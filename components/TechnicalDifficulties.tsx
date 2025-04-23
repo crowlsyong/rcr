@@ -27,6 +27,10 @@ export default function TechnicalDifficulties() {
           Some users have a credit score of less than 0, this is not supposed to
           be possible. We are looking into the issue.
         </p>
+        <p class="text-sm">
+          <strong>Update #1:</strong>{" "}
+          We implimented a patch for negative credit scores. Test it out. 
+        </p>
         <p class="text-sm mt-2">
           To report a negative credit score or any other bugs, send{" "}
           <strong>
