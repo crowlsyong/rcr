@@ -1,59 +1,85 @@
+import { h } from "preact";
+
 interface ScoreResultProps {
   username: string;
   creditScore: number;
   riskMultiplier: number;
+  avatarUrl: string | null;
   isWaiting: boolean;
-}
-
-function getScoreColor(score: number) {
-  const percentage = Math.min(Math.max(score / 1000, 0), 1);
-  const red = Math.round(255 * (1 - percentage));
-  const green = Math.round(200 * percentage);
-  return `rgba(${red}, ${green}, 100, 0.5)`; // 50% transparent background only
 }
 
 export default function ScoreResult({
   username,
   creditScore,
   riskMultiplier,
+  avatarUrl,
   isWaiting,
 }: ScoreResultProps) {
-  const bgColor = isWaiting
-    ? "rgba(255, 255, 255, 0.1)"
-    : getScoreColor(creditScore);
+  // Define color class based on credit score
+  const colorClass = creditScore >= 800
+    ? "text-green-500"
+    : creditScore >= 700
+    ? "text-blue-500"
+    : creditScore >= 600
+    ? "text-yellow-500"
+    : "text-red-500";
 
-  return (
-    <div
-      class="w-full p-6 rounded-lg shadow-lg text-center relative"
-      style={{ backgroundColor: bgColor }}
+  const borderColorClass = creditScore >= 800
+    ? "border-green-500"
+    : creditScore >= 700
+    ? "border-blue-500"
+    : creditScore >= 600
+    ? "border-yellow-500"
+    : "border-red-500";
+
+  // Determine if the container should be clickable
+  const isClickable = username && username !== "nouserfound";
+
+  // Common container classes
+  const containerClasses = `block border p-6 rounded-lg bg-gray-800 text-white transition-all duration-300 ${borderColorClass} ${isClickable ? "hover:brightness-110 cursor-pointer" : "cursor-default"}`;
+
+  // Card content
+  const content = (
+    <div class="flex items-center mb-4">
+      {avatarUrl ? (
+        <img
+          src={avatarUrl}
+          alt={`${username}'s avatar`}
+          class="w-12 h-12 rounded-full mr-4"
+        />
+      ) : (
+        <div class="w-12 h-12 rounded-full bg-gray-500 mr-4" />
+      )}
+      <div>
+        <h2 class="text-xl font-semibold">{username}</h2>
+        <p class="text-sm">Risk Multiplier: {riskMultiplier}</p>
+        <p class="text-2xl font-bold mt-2">
+          Credit Score: <span class={colorClass}>{creditScore}</span>
+        </p>
+      </div>
+    </div>
+  );
+
+  if (isWaiting) {
+    return (
+      <div class={containerClasses}>
+        <p class="text-gray-400">Loading...</p>
+      </div>
+    );
+  }
+
+  return isClickable ? (
+    <a
+      href={`https://manifold.markets/${username}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      class={containerClasses}
     >
-      {/* Username with link */}
-      <div class="text-sm text-white mb-2">
-        {isWaiting
-          ? (
-            "Waiting..."
-          )
-          : (
-            <a
-              href={`https://manifold.markets/${username}`}
-              target="_blank"
-              class="text-white underline"
-              rel="noopener noreferrer"
-            >
-              {username}
-            </a>
-          )}
-      </div>
-
-      {/* Credit Score */}
-      <div class="text-4xl font-bold text-white">
-        {isWaiting ? "..." : creditScore}
-      </div>
-      
-      {/* Risk Multiplier */}
-      <div class="mt-2 text-white text-base">
-        Risk Multiplier: {isWaiting ? "Waiting..." : riskMultiplier}
-      </div>
+      {content}
+    </a>
+  ) : (
+    <div class={containerClasses}>
+      {content}
     </div>
   );
 }

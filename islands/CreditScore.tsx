@@ -6,6 +6,7 @@ interface CreditScoreData {
   username: string;
   creditScore: number;
   riskMultiplier: number;
+  avatarUrl: string | null;
 }
 
 export default function CreditScore() {
@@ -67,6 +68,7 @@ export default function CreditScore() {
         username={scoreData.value?.username || "N/A"}
         creditScore={scoreData.value?.creditScore || 0}
         riskMultiplier={scoreData.value?.riskMultiplier || 0}
+        avatarUrl={scoreData.value?.avatarUrl || null} // Pass the avatar URL here
         isWaiting={!scoreData.value && !error.value} // Check if still waiting
       />
 
@@ -100,7 +102,7 @@ export default function CreditScore() {
             </p> // Green message with clickable link when user is found
           )
           : (
-            <p class="text-gray-400">Waiting...</p> // Default waiting message
+            <p class="text-gray-400">To type something...</p> // Default waiting message
           )}
       </div>
     </div>
