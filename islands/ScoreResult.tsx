@@ -63,7 +63,7 @@ export default function ScoreResult({
   if (isWaiting) {
     return (
       <div class={containerClasses}>
-        <p class="text-gray-400">Loading...</p>
+        <p class="text-gray-400">Waiting...</p>
       </div>
     );
   }

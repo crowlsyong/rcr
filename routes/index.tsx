@@ -14,6 +14,9 @@ export default function Home() {
         <h1 class="text-3xl sm:text-4xl font-bold text-center mb-4">
           🦝RISK Credit Score
         </h1>
+        <p>
+          ⚠️ This product is in Alpha Testing
+        </p>
         <CreditScore />
       </div>
     </div>

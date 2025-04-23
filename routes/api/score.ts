@@ -31,29 +31,39 @@ async function fetchUserData(username: string) {
   
   function computeCreditScore(user: any, lbIndex: number): number {
     const balance = user.balance ?? 0;
-    const allTimeProfit = (user.rawProfitAll ?? 0) + balance -
-      (user.totalDeposits ?? 0);
+// Fetch user data
+const allTimeProfit = (user.rawProfitAll ?? 0) + balance - (user.totalDeposits ?? 0);
+
+// Log the individual components for debugging
+console.log("rawProfitAll:", user.rawProfitAll);
+console.log("balance:", balance);
+console.log("totalDeposits:", user.totalDeposits);
+
+console.log("All-Time Profit:", allTimeProfit);
     const ageDays = (Date.now() - (user.createdTime ?? Date.now())) / 86_400_000;
   
     const balMag = signedMagnitude(balance);
     const profMag = signedMagnitude(allTimeProfit);
     const ageMag = signedMagnitude(ageDays);
   
-    const raw = balMag * 0.3 +
-      profMag * 0.4 +
-      ageMag * 0.3 +
-      leaderboardBonus(lbIndex);
+    const lbBonus = leaderboardBonus(lbIndex);
   
+    // Debug log for diagnosing spiderduckpig or others
+    console.log(`[DEBUG] Computation for ${user.username || "unknown user"}:`);
+    console.log(`  Balance = ${balance} (mag=${balMag.toFixed(2)})`);
+    console.log(`  All-Time Profit = ${allTimeProfit} (mag=${profMag.toFixed(2)})`);
+    console.log(`  Age (days) = ${ageDays.toFixed(2)} (mag=${ageMag.toFixed(2)})`);
+    console.log(`  Leaderboard Bonus = ${lbBonus.toFixed(4)}`);
+  
+    const raw = balMag * 0.3 + profMag * 0.4 + ageMag * 0.3 + lbBonus;
     const rawScore = raw * 1000;
     const normalizedScore = Math.min(Math.max((rawScore + 1000) / 2, 0), 1000);
   
-    // Special handling for top-100 users
     if (lbIndex >= 0 && lbIndex < 100) {
       if (lbIndex < 10) {
         return 1000;
       } else {
-        // 10th place = 999, 99th place = 970
-        const scaled = 999 - ((lbIndex - 10) * (29 / 89)); // 29 points lost over 89 positions
+        const scaled = 999 - ((lbIndex - 10) * (29 / 89));
         return Math.round(scaled);
       }
     }
@@ -95,20 +105,27 @@ async function fetchUserData(username: string) {
       const score = computeCreditScore(user, idx);
       const risk = +calculateRiskMultiplier(score).toFixed(3);
   
-      // Now include the avatar URL correctly
       const output = {
         username,
         creditScore: score,
         riskMultiplier: risk,
-        avatarUrl: user.avatarUrl || null, // Use avatarUrl from the fetched user data
+        avatarUrl: user.avatarUrl || null,
       };
   
       return new Response(JSON.stringify(output, null, 2), {
         headers: { "Content-Type": "application/json" },
       });
     } catch (err) {
-      console.error("Error:", err);
-      return new Response(JSON.stringify({ error: "❌ No result" }), {
+      if (err instanceof Error && err.message.startsWith("Failed to fetch")) {
+        // Do not spam console for expected "not found" cases
+        return new Response(JSON.stringify({ error: "❌ No result" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+  
+      console.error("Unexpected error:", err);
+      return new Response(JSON.stringify({ error: "❌ Server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       });
