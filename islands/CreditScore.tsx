@@ -57,12 +57,12 @@ export default function CreditScore() {
     <div class="w-full max-w-md mx-auto flex flex-col items-center justify-center bg-gray-800 p-6 rounded-lg shadow-lg mt-6">
       <input
         type="text"
-        placeholder="Enter username"
+        placeholder="Enter username to fetch credit score"
         value={username.value}
         onInput={(e) => username.value = (e.target as HTMLInputElement).value}
         class="w-full p-3 mb-4 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
-
+      <p class="text-sm text-gray-400 mt-1">Usernames are case sensitive</p>
       {error.value && <p class="mt-4 text-red-400 text-center">{error.value}</p>}
 
       {scoreData.value && !error.value && (

@@ -13,11 +13,8 @@ export default function Home() {
           alt="the Fresh logo: a sliced lemon dripping with juice"
         />
         <h1 class="text-3xl sm:text-4xl font-bold text-center mb-4">
-          Manifold Credit Score
+          🦝RISK Credit Score
         </h1>
-        <p class="my-4 text-center text-lg sm:text-xl">
-          Enter a username to fetch their credit score.
-        </p>
         {/* Include the CreditScore island */}
         <CreditScore />
       </div>
