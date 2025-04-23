@@ -78,6 +78,8 @@ async function fetchUserData(username: string) {
     try {
       const leaderboard = await fetchLeaderboard();
       const user = await fetchUserData(username);
+console.log("Fetched user:", user); // <-- add this
+
       const idx = leaderboard.findIndex((e) => e.userId === user.id);
       const score = computeCreditScore(user, idx);
       const risk = +calculateRiskMultiplier(score).toFixed(3);

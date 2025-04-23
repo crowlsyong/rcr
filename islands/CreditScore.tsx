@@ -85,7 +85,16 @@ export default function CreditScore() {
         {error.value ? (
           <p class="text-red-400">{error.value}</p>
         ) : scoreData.value ? (
-          <p class="text-green-400">✅User found</p>  // Green message when user is found
+          <p class="text-green-400">
+            ✅User found
+            <a 
+              href={`https://manifold.markets/${scoreData.value?.username}`} 
+              target="_blank" 
+              class="text-blue-400 hover:underline ml-2"
+            >
+              Visit {scoreData.value.username}'s Manifold page
+            </a>
+          </p>  // Green message with clickable link when user is found
         ) : (
           <p class="text-gray-400">Waiting...</p> // Default waiting message
         )}
