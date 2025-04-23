@@ -29,7 +29,7 @@ jobs:
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-          project: "risk-credit-report"
+          project: "risk"
           entrypoint: "main.ts"
           root: "."
           
