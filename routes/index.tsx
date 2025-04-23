@@ -6,10 +6,9 @@ import TechnicalDifficulties from "../components/TechnicalDifficulties.tsx"; // 
 export default function Home() {
   return (
     <div class="min-h-screen bg-[#0F1729] text-white dark:bg-[#0F1729] dark:text-white">
-      
       <div class="max-w-screen-md mx-auto flex flex-col items-center justify-center min-h-screen px-4 py-8">
-                {/* Show technical difficulties warning */}
-                <div class="w-full mb-6">
+        {/* Show technical difficulties warning */}
+        <div class="w-full mb-6">
           <TechnicalDifficulties />
         </div>
         <img
@@ -21,7 +20,6 @@ export default function Home() {
         <h1 class="text-3xl sm:text-4xl font-bold text-center mb-4">
           🦝RISK Credit Score
         </h1>
-
 
         {/* Include the CreditScore island */}
         <CreditScore />

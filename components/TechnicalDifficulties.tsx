@@ -18,16 +18,29 @@ export default function TechnicalDifficulties() {
         />
       </svg>
       <div class="flex flex-col space-y-2">
-  <p class="text-md">
-    <strong>This product is in Alpha testing!</strong>
-  </p>
-  <hr />
-  <p class="text-sm">
-    <strong>Technical Difficulties: </strong>
-    Some users have a credit score of less than 0, this is not supposed to be possible. We are looking into the issue.
-  </p>
-</div>
-
+        <p class="text-md">
+          <strong>This product is in Alpha testing!</strong>
+        </p>
+        <hr />
+        <p class="text-sm">
+          <strong>Technical Difficulties:</strong>
+          Some users have a credit score of less than 0, this is not supposed to
+          be possible. We are looking into the issue.
+        </p>
+        <p class="text-sm mt-2">
+          To report a negative credit score or any other bugs, send{" "}
+          <strong>
+            <a
+              href="https://manifold.markets/crowlsyong"
+              target="_blank"
+              class="text-blue-600 hover:underline"
+            >
+              @crowlsyong
+            </a>
+          </strong>{" "}
+          a DM on Manifold.
+        </p>
+      </div>
     </div>
   );
 }

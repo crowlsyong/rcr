@@ -43,7 +43,7 @@ export default function CreditScore() {
         scoreData.value = null;
       } else {
         scoreData.value = data;
-        error.value = "";  // Clear any previous error
+        error.value = ""; // Clear any previous error
       }
     } catch {
       error.value = "An error occurred while fetching data.";
@@ -54,7 +54,7 @@ export default function CreditScore() {
   // URL parsing to fetch the username from URL params
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const urlUsername = params.get('username');
+    const urlUsername = params.get("username");
     if (urlUsername) {
       username.value = urlUsername;
       setDebouncedUsername(urlUsername); // Update debouncedUsername to trigger the fetch
@@ -69,35 +69,39 @@ export default function CreditScore() {
         riskMultiplier={scoreData.value?.riskMultiplier || 0}
         isWaiting={!scoreData.value && !error.value} // Check if still waiting
       />
-      
+
       <div class="mt-4">
         <input
           type="text"
           placeholder="Enter username"
           value={username.value}
-          onInput={(e) => (username.value = (e.target as HTMLInputElement).value)}
+          onInput={(
+            e,
+          ) => (username.value = (e.target as HTMLInputElement).value)}
           class="w-full p-3 mb-4 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
       {/* Always render the error container or success message */}
       <div class="text-center mt-2">
-        {error.value ? (
-          <p class="text-red-400">{error.value}</p>
-        ) : scoreData.value ? (
-          <p class="text-green-400">
-            ✅User found
-            <a 
-              href={`https://manifold.markets/${scoreData.value?.username}`} 
-              target="_blank" 
-              class="text-blue-400 hover:underline ml-2"
-            >
-              Visit {scoreData.value.username}'s Manifold page
-            </a>
-          </p>  // Green message with clickable link when user is found
-        ) : (
-          <p class="text-gray-400">Waiting...</p> // Default waiting message
-        )}
+        {error.value
+          ? <p class="text-red-400">{error.value}</p>
+          : scoreData.value
+          ? (
+            <p class="text-green-400">
+              ✅User found
+              <a
+                href={`https://manifold.markets/${scoreData.value?.username}`}
+                target="_blank"
+                class="text-blue-400 hover:underline ml-2"
+              >
+                Visit {scoreData.value.username}'s Manifold page
+              </a>
+            </p> // Green message with clickable link when user is found
+          )
+          : (
+            <p class="text-gray-400">Waiting...</p> // Default waiting message
+          )}
       </div>
     </div>
   );
