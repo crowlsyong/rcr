@@ -17,16 +17,17 @@ export default function TechnicalDifficulties() {
           d="M12 9v2m0 4h.01m-6.938 4h13.856c1.054 0 1.618-1.14 1.054-2l-6.928-12c-.526-.91-1.842-.91-2.368 0l-6.928 12c-.564.86 0 2 1.054 2z"
         />
       </svg>
-      <div class="flex-row gap-2">
+      <div class="flex flex-col space-y-2">
+  <p class="text-md">
+    <strong>This product is in Alpha testing!</strong>
+  </p>
+  <hr />
+  <p class="text-sm">
+    <strong>Technical Difficulties: </strong>
+    Some users have a credit score of less than 0, this is not supposed to be possible. We are looking into the issue.
+  </p>
+</div>
 
-      <p class="text-md">
-        <strong>This product is in Alpha testing! </strong>
-      </p>
-      <p class="text-sm">
-        <strong>Technical Difficulties:  </strong>
-        Some users have a credit score of less than 0, this is not supposed to be possible. We are looking into the issue.
-      </p>
-      </div>
     </div>
   );
 }
