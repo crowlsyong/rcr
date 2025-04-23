@@ -58,12 +58,23 @@ function mapToCreditScore(clampedMMRBalance: number): number {
   return Math.max(0, Math.min(1000, score));
 }
 
-// Risk multiplier based on credit score
 function calculateRiskMultiplier(score: number): number {
-  if (score < 500) return 2;
-  if (score < 800) return 1.5;
-  return 1;
+  let multiplier: number;
+
+  if (score <= 600) {
+    multiplier = 1.2 - (score / 600) * 0.6; // 1.2 → 0.6 as score goes 0→600
+  } else if (score <= 700) {
+    multiplier = 0.6 - ((score - 600) / 100) * 0.2; // 0.6 → 0.4 as score goes 600→700
+  } else if (score <= 800) {
+    multiplier = 0.4 + ((score - 700) / 100) * 0.2; // 0.4 → 0.6 as score goes 700→800
+  } else {
+    multiplier = 0.6 + ((score - 800) / 200) * 0.4; // 0.6 → 1.0 as score goes 800→1000
+  }
+
+  return Math.round(multiplier * 100) / 100;
 }
+
+let lastErrorTime = 0;
 
 // HTTP server for /api/score endpoint
 export async function handler(req: Request): Promise<Response> {
@@ -111,7 +122,11 @@ export async function handler(req: Request): Promise<Response> {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error(`Error fetching user data:`, error);
+    const now = Date.now();
+    if (now - lastErrorTime > 500) {
+      console.error(`Error fetching user data:`, error);
+      lastErrorTime = now;
+    }
     return new Response(`Error fetching data for ${username}`, { status: 500 });
   }
 }
