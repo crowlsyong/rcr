@@ -76,7 +76,9 @@ export default function CreditScore() {
           type="text"
           placeholder="Enter username"
           value={username.value}
-          onInput={(e) => (username.value = (e.target as HTMLInputElement).value)}
+          onInput={(
+            e,
+          ) => (username.value = (e.target as HTMLInputElement).value)}
           class="w-full p-3 mb-4 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
@@ -97,9 +99,7 @@ export default function CreditScore() {
               </a>
             </p>
           )
-          : (
-            <p class="text-gray-400">To type something...</p>
-          )}
+          : <p class="text-gray-400">To type something...</p>}
       </div>
     </div>
   );
