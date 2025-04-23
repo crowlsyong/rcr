@@ -23,7 +23,7 @@ export default function TechnicalDifficulties() {
         </p>
         <hr />
         <p class="text-sm">
-          <strong>Technical Difficulties:</strong>
+          <strong>Technical Difficulties:</strong>{" "}
           Some users have a credit score of less than 0, this is not supposed to
           be possible. We are looking into the issue.
         </p>
