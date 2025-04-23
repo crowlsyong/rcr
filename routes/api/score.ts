@@ -66,13 +66,14 @@ function calculateRiskMultiplier(score: number): number {
   } else if (score <= 700) {
     multiplier = 0.6 - ((score - 600) / 100) * 0.2; // 0.6 → 0.4 as score goes 600→700
   } else if (score <= 800) {
-    multiplier = 0.4 + ((score - 700) / 100) * 0.2; // 0.4 → 0.6 as score goes 700→800
+    multiplier = 0.4 - ((score - 700) / 100) * 0.2; // 0.4 → 0.2 as score goes 700→800
   } else {
-    multiplier = 0.6 + ((score - 800) / 200) * 0.4; // 0.6 → 1.0 as score goes 800→1000
+    multiplier = 0.2 - ((score - 800) / 200) * 0.15; // 0.2 → 0.05 as score goes 800→1000
   }
 
   return Math.round(multiplier * 100) / 100;
 }
+
 
 let lastErrorTime = 0;
 

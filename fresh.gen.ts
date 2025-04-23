@@ -6,7 +6,10 @@ import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $api_score from "./routes/api/score.ts";
 import * as $index from "./routes/index.tsx";
+import * as $insurance from "./routes/insurance.tsx";
+import * as $CoverageResult from "./islands/CoverageResult.tsx";
 import * as $CreditScore from "./islands/CreditScore.tsx";
+import * as $InsuranceCalc from "./islands/InsuranceCalc.tsx";
 import * as $ScoreResult from "./islands/ScoreResult.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
@@ -16,9 +19,12 @@ const manifest = {
     "./routes/_app.tsx": $_app,
     "./routes/api/score.ts": $api_score,
     "./routes/index.tsx": $index,
+    "./routes/insurance.tsx": $insurance,
   },
   islands: {
+    "./islands/CoverageResult.tsx": $CoverageResult,
     "./islands/CreditScore.tsx": $CreditScore,
+    "./islands/InsuranceCalc.tsx": $InsuranceCalc,
     "./islands/ScoreResult.tsx": $ScoreResult,
   },
   baseUrl: import.meta.url,

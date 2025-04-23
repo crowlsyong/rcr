@@ -1,0 +1,162 @@
+// InsuranceCalc.tsx
+import { h } from "preact";
+import { useSignal } from "@preact/signals";
+import { useState, useEffect, useRef } from "preact/hooks";
+import ScoreResult from "./ScoreResult.tsx";
+
+interface CreditScoreData {
+  username: string;
+  creditScore: number;
+  riskMultiplier: number;
+  avatarUrl: string | null;
+}
+
+export default function InsuranceCalc() {
+  const username = useSignal(""); 
+  const loanAmount = useSignal(0); 
+  const selectedCoverage = useSignal<number | null>(null); 
+  const [debouncedUsername, setDebouncedUsername] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null); 
+  const [insuranceFee, setInsuranceFee] = useState<number | null>(null); 
+  const [riskMultiplier, setRiskMultiplier] = useState(0); 
+
+  const scoreData = useSignal<CreditScoreData | null>(null); 
+
+  // Debounced username effect
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedUsername(username.value), 100);
+    return () => clearTimeout(timer);
+  }, [username.value]);
+
+  useEffect(() => {
+    if (debouncedUsername) fetchScoreData(debouncedUsername);
+    else resetState();
+  }, [debouncedUsername]);
+
+  // Fetch the score data based on username
+  async function fetchScoreData(user: string) {
+    try {
+      const res = await fetch(`/api/score?username=${user}`);
+      const data = await res.json();
+      if (data.error) {
+        scoreData.value = null;
+      } else {
+        scoreData.value = data;
+        setRiskMultiplier(data.riskMultiplier); 
+      }
+    } catch {
+      scoreData.value = null;
+    }
+  }
+
+  function resetState() {
+    scoreData.value = null;
+  }
+
+  // Calculate the insurance fee
+  function calculateInsuranceFee() {
+    if (loanAmount.value <= 0 || !selectedCoverage.value || riskMultiplier === 0) return;
+    const coveragePercentage = selectedCoverage.value / 100;
+    const fee = loanAmount.value * coveragePercentage * riskMultiplier;
+    setInsuranceFee(fee);
+  }
+
+  // Handle the selection of coverage percentages
+  const handleCoverageClick = (percentage: number | null) => {
+    if (selectedCoverage.value === percentage) {
+      selectedCoverage.value = null; // Deselect if already selected
+    } else {
+      selectedCoverage.value = percentage;
+    }
+    calculateInsuranceFee();
+  };
+
+  // Set the username when typed in
+  const handleUsernameInput = (e: Event) => {
+    username.value = (e.target as HTMLInputElement).value;
+  };
+
+  // Handle loan amount input
+  const handleLoanInput = (e: Event) => {
+    const value = parseFloat((e.target as HTMLInputElement).value);
+    loanAmount.value = value > 0 ? value : 0;
+    calculateInsuranceFee();
+  };
+
+  const totalOwed = loanAmount.value + (insuranceFee || 0); 
+
+  return (
+    <div class="w-full max-w-md mx-auto pt-6 pb-6 px-0 sm:px-6">
+      <ScoreResult
+        username={scoreData.value?.username || "N/A"}
+        creditScore={scoreData.value?.creditScore || 0}
+        riskMultiplier={riskMultiplier || 0}
+        avatarUrl={scoreData.value?.avatarUrl || null}
+        isWaiting={!scoreData.value}
+      />
+
+{/* Username Input */}
+<div class="mt-4">
+  <label htmlFor="username" class="text-gray-400 mb-1 block">Enter your username</label>
+  <div class="relative">
+    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">@</span>
+    <input
+      id="username"
+      ref={inputRef}
+      type="text"
+      placeholder="Enter a manifold username"
+      value={username.value}
+      onInput={handleUsernameInput}
+      class="w-full pl-8 p-3 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+  </div>
+</div>
+
+
+{/* Loan Amount Input */}
+<div class="mt-4">
+  <label htmlFor="loanAmount" class="text-gray-400 mb-1 block">Enter loan amount</label>
+  <input
+    id="loanAmount"
+    type="number"
+    value={loanAmount.value}
+    placeholder="Loan amount"
+    onInput={handleLoanInput}
+    min="0"
+    class="w-full p-3 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+  />
+</div>
+      {/* Coverage Buttons */}
+      <div class="mt-4 flex space-x-4">
+        {["25%", "50%", "75%", "100%"].map((label) => (
+          <button
+            key={label}
+            onClick={() => handleCoverageClick(parseInt(label))}
+            class={`w-1/4 p-3 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              selectedCoverage.value === parseInt(label)
+                ? "bg-blue-600"
+                : "bg-gray-700 hover:bg-blue-500"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Insurance Fee */}
+      <div class="mt-4 text-right">
+        <p class="text-gray-400">{loanAmount.value ? `Loan Amount: $${loanAmount.value.toFixed(2)}` : ""}</p>
+        <p class={`${insuranceFee === null || !loanAmount.value || !selectedCoverage.value ? "text-orange-400" : "text-green-400"}`}>
+          {insuranceFee === null || !loanAmount.value || !selectedCoverage.value
+            ? "Waiting..."
+            : `Insurance Fee: $${insuranceFee.toFixed(2)}`}
+        </p>
+        {insuranceFee !== null && (
+          <p class="text-gray-300">
+            Total Owed: ${(totalOwed).toFixed(2)}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
