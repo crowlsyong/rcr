@@ -93,7 +93,7 @@ async function fetchUserData(username: string) {
       });
     } catch (err) {
       console.error("Error:", err);
-      return new Response(JSON.stringify({ error: "No result" }), {
+      return new Response(JSON.stringify({ error: "❌ No result" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       });

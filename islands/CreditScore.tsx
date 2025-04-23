@@ -1,6 +1,6 @@
-// islands/CreditScore.tsx
 import { useSignal } from "@preact/signals";
 import { useEffect, useState } from "preact/hooks";
+import ScoreResult from "./ScoreResult.tsx"; // Import your result box
 
 interface CreditScoreData {
   username: string;
@@ -9,69 +9,87 @@ interface CreditScoreData {
 }
 
 export default function CreditScore() {
-  const username = useSignal(""); // The username input
+  const username = useSignal("");
   const scoreData = useSignal<CreditScoreData | null>(null);
-  const error = useSignal<string>(""); // For error handling
+  const error = useSignal<string>("");
 
-  // Local state to handle debouncing
   const [debouncedUsername, setDebouncedUsername] = useState("");
 
-  // Set up a debounce to trigger after typing stops for 100ms
+  // Set up effect to listen for changes in the username field
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedUsername(username.value);
-    }, 100);
-
-    return () => clearTimeout(timer); // Clean up the timer on re-render
+    const timer = setTimeout(() => setDebouncedUsername(username.value), 100);
+    return () => clearTimeout(timer);
   }, [username.value]);
 
-  // Fetch data when the debounced username changes
+  // Fetch score data if username changes
   useEffect(() => {
-    if (debouncedUsername) {
-      fetchScoreData(debouncedUsername);
-    }
+    if (debouncedUsername) fetchScoreData(debouncedUsername);
+    else resetState(); // Reset state when the textbox is cleared
   }, [debouncedUsername]);
 
-  const fetchScoreData = async (user: string) => {
-    if (!user) {
-      error.value = "Please enter a username.";
-      return;
-    }
+  // Reset state to waiting
+  function resetState() {
+    scoreData.value = null;
+    error.value = "";
+  }
 
+  // Fetch the score data from the backend
+  async function fetchScoreData(user: string) {
     try {
       const res = await fetch(`/api/score?username=${user}`);
       const data = await res.json();
-
       if (data.error) {
         error.value = data.error;
+        scoreData.value = null;
       } else {
         scoreData.value = data;
-        error.value = ""; // Clear any previous errors
+        error.value = "";  // Clear any previous error
       }
-    } catch (err) {
+    } catch {
       error.value = "An error occurred while fetching data.";
+      scoreData.value = null;
     }
-  };
+  }
+
+  // URL parsing to fetch the username from URL params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlUsername = params.get('username');
+    if (urlUsername) {
+      username.value = urlUsername;
+      setDebouncedUsername(urlUsername); // Update debouncedUsername to trigger the fetch
+    }
+  }, []);
 
   return (
-    <div class="w-full max-w-md mx-auto flex flex-col items-center justify-center bg-gray-800 p-6 rounded-lg shadow-lg mt-6">
-      <input
-        type="text"
-        placeholder="Enter username to fetch credit score"
-        value={username.value}
-        onInput={(e) => username.value = (e.target as HTMLInputElement).value}
-        class="w-full p-3 mb-4 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+    <div class="w-full max-w-md mx-auto p-6">
+      <ScoreResult
+        username={scoreData.value?.username || "N/A"}
+        creditScore={scoreData.value?.creditScore || 0}
+        riskMultiplier={scoreData.value?.riskMultiplier || 0}
+        isWaiting={!scoreData.value && !error.value} // Check if still waiting
       />
-      <p class="text-sm text-gray-400 mt-1">Usernames are case sensitive</p>
-      {error.value && <p class="mt-4 text-red-400 text-center">{error.value}</p>}
+      
+      <div class="mt-4">
+        <input
+          type="text"
+          placeholder="Enter username"
+          value={username.value}
+          onInput={(e) => (username.value = (e.target as HTMLInputElement).value)}
+          class="w-full p-3 mb-4 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
 
-      {scoreData.value && !error.value && (
-        <div class="mt-6 text-center text-lg text-white">
-          <h3 class="font-semibold">Credit Score for {scoreData.value.username}</h3>
-          <p>Credit Score: {scoreData.value.creditScore}</p>
-          <p>Risk Multiplier: {scoreData.value.riskMultiplier}</p>
-        </div>
-      )}
+      {/* Always render the error container or success message */}
+      <div class="text-center mt-2">
+        {error.value ? (
+          <p class="text-red-400">{error.value}</p>
+        ) : scoreData.value ? (
+          <p class="text-green-400">✅User found</p>  // Green message when user is found
+        ) : (
+          <p class="text-gray-400">Waiting...</p> // Default waiting message
+        )}
+      </div>
     </div>
   );
 }

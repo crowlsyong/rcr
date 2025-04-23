@@ -7,6 +7,7 @@ import * as $_app from "./routes/_app.tsx";
 import * as $api_score from "./routes/api/score.ts";
 import * as $index from "./routes/index.tsx";
 import * as $CreditScore from "./islands/CreditScore.tsx";
+import * as $ScoreResult from "./islands/ScoreResult.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -18,6 +19,7 @@ const manifest = {
   },
   islands: {
     "./islands/CreditScore.tsx": $CreditScore,
+    "./islands/ScoreResult.tsx": $ScoreResult,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;
