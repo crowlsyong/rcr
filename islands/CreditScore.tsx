@@ -61,7 +61,7 @@ export default function CreditScore() {
   }, []);
 
   return (
-    <div class="w-full max-w-md mx-auto p-6">
+    <div class="w-full max-w-md mx-auto pt-6 pb-6 px-0 sm:px-6">
       <ScoreResult
         username={scoreData.value?.username || "N/A"}
         creditScore={scoreData.value?.creditScore || 0}
@@ -69,17 +69,19 @@ export default function CreditScore() {
         avatarUrl={scoreData.value?.avatarUrl || null}
         isWaiting={!scoreData.value && !error.value}
       />
-
-      <div class="mt-4">
+      <div class="mt-4 relative">
+        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
+          @
+        </span>
         <input
-          ref={inputRef} // attach the ref here
+          ref={inputRef}
           type="text"
-          placeholder="Enter username"
+          placeholder="Enter a manifold username"
           value={username.value}
           onInput={(
             e,
           ) => (username.value = (e.target as HTMLInputElement).value)}
-          class="w-full p-3 mb-4 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full pl-8 p-3 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
@@ -99,7 +101,7 @@ export default function CreditScore() {
               </a>
             </p>
           )
-          : <p class="text-gray-400">To type something...</p>}
+          : <p class="text-gray-400">...</p>}
       </div>
     </div>
   );

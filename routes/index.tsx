@@ -15,7 +15,15 @@ export default function Home() {
           🦝RISK Credit Score
         </h1>
         <p class="text-xs sm:text-base text-center mb-4">
-          Built for Manifold.Markets
+          Built for{" "}
+          <a
+            href="https://manifold.markets/"
+            class="underline hover:text-blue-500"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            manifold.markets
+          </a>
         </p>
         <p class="text-xxs font-bold">
           ⚠️ This product is in Alpha Testing
