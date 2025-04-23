@@ -4,7 +4,24 @@ async function fetchUserData(username: string) {
     if (!res.ok) {
       throw new Error(`Failed to fetch ${username}: ${res.statusText}`);
     }
-    return await res.json();
+    const userData = await res.json();
+  
+    // Fetch league standings for the user
+    const leagueRes = await fetch(`https://api.manifold.markets/v0/leagues?userId=${userData.id}`);
+    if (!leagueRes.ok) {
+      console.error(`Failed to fetch leagues for ${username}: ${leagueRes.statusText}`);
+    } else {
+      const leaguesData = await leagueRes.json();
+      console.log("Leagues Data:", leaguesData); // Log the leagues data
+  
+      // Calculate the total manaEarned from all seasons
+      const totalManaEarned = leaguesData.reduce((total: number, season: any) => total + season.manaEarned, 0);
+  
+      // Log the total mana earned
+      console.log("Total Mana Earned from all seasons:", totalManaEarned);
+    }
+  
+    return userData;
   }
   
   // Fetch top-100 profit leaderboard
@@ -31,15 +48,14 @@ async function fetchUserData(username: string) {
   
   function computeCreditScore(user: any, lbIndex: number): number {
     const balance = user.balance ?? 0;
-// Fetch user data
-const allTimeProfit = (user.rawProfitAll ?? 0) + balance - (user.totalDeposits ?? 0);
-
-// Log the individual components for debugging
-console.log("rawProfitAll:", user.rawProfitAll);
-console.log("balance:", balance);
-console.log("totalDeposits:", user.totalDeposits);
-
-console.log("All-Time Profit:", allTimeProfit);
+    const allTimeProfit = (user.rawProfitAll ?? 0) + balance - (user.totalDeposits ?? 0);
+  
+    // Log the individual components for debugging
+    console.log("rawProfitAll:", user.rawProfitAll);
+    console.log("balance:", balance);
+    console.log("totalDeposits:", user.totalDeposits);
+  
+    console.log("All-Time Profit:", allTimeProfit);
     const ageDays = (Date.now() - (user.createdTime ?? Date.now())) / 86_400_000;
   
     const balMag = signedMagnitude(balance);

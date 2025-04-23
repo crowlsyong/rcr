@@ -24,7 +24,10 @@ export default function ScoreResult({
     ? "text-yellow-500"
     : "text-red-500";
 
-  const borderColorClass = creditScore >= 800
+  // If waiting, override border color to gray
+  const borderColorClass = isWaiting
+    ? "border-gray-500"
+    : creditScore >= 800
     ? "border-green-500"
     : creditScore >= 700
     ? "border-blue-500"
