@@ -29,7 +29,12 @@ export default function TechnicalDifficulties() {
         </p>
         <p class="text-sm">
           <strong>Update #1:</strong>{" "}
-          We implimented a patch for negative credit scores. Test it out. 
+          Implimented a patch for negative credit scores.
+        </p>
+        <p class="text-sm">
+          <strong>Update #2:</strong>{" "}
+          Implimented a in improvement on the algorithm to better determine
+          alltime profit
         </p>
         <p class="text-sm mt-2">
           To report a negative credit score or any other bugs, send{" "}

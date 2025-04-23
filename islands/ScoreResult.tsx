@@ -18,7 +18,9 @@ export default function ScoreResult({
   riskMultiplier,
   isWaiting,
 }: ScoreResultProps) {
-  const bgColor = isWaiting ? "#0F1729" : getScoreColor(creditScore);
+  const bgColor = isWaiting
+    ? "rgba(255, 255, 255, 0.1)"
+    : getScoreColor(creditScore);
 
   return (
     <div
@@ -44,8 +46,10 @@ export default function ScoreResult({
       </div>
 
       {/* Credit Score */}
-      <div class="text-4xl font-bold text-white">{creditScore}</div>
-
+      <div class="text-4xl font-bold text-white">
+        {isWaiting ? "..." : creditScore}
+      </div>
+      
       {/* Risk Multiplier */}
       <div class="mt-2 text-white text-base">
         Risk Multiplier: {isWaiting ? "Waiting..." : riskMultiplier}
