@@ -46,7 +46,7 @@ export default function CreditScore() {
         error.value = "";
       }
     } catch {
-      error.value = "An error occurred while fetching data.";
+      error.value = "Not found";
       scoreData.value = null;
     }
   }

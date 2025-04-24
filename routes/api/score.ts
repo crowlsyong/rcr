@@ -1,12 +1,35 @@
 // Fetch raw user data
 async function fetchUserData(username: string) {
-  const res = await fetch(`https://api.manifold.markets/v0/user/${username}`);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch ${username}: ${res.statusText}`);
+  let fetchSuccess = false;
+  let userData = null;
+
+  try {
+    const res = await fetch(`https://api.manifold.markets/v0/user/${username}`);
+
+    if (res.status === 404) {
+      console.error(`User '${username}' not found (404).`);
+      fetchSuccess = false;
+      console.log(`fetchSuccess for '${username}':`, fetchSuccess); // 👈 move it here if needed
+      return { userData: null, fetchSuccess };
+    }
+    
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch ${username}: ${res.statusText}`);
+    }
+
+    userData = await res.json();
+    fetchSuccess = true;
+
+  } catch (error) {
+    fetchSuccess = false;
+    console.error(`Error fetching user '${username}':`, error);
   }
-  const userData = await res.json();
-  return userData;
+
+  console.log(`fetchSuccess for '${username}':`, fetchSuccess);
+  return { userData, fetchSuccess };
 }
+
 
 // Fetch total mana earned from all league seasons
 async function fetchTotalManaEarned(userId: string): Promise<number> {
@@ -74,13 +97,12 @@ function calculateRiskMultiplier(score: number): number {
   return Math.round(multiplier * 100) / 100;
 }
 
-let lastErrorTime = 0;
+//  const PROMOCODES: Record<string, number> = {
+//    tumble: 0.5, // 50% off
+//    earlyrisker: 0.7, // 30% off
+//  };
 
-const PROMOCODES: Record<string, number> = {
-  tumble: 0.5, // 50% off
-  earlyrisker: 0.7, // 30% off
-};
-
+// HTTP server for /api/score endpoint
 // HTTP server for /api/score endpoint
 export async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url);
@@ -90,12 +112,17 @@ export async function handler(req: Request): Promise<Response> {
     return new Response("Username missing or too short", { status: 400 });
   }
 
+  const { userData, fetchSuccess } = await fetchUserData(username);
+
+  if (!fetchSuccess) {
+    return new Response(`User ${username} not found`, { status: 404 });
+  }
+
   try {
-    const user = await fetchUserData(username);
-    const balance = user.balance ?? 0;
-    const createdTime = user.createdTime ?? Date.now();
+    const balance = userData.balance ?? 0;
+    const createdTime = userData.createdTime ?? Date.now();
     const ageDays = (Date.now() - createdTime) / 86_400_000;
-    const totalManaEarned = await fetchTotalManaEarned(user.id);
+    const totalManaEarned = await fetchTotalManaEarned(userData.id);
     const mmr = computeMMR(balance, totalManaEarned, ageDays);
     const clampedMMR = Math.max(Math.min(mmr, 1000000), -1000000);
     const clampedMMRBalance = clampedMMR + balance;
@@ -104,7 +131,6 @@ export async function handler(req: Request): Promise<Response> {
     // Calculate risk multiplier
     const risk = calculateRiskMultiplier(creditScore);
 
-    // Log the results
     console.log(`Stats for user: ${username}`);
     console.log(`  MMR: ${mmr}`);
     console.log(`  Clamped MMR: ${clampedMMR}`);
@@ -113,25 +139,24 @@ export async function handler(req: Request): Promise<Response> {
     console.log(`  Balance: ${balance}`);
     console.log(`  Age (days): ${ageDays}`);
     console.log(`  Credit Score: ${creditScore}`);
+    console.log(`  fetchSuccess: ${fetchSuccess}`);
     console.log("---");
 
+    // Return response with the relevant data
     const output = {
       username,
       creditScore,
       riskMultiplier: risk,
-      avatarUrl: user.avatarUrl || null,
-      promocodes: PROMOCODES,
+      avatarUrl: userData.avatarUrl || null,
+      userExists: fetchSuccess, // This tells whether the user was found or not
     };
 
     return new Response(JSON.stringify(output), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    const now = Date.now();
-    if (now - lastErrorTime > 500) {
-      console.error(`Error fetching user data:`, error);
-      lastErrorTime = now;
-    }
-    return new Response(`Error fetching data for ${username}`, { status: 500 });
+    console.error(`Error processing data for ${username}:`, error);
+    return new Response(`Error processing data for ${username}`, { status: 500 });
   }
 }
+

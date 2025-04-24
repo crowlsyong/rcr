@@ -3,7 +3,11 @@
 import { h } from "preact";
 
 // Function to interpolate colors based on credit score
-function lerpColor(color1: [number, number, number], color2: [number, number, number], t: number): string {
+function lerpColor(
+  color1: [number, number, number],
+  color2: [number, number, number],
+  t: number,
+): string {
   const r = Math.round(color1[0] + (color2[0] - color1[0]) * t);
   const g = Math.round(color1[1] + (color2[1] - color1[1]) * t);
   const b = Math.round(color1[2] + (color2[2] - color1[2]) * t);
@@ -42,7 +46,11 @@ interface ScoreResultProps {
   riskMultiplier: number;
   avatarUrl: string | null;
   isWaiting: boolean;
+  userExists?: boolean;
+  fetchSuccess?: boolean;
 }
+
+
 
 export default function ScoreResult({
   username,
@@ -50,6 +58,8 @@ export default function ScoreResult({
   riskMultiplier,
   avatarUrl,
   isWaiting,
+  userExists,
+  fetchSuccess,
 }: ScoreResultProps) {
   // Calculate dynamic color for the credit score
   const colorClass = getScoreColor(creditScore); // Dynamic color from score
@@ -64,51 +74,55 @@ export default function ScoreResult({
 
   // Common container classes
   const containerClasses =
-    `block p-6 rounded-lg bg-gray-800 text-white transition-all duration-300 ${isClickable ? "hover:brightness-110 cursor-pointer" : "cursor-default"}`;
+  `block p-6 rounded-lg bg-slate-900 text-white transition-all duration-200 ${
+    isClickable ? "hover:bg-slate-800 cursor-pointer" : "cursor-default"
+  }`;
+
 
   // Card content
   const content = (
     <div class="flex-col items-center mb-4">
-    <div class="flex items-center mb-4">
-      {avatarUrl
-        ? (
-          <img
-            src={avatarUrl}
-            alt={`${username}'s avatar`}
-            class="w-12 h-12 rounded-full mr-4"
-          />
-        )
-        : <div class="w-12 h-12 rounded-full bg-gray-500 mr-4" />}
-<div>
-  <h2 class="text-xl font-semibold">{username}</h2>
-  <p class="text-sm">Risk Multiplier: {riskMultiplier}</p>
-
-</div>
-<div class="flex flex-col mt-2 text-right ml-auto">
-  <span class="text-xs text-gray-400">Credit Score:</span>
-  <span class="text-3xl font-bold" style={{ color: colorClass }}>{creditScore}</span>
-</div>
-
-    </div>
-    <div
-  class="mt-3 px-3 py-2 rounded-md relative"
-  style={{ backgroundColor: colorClass }}
->
-  {/* Overlay to dull the background */}
-  <div
-    class="absolute inset-0 bg-black opacity-40 rounded-md"
-    aria-hidden="true"
-  ></div>
-
-  {/* Text remains on top, unaffected */}
-  <div class="relative z-10">
-    <p class="text-xs text-gray-100">Lending to this user is</p>
-    <p class="text-sm text-white font-semibold">{getRiskLevelText(creditScore)}</p>
-  </div>
-</div>
-
-
+      <div class="flex items-center mb-4">
+        {avatarUrl
+          ? (
+            <img
+              src={avatarUrl}
+              alt={`${username}'s avatar`}
+              class="w-12 h-12 rounded-full mr-4"
+            />
+          )
+          : <div class="w-12 h-12 rounded-full bg-gray-500 mr-4" />}
+        <div>
+          <h2 class="text-xl font-semibold">{username}</h2>
+          <p class="text-sm">Insurance Fee: {riskMultiplier}x</p>
         </div>
+        <div class="flex flex-col mt-2 text-right ml-auto">
+          <span class="text-xs text-gray-400">Credit Score:</span>
+          <span class="text-3xl font-bold" style={{ color: colorClass }}>
+            {creditScore}
+          </span>
+        </div>
+      </div>
+      <div
+        class="mt-3 px-3 py-2 rounded-md relative"
+        style={{ backgroundColor: colorClass }}
+      >
+        {/* Overlay to dull the background */}
+        <div
+          class="absolute inset-0 bg-black opacity-40 rounded-md"
+          aria-hidden="true"
+        >
+        </div>
+
+        {/* Text remains on top, unaffected */}
+        <div class="relative z-10">
+          <p class="text-xs text-gray-100">Lending to this user is</p>
+          <p class="text-sm text-white font-semibold">
+            {getRiskLevelText(creditScore)}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 
   if (isWaiting) {
@@ -118,6 +132,7 @@ export default function ScoreResult({
       </div>
     );
   }
+  
 
   return isClickable
     ? (
