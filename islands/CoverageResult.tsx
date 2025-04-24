@@ -1,8 +1,12 @@
 import { h } from "preact";
-import { useState, useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 
 // Function to calculate the Insurance Fee
-function calculateInsuranceFee(coverage: number, loanAmount: number, riskMultiplier: number): number {
+function calculateInsuranceFee(
+  coverage: number,
+  loanAmount: number,
+  riskMultiplier: number,
+): number {
   return coverage * loanAmount * riskMultiplier;
 }
 
@@ -18,12 +22,16 @@ export default function CoverageResult({
   coverageOption,
 }: CoverageResultProps) {
   // Calculate the insurance fee
-  const insuranceFee = calculateInsuranceFee(coverageOption, loanAmount, riskMultiplier);
+  const insuranceFee = calculateInsuranceFee(
+    coverageOption,
+    loanAmount,
+    riskMultiplier,
+  );
 
   return (
     <div class="block p-6 rounded-lg bg-gray-800 text-white">
       <h2 class="text-xl font-semibold mb-4">Insurance Coverage Details</h2>
-      
+
       {/* Coverage Option */}
       <p class="text-lg mb-2">
         Coverage Option: {coverageOption * 100}% of the loan amount

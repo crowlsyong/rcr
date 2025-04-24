@@ -62,7 +62,7 @@ function calculateRiskMultiplier(score: number): number {
   let multiplier: number;
 
   if (score <= 600) {
-    multiplier = 1.2 - (score / 600) * 0.6; // 1.2 → 0.6 as score goes 0→600
+    multiplier = 0.95 - (score / 600) * 0.6; // 1.2 → 0.6 as score goes 0→600
   } else if (score <= 700) {
     multiplier = 0.6 - ((score - 600) / 100) * 0.2; // 0.6 → 0.4 as score goes 600→700
   } else if (score <= 800) {
@@ -74,8 +74,12 @@ function calculateRiskMultiplier(score: number): number {
   return Math.round(multiplier * 100) / 100;
 }
 
-
 let lastErrorTime = 0;
+
+const PROMOCODES: Record<string, number> = {
+  tumble: 0.5, // 50% off
+  earlyrisker: 0.7, // 30% off
+};
 
 // HTTP server for /api/score endpoint
 export async function handler(req: Request): Promise<Response> {
@@ -92,7 +96,6 @@ export async function handler(req: Request): Promise<Response> {
     const createdTime = user.createdTime ?? Date.now();
     const ageDays = (Date.now() - createdTime) / 86_400_000;
     const totalManaEarned = await fetchTotalManaEarned(user.id);
-
     const mmr = computeMMR(balance, totalManaEarned, ageDays);
     const clampedMMR = Math.max(Math.min(mmr, 1000000), -1000000);
     const clampedMMRBalance = clampedMMR + balance;
@@ -117,6 +120,7 @@ export async function handler(req: Request): Promise<Response> {
       creditScore,
       riskMultiplier: risk,
       avatarUrl: user.avatarUrl || null,
+      promocodes: PROMOCODES,
     };
 
     return new Response(JSON.stringify(output), {

@@ -10,6 +10,19 @@ function lerpColor(color1: [number, number, number], color2: [number, number, nu
   return `rgb(${r}, ${g}, ${b})`;
 }
 
+function getRiskLevelText(score: number): string {
+  if (score < 100) return "Outright Dangerous";
+  if (score < 200) return "Extremely Risky";
+  if (score < 300) return "Highly Risky";
+  if (score < 400) return "Risky";
+  if (score < 500) return "A Bit Risky";
+  if (score < 600) return "Moderate Risk";
+  if (score < 700) return "Fair";
+  if (score < 800) return "Good";
+  if (score < 900) return "Very Safe";
+  return "Extremely Safe";
+}
+
 function getScoreColor(score: number): string {
   if (score >= 800) {
     const t = (score - 800) / 200; // 800 → 1000
@@ -55,6 +68,7 @@ export default function ScoreResult({
 
   // Card content
   const content = (
+    <div class="flex-col items-center mb-4">
     <div class="flex items-center mb-4">
       {avatarUrl
         ? (
@@ -65,20 +79,42 @@ export default function ScoreResult({
           />
         )
         : <div class="w-12 h-12 rounded-full bg-gray-500 mr-4" />}
-      <div>
-        <h2 class="text-xl font-semibold">{username}</h2>
-        <p class="text-sm">Risk Multiplier: {riskMultiplier}</p>
-        <p class="text-2xl font-bold mt-2">
-          Credit Score: <span style={{ color: colorClass }}>{creditScore}</span>
-        </p>
-      </div>
+<div>
+  <h2 class="text-xl font-semibold">{username}</h2>
+  <p class="text-sm">Risk Multiplier: {riskMultiplier}</p>
+
+</div>
+<div class="flex flex-col mt-2 text-right ml-auto">
+  <span class="text-xs text-gray-400">Credit Score:</span>
+  <span class="text-3xl font-bold" style={{ color: colorClass }}>{creditScore}</span>
+</div>
+
     </div>
+    <div
+  class="mt-3 px-3 py-2 rounded-md relative"
+  style={{ backgroundColor: colorClass }}
+>
+  {/* Overlay to dull the background */}
+  <div
+    class="absolute inset-0 bg-black opacity-40 rounded-md"
+    aria-hidden="true"
+  ></div>
+
+  {/* Text remains on top, unaffected */}
+  <div class="relative z-10">
+    <p class="text-xs text-gray-100">Lending to this user is</p>
+    <p class="text-sm text-white font-semibold">{getRiskLevelText(creditScore)}</p>
+  </div>
+</div>
+
+
+        </div>
   );
 
   if (isWaiting) {
     return (
       <div class={containerClasses} style={borderColorStyle}>
-        <p class="text-gray-400">Waiting...</p>
+        <p class="text-gray-400">...</p>
       </div>
     );
   }
