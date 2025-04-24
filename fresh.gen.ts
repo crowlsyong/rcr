@@ -5,6 +5,8 @@
 import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $api_score from "./routes/api/score.ts";
+import * as $iframe_credit_score from "./routes/iframe/credit-score.tsx";
+import * as $iframe_insurance_fee_calculator from "./routes/iframe/insurance-fee-calculator.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $insurance from "./routes/insurance.tsx";
 import * as $CoverageResult from "./islands/CoverageResult.tsx";
@@ -18,6 +20,9 @@ const manifest = {
     "./routes/_404.tsx": $_404,
     "./routes/_app.tsx": $_app,
     "./routes/api/score.ts": $api_score,
+    "./routes/iframe/credit-score.tsx": $iframe_credit_score,
+    "./routes/iframe/insurance-fee-calculator.tsx":
+      $iframe_insurance_fee_calculator,
     "./routes/index.tsx": $index,
     "./routes/insurance.tsx": $insurance,
   },
