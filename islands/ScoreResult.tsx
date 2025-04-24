@@ -16,10 +16,10 @@ function getRiskLevelText(score: number): string {
   if (score < 300) return "Highly Risky";
   if (score < 400) return "Risky";
   if (score < 500) return "A Bit Risky";
-  if (score < 600) return "Moderate Risk";
-  if (score < 700) return "Fair";
-  if (score < 800) return "Good";
-  if (score < 900) return "Very Safe";
+  if (score < 600) return "Moderately Safe";
+  if (score < 700) return "Safe";
+  if (score < 800) return "Very Safe";
+  if (score < 900) return "Super Safe";
   return "Extremely Safe";
 }
 
@@ -114,7 +114,7 @@ export default function ScoreResult({
   if (isWaiting) {
     return (
       <div class={containerClasses} style={borderColorStyle}>
-        <p class="text-gray-400">...</p>
+        <p class="text-gray-400">Waiting...</p>
       </div>
     );
   }
