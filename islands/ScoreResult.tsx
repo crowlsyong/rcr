@@ -13,7 +13,7 @@ function lerpColor(
 }
 
 function getRiskLevelText(score: number): string {
-  if (score < 100) return "Outright Dangerous";
+  if (score < 100) return "Outrageously Dangerous";
   if (score < 200) return "Extremely Risky";
   if (score < 300) return "Highly Risky";
   if (score < 400) return "Risky";

@@ -80,20 +80,18 @@ function mapToCreditScore(clampedMMRBalance: number): number {
 }
 
 function calculateRiskMultiplier(score: number): number {
-  let multiplier: number;
+  const clampedScore = Math.max(0, Math.min(score, 1000));
+  const minMultiplier = 0.05;
+  const maxMultiplier = 3;
 
-  if (score <= 600) {
-    multiplier = 0.5 - (score / 600) * 0.15; // 0.5 → 0.35
-  } else if (score <= 700) {
-    multiplier = 0.35 - ((score - 600) / 100) * 0.17; // 0.35 → 0.18
-  } else if (score <= 800) {
-    multiplier = 0.18 - ((score - 700) / 100) * 0.09; // 0.18 → 0.09
-  } else {
-    multiplier = 0.09 - ((score - 800) / 200) * 0.05; // 0.09 → 0.04
-  }
+  const a = maxMultiplier - minMultiplier;
+  const b = Math.log(a / 0.01) / 1000; // Tweak 0.01 to control how fast it decays
+
+  const multiplier = a * Math.exp(-b * clampedScore) + minMultiplier;
 
   return Math.round(multiplier * 100) / 100;
 }
+
 
 //  const PROMOCODES: Record<string, number> = {
 //    tumble: 0.5, // 50% off
