@@ -1,7 +1,5 @@
 // ScoreResults.tsx
 
-import { h } from "preact";
-
 // Function to interpolate colors based on credit score
 function lerpColor(
   color1: [number, number, number],
@@ -50,16 +48,12 @@ interface ScoreResultProps {
   fetchSuccess?: boolean;
 }
 
-
-
 export default function ScoreResult({
   username,
   creditScore,
   riskMultiplier,
   avatarUrl,
   isWaiting,
-  userExists,
-  fetchSuccess,
 }: ScoreResultProps) {
   // Calculate dynamic color for the credit score
   const colorClass = getScoreColor(creditScore); // Dynamic color from score
@@ -74,10 +68,9 @@ export default function ScoreResult({
 
   // Common container classes
   const containerClasses =
-  `block p-6 rounded-lg bg-slate-900 text-white transition-all duration-200 ${
-    isClickable ? "hover:bg-slate-800 cursor-pointer" : "cursor-default"
-  }`;
-
+    `block p-6 rounded-lg bg-slate-900 text-white transition-all duration-200 ${
+      isClickable ? "hover:bg-slate-800 cursor-pointer" : "cursor-default"
+    }`;
 
   // Card content
   const content = (
@@ -94,7 +87,9 @@ export default function ScoreResult({
           : <div class="w-12 h-12 rounded-full bg-gray-500 mr-4" />}
         <div>
           <h2 class="text-xl font-semibold">{username}</h2>
-          <p class="text-sm">Insurance Fee: {riskMultiplier}x</p>
+          <p class="text-sm">
+            Insurance Fee: {(riskMultiplier * 100).toFixed(0)}%
+          </p>
         </div>
         <div class="flex flex-col mt-2 text-right ml-auto">
           <span class="text-xs text-gray-400">Credit Score:</span>
@@ -132,7 +127,6 @@ export default function ScoreResult({
       </div>
     );
   }
-  
 
   return isClickable
     ? (

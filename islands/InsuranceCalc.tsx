@@ -1,5 +1,4 @@
 // InsuranceCalc.tsx
-import { h } from "preact";
 import { useSignal } from "@preact/signals";
 import { useEffect, useRef, useState } from "preact/hooks";
 import ScoreResult from "./ScoreResult.tsx";
@@ -85,8 +84,6 @@ export default function InsuranceCalc() {
     calculateInsuranceFee();
   };
 
-  const totalOwed = loanAmount.value + (insuranceFee || 0);
-
   return (
     <div class="w-full max-w-md mx-auto pt-6 pb-6 px-0 sm:px-6">
       <ScoreResult
@@ -119,6 +116,7 @@ export default function InsuranceCalc() {
       </div>
 
       {/* Loan Amount Input */}
+
       <div class="mt-4">
         <label htmlFor="loanAmount" class="text-gray-400 mb-1 block">
           Enter loan amount
@@ -159,12 +157,23 @@ export default function InsuranceCalc() {
       </div>
 
       {/* Insurance Fee */}
-      <div class="mt-4 text-right">
-        <p class="text-gray-400">
-          {loanAmount.value
-            ? `Loan Amount: $${loanAmount.value.toFixed(2)}`
-            : ""}
+
+      <div class="mt-4 text-right space-y-2">
+        <p class="text-gray-400 text-xs">
+          {loanAmount.value ? `Loan Amount: M${loanAmount.value}` : ""}
         </p>
+
+        {loanAmount.value > 0 && selectedCoverage.value && (
+          <p class="text-blue-400 text-xs">
+            Coverage: {selectedCoverage.value}% × M{loanAmount.value} ={" "}
+            M{loanAmount.value > 0 && selectedCoverage.value
+              ? parseInt(
+                ((selectedCoverage.value / 100) * loanAmount.value).toString(),
+              )
+              : 0}
+          </p>
+        )}
+
         <p
           class={`${
             insuranceFee === null || !loanAmount.value ||
@@ -175,17 +184,20 @@ export default function InsuranceCalc() {
         >
           {insuranceFee === null || !loanAmount.value || !selectedCoverage.value
             ? ""
-            : `Insurance Fee: $${insuranceFee.toFixed(2)}`}
+            : "🦝 RISK Insurance Fee: "}
+          <span class="font-bold">
+            {insuranceFee === null || !loanAmount.value ||
+                !selectedCoverage.value
+              ? ""
+              : "M"}
+          </span>
+          <span class="font-bold">
+            {insuranceFee === null || !loanAmount.value ||
+                !selectedCoverage.value
+              ? ""
+              : Math.round(insuranceFee)}
+          </span>
         </p>
-        {
-          /*
-        {insuranceFee !== null && (
-          <p class="text-gray-300">
-            Total Owed: ${(totalOwed).toFixed(2)}
-          </p>
-        )}
-        */
-        }
       </div>
     </div>
   );

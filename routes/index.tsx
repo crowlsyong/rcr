@@ -1,4 +1,3 @@
-import { useSignal } from "@preact/signals";
 import CreditScore from "../islands/CreditScore.tsx";
 // import TechnicalDifficulties from "../components/TechnicalDifficulties.tsx";
 import MenuBar from "../components/MenuBar.tsx"; // Import the MenuBar
@@ -14,7 +13,7 @@ export default function Home() {
         <h1 class="text-3xl sm:text-4xl font-bold text-center mb-4">
           🦝RISK Credit Score
         </h1>
-        <p class="text-xs sm:text-base text-center mb-4">
+        <p class="text-xs text-center mb-4 text-gray-500">
           Built for{" "}
           <a
             href="https://manifold.markets/"

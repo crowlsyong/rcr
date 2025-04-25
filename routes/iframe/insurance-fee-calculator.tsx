@@ -15,7 +15,7 @@ export default function Home() {
         <h1 class="text-3xl sm:text-4xl font-bold text-center mb-4">
           🦝Insurance Calculator
         </h1>
-        <p class="text-xs sm:text-base text-center mb-4">
+        <p class="text-xs text-gray-500 text-center mb-4">
           Built for{" "}
           <a
             href="https://manifold.markets/"

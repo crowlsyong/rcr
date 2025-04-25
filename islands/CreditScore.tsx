@@ -52,7 +52,7 @@ export default function CreditScore() {
   }
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(globalThis.location.search);
     const urlUsername = params.get("username");
     if (urlUsername) {
       username.value = urlUsername;
@@ -87,7 +87,7 @@ export default function CreditScore() {
         />
       </div>
 
-      <div class="text-center mt-2">
+      <div class="text-center">
         {error.value
           ? <p class="text-red-400">{error.value}</p>
           : scoreData.value

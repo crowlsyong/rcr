@@ -12,7 +12,6 @@ async function fetchUserData(username: string) {
       console.log(`fetchSuccess for '${username}':`, fetchSuccess); // 👈 move it here if needed
       return { userData: null, fetchSuccess };
     }
-    
 
     if (!res.ok) {
       throw new Error(`Failed to fetch ${username}: ${res.statusText}`);
@@ -20,7 +19,6 @@ async function fetchUserData(username: string) {
 
     userData = await res.json();
     fetchSuccess = true;
-
   } catch (error) {
     fetchSuccess = false;
     console.error(`Error fetching user '${username}':`, error);
@@ -29,7 +27,6 @@ async function fetchUserData(username: string) {
   console.log(`fetchSuccess for '${username}':`, fetchSuccess);
   return { userData, fetchSuccess };
 }
-
 
 // Fetch total mana earned from all league seasons
 async function fetchTotalManaEarned(userId: string): Promise<number> {
@@ -42,7 +39,8 @@ async function fetchTotalManaEarned(userId: string): Promise<number> {
   }
   const leaguesData = await res.json();
   return leaguesData.reduce(
-    (total: number, season: any) => total + season.manaEarned,
+    (total: number, season: { manaEarned: number }) =>
+      total + season.manaEarned,
     0,
   );
 }
@@ -156,7 +154,8 @@ export async function handler(req: Request): Promise<Response> {
     });
   } catch (error) {
     console.error(`Error processing data for ${username}:`, error);
-    return new Response(`Error processing data for ${username}`, { status: 500 });
+    return new Response(`Error processing data for ${username}`, {
+      status: 500,
+    });
   }
 }
-
