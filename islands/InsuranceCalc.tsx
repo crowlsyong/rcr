@@ -75,6 +75,8 @@ export default function InsuranceCalc() {
   // Set the username when typed in
   const handleUsernameInput = (e: Event) => {
     username.value = (e.target as HTMLInputElement).value;
+    selectedCoverage.value = null; // Deselect coverage on username input
+    setInsuranceFee(null); // Optional: reset fee to avoid showing stale results
   };
 
   // Handle loan amount input

@@ -92,7 +92,6 @@ function calculateRiskMultiplier(score: number): number {
   return Math.round(multiplier * 100) / 100;
 }
 
-
 //  const PROMOCODES: Record<string, number> = {
 //    tumble: 0.5, // 50% off
 //    earlyrisker: 0.7, // 30% off
