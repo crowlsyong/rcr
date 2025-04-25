@@ -7,7 +7,7 @@ import InsuranceCalc from "../../islands/InsuranceCalc.tsx";
 
 export default function Home() {
   return (
-    <div class="min-h-screen bg-[#0F1729] text-white dark:bg-[#0F1729] dark:text-white">
+    <div class="bg-[#0F1729] text-white dark:bg-[#0F1729] dark:text-white">
       <div class="max-w-screen-sm mx-auto flex flex-col items-center justify-center min-h-screen px-2 py-2">
         <div class="w-full mb-2">
           {/* <TechnicalDifficulties /> */}
