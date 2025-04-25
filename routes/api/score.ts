@@ -28,30 +28,59 @@ async function fetchUserData(username: string) {
   return { userData, fetchSuccess };
 }
 
-// Fetch total mana earned from all league seasons
-async function fetchTotalManaEarned(userId: string): Promise<number> {
+async function fetchManaAndRecentRank(
+  userId: string,
+): Promise<{ total: number; latestRank: number | null }> {
   const res = await fetch(
     `https://api.manifold.markets/v0/leagues?userId=${userId}`,
   );
+
   if (!res.ok) {
     console.error(`Failed to fetch leagues: ${res.statusText}`);
-    return 0;
+    return { total: 0, latestRank: null };
   }
+
   const leaguesData = await res.json();
-  return leaguesData.reduce(
-    (total: number, season: { manaEarned: number }) =>
-      total + season.manaEarned,
-    0,
-  );
+
+  // Log the entire leaguesData to inspect the structure
+  // console.log('Leagues data:', leaguesData);
+
+  let total = 0;
+  let latestRank: number | null = null;
+
+  // Calculate total mana earned
+  for (const season of leaguesData) {
+    total += season.manaEarned;
+  }
+
+  // Find the most recent season and log the rank
+  if (leaguesData.length > 0) {
+    const mostRecent = leaguesData.reduce((
+      a: { season?: number; rankSnapshot?: number },
+      b: { season?: number; rankSnapshot?: number },
+    ) => (a.season ?? 0) > (b.season ?? 0) ? a : b);
+    latestRank = mostRecent.rankSnapshot ?? null;
+    console.log(
+      `Most recent season: ${mostRecent.season}, Rank: ${latestRank}`,
+    );
+  }
+
+  return { total, latestRank };
 }
 
-// Compute MMR score based on Balance (50%), Age (10%), Total Mana Earned (40%)
+// Compute MMR score based on Balance (40%), Age (20%), Total Mana Earned (40%)
 function computeMMR(
   balance: number,
   totalMana: number,
   ageDays: number,
+  rank: number, // Add rank as a parameter
+  maxRank: number = 100, // Maximum rank, for example, 100
 ): number {
-  return (balance * 0.5) + (ageDays * 0.1) + (totalMana * 0.4);
+  // Reverse the formula to make rank 1 = 100% and rank 100 = 0%
+  const rankWeight = Math.max(0, Math.min(1, 1 - (rank - 1) / (maxRank - 1)));
+  console.log(`Rank: ${rank}, Rank Weight: ${rankWeight}`);
+  return ((balance * 0.4) + (ageDays * 0.1) + (totalMana * 0.3)) +
+    (rankWeight * 10000);
 }
 
 // Piecewise linear mapping function for Credit Score
@@ -82,7 +111,7 @@ function mapToCreditScore(clampedMMRBalance: number): number {
 function calculateRiskMultiplier(score: number): number {
   const clampedScore = Math.max(0, Math.min(score, 1000));
   const minMultiplier = 0.05;
-  const maxMultiplier = 3;
+  const maxMultiplier = 2;
 
   const a = maxMultiplier - minMultiplier;
   const b = Math.log(a / 0.01) / 1000; // Tweak 0.01 to control how fast it decays
@@ -117,8 +146,15 @@ export async function handler(req: Request): Promise<Response> {
     const balance = userData.balance ?? 0;
     const createdTime = userData.createdTime ?? Date.now();
     const ageDays = (Date.now() - createdTime) / 86_400_000;
-    const totalManaEarned = await fetchTotalManaEarned(userData.id);
-    const mmr = computeMMR(balance, totalManaEarned, ageDays);
+    const { total: totalManaEarned, latestRank } = await fetchManaAndRecentRank(
+      userData.id,
+    );
+    const mmr = computeMMR(
+      balance,
+      totalManaEarned,
+      ageDays,
+      latestRank ?? 100,
+    ); // Use latestRank or default to 100 if it's null
     const clampedMMR = Math.max(Math.min(mmr, 1000000), -1000000);
     const clampedMMRBalance = clampedMMR + balance;
     const creditScore = mapToCreditScore(clampedMMRBalance);
@@ -144,6 +180,7 @@ export async function handler(req: Request): Promise<Response> {
       riskMultiplier: risk,
       avatarUrl: userData.avatarUrl || null,
       userExists: fetchSuccess, // This tells whether the user was found or not
+      latestRank,
     };
 
     return new Response(JSON.stringify(output), {

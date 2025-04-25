@@ -24,17 +24,16 @@ function getRiskLevelText(score: number): string {
   if (score < 900) return "Super Safe";
   return "Extremely Safe";
 }
-
 function getScoreColor(score: number): string {
   if (score >= 800) {
     const t = (score - 800) / 200; // 800 → 1000
-    return lerpColor([100, 100, 255], [100, 255, 100], t); // soft blue → soft green
+    return lerpColor([100, 100, 255], [96, 225, 105], t); // soft purple → soft green
   } else if (score >= 600) {
     const t = (score - 600) / 200; // 600 → 800
-    return lerpColor([255, 255, 0], [100, 100, 255], t); // soft yellow → soft blue
+    return lerpColor([50, 150, 200], [100, 100, 255], t); // soft blue → soft purple
   } else {
     const t = score / 600; // 0 → 600
-    return lerpColor([255, 100, 100], [255, 255, 100], t); // soft red → soft yellow
+    return lerpColor([255, 100, 100], [180, 100, 255], t); // soft red → soft purple
   }
 }
 
