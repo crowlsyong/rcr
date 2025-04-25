@@ -86,8 +86,8 @@ export default function ScoreResult({
           : <div class="w-12 h-12 rounded-full bg-gray-500 mr-4" />}
         <div>
           <h2 class="text-xl font-semibold">{username}</h2>
-          <p class="text-sm">
-            Insurance Fee: {(riskMultiplier * 100).toFixed(0)}%
+          <p class="text-xs">
+            Base Insurance Fee: {(riskMultiplier * 100).toFixed(0)}%
           </p>
         </div>
         <div class="flex flex-col mt-2 text-right ml-auto">

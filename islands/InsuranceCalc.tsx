@@ -55,12 +55,34 @@ export default function InsuranceCalc() {
   // Calculate the insurance fee
   function calculateInsuranceFee() {
     if (
-      loanAmount.value <= 0 || !selectedCoverage.value || riskMultiplier === 0
+      loanAmount.value <= 0 ||
+      !selectedCoverage.value ||
+      riskMultiplier === 0
     ) return;
+  
+    let adjustedMultiplier = riskMultiplier;
+    switch (selectedCoverage.value) {
+      case 25:
+        adjustedMultiplier = riskMultiplier;
+        break;
+      case 50:
+        adjustedMultiplier = riskMultiplier * 1.33;
+        break;
+      case 75:
+        adjustedMultiplier = riskMultiplier * 1.5;
+        break;
+      case 100:
+        adjustedMultiplier = riskMultiplier * 2;
+        break;
+      default:
+        break;
+    }
+  
     const coveragePercentage = selectedCoverage.value / 100;
-    const fee = loanAmount.value * coveragePercentage * riskMultiplier;
+    const fee = loanAmount.value * coveragePercentage * adjustedMultiplier;
     setInsuranceFee(fee);
   }
+  
 
   // Handle the selection of coverage percentages
   const handleCoverageClick = (percentage: number | null) => {
