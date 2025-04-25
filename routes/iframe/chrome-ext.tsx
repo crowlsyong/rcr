@@ -2,7 +2,7 @@
 
 // import { useSignal } from "@preact/signals";
 // import CreditScore from "../../islands/CreditScore.tsx";
-import InsuranceCalc from "../../islands/InsuranceCalc.tsx";
+import CreditScore from "../../islands/CreditScore.tsx";
 // import MenuBar from "../../components/MenuBar.tsx";
 
 export default function Home() {
@@ -31,7 +31,7 @@ export default function Home() {
         </p>
 
         <div class="w-full space-y-2 mt-2">
-          <InsuranceCalc />
+          <CreditScore />
         </div>
       </div>
     </div>
