@@ -15,6 +15,7 @@ import * as $test from "./routes/test.tsx";
 import * as $CoverageResult from "./islands/CoverageResult.tsx";
 import * as $CreditScore from "./islands/CreditScore.tsx";
 import * as $InsuranceCalc from "./islands/InsuranceCalc.tsx";
+import * as $PasswordGate from "./islands/PasswordGate.tsx";
 import * as $ScoreResult from "./islands/ScoreResult.tsx";
 import * as $test_1 from "./islands/test.tsx";
 import type { Manifest } from "$fresh/server.ts";
@@ -37,6 +38,7 @@ const manifest = {
     "./islands/CoverageResult.tsx": $CoverageResult,
     "./islands/CreditScore.tsx": $CreditScore,
     "./islands/InsuranceCalc.tsx": $InsuranceCalc,
+    "./islands/PasswordGate.tsx": $PasswordGate,
     "./islands/ScoreResult.tsx": $ScoreResult,
     "./islands/test.tsx": $test_1,
   },
