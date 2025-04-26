@@ -1,10 +1,10 @@
-// import PasswordGate from "../islands/PasswordGate.tsx";
+import PasswordGate from "../islands/PasswordGate.tsx";
 import InsuranceCalc from "../islands/InsuranceCalc.tsx";
 import MenuBar from "../components/MenuBar.tsx";
 
 export default function Home() {
   return (
-    // <PasswordGate>
+    <PasswordGate>
     <div class="min-h-screen bg-[#0F1729] text-white dark:bg-[#0F1729] dark:text-white">
       <MenuBar />
       <div class="max-w-screen-md mx-auto flex flex-col items-center justify-center min-h-screen px-4 py-8">
@@ -32,6 +32,6 @@ export default function Home() {
         </div>
       </div>
     </div>
-    // </PasswordGate>
+    </PasswordGate>
   );
 }
