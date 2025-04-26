@@ -25,7 +25,7 @@ export default function Home() {
           </a>
         </p>
         <p class="text-xxs font-bold">
-          ⚠️ This product is in Alpha Testing
+          ⚠️ This product is in Beta Testing
         </p>
         <CreditScore />
       </div>

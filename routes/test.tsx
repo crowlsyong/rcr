@@ -10,7 +10,7 @@ export default function Home() {
           {/* Optional components */}
         </div>
         <h1 class="text-3xl sm:text-4xl font-bold text-center mb-4">
-          🦝RISK Credit Score
+          🦝Test bench
         </h1>
         <p class="text-xs text-center mb-4 text-gray-500">
           Built for{" "}
@@ -24,7 +24,7 @@ export default function Home() {
           </a>
         </p>
         <p class="text-xxs font-bold">
-          ⚠️ This product is in Alpha Testing
+          ⚠️ This product is secret, shhhh
         </p>
         <Test />
       </div>
