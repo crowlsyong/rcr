@@ -16,7 +16,8 @@ export default function MenuBar() {
           alt="the RISK mini mascot: a raccoon"
         />
       </a>
-      <div class="flex space-x-4">
+      {/* Adjusted text size and spacing */}
+      <div class="flex space-x-2 sm:space-x-4 text-xs sm:text-base">
         <a
           href="https://manifold.markets/news/risk"
           target="_blank"
