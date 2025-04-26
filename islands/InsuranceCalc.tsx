@@ -17,11 +17,20 @@ export default function InsuranceCalc() {
   const [riskMultiplier, setRiskMultiplier] = useState(0);
   const scoreData = useSignal<CreditScoreData | null>(null);
 
+  // Coverage fees mapping
+  const coverageFees: { [key: number]: number } = {
+    25: 0.06,
+    50: 0.12,
+    75: 0.23,
+    100: 0.49,
+  };
+
   // Debounced username effect
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedUsername(username.value), 100);
     return () => clearTimeout(timer);
   }, [username.value]);
+
   useEffect(() => {
     if (debouncedUsername) fetchScoreData(debouncedUsername);
     else resetState();
@@ -42,6 +51,7 @@ export default function InsuranceCalc() {
       scoreData.value = null;
     }
   }
+
   function resetState() {
     scoreData.value = null;
   }
@@ -51,9 +61,16 @@ export default function InsuranceCalc() {
     if (
       loanAmount.value <= 0 || !selectedCoverage.value || riskMultiplier === 0
     ) return;
-    const coveragePercentage = selectedCoverage.value / 100;
-    const fee = loanAmount.value * coveragePercentage * riskMultiplier;
-    setInsuranceFee(fee);
+
+    // Calculate the base fee with the risk multiplier
+    const baseFee = loanAmount.value * riskMultiplier;
+
+    // Get the selected coverage fee
+    const coverageFee = coverageFees[selectedCoverage.value];
+
+    // Calculate the final fee considering coverage
+    const finalFee = (baseFee + loanAmount.value) * (1 + coverageFee);
+    setInsuranceFee(finalFee - loanAmount.value); // Calculate only the additional fee
   }
 
   // Handle the selection of coverage percentages
