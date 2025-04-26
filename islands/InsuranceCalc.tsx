@@ -139,7 +139,7 @@ export default function InsuranceCalc() {
       {/* Username Input */}
       <div class="mt-4">
         <label htmlFor="username" class="text-gray-400 mb-1 block">
-          Enter your username
+          Enter a username
         </label>
         <div class="relative">
           <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
@@ -149,7 +149,7 @@ export default function InsuranceCalc() {
             id="username"
             ref={inputRef}
             type="text"
-            placeholder="Enter a manifold username"
+            placeholder="ex. Tumbles"
             value={username.value}
             onInput={handleUsernameInput}
             class="w-full pl-8 p-3 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
