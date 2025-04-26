@@ -87,7 +87,7 @@ export default function CreditScore() {
         />
       </div>
 
-      <div class="text-center">
+      <div class="text-center pt-4">
         {error.value
           ? <p class="text-red-400">{error.value}</p>
           : scoreData.value

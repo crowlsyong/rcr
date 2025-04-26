@@ -11,10 +11,12 @@ import * as $iframe_credit_score from "./routes/iframe/credit-score.tsx";
 import * as $iframe_insurance_fee_calculator from "./routes/iframe/insurance-fee-calculator.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $insurance from "./routes/insurance.tsx";
+import * as $test from "./routes/test.tsx";
 import * as $CoverageResult from "./islands/CoverageResult.tsx";
 import * as $CreditScore from "./islands/CreditScore.tsx";
 import * as $InsuranceCalc from "./islands/InsuranceCalc.tsx";
 import * as $ScoreResult from "./islands/ScoreResult.tsx";
+import * as $test_1 from "./islands/test.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -29,12 +31,14 @@ const manifest = {
       $iframe_insurance_fee_calculator,
     "./routes/index.tsx": $index,
     "./routes/insurance.tsx": $insurance,
+    "./routes/test.tsx": $test,
   },
   islands: {
     "./islands/CoverageResult.tsx": $CoverageResult,
     "./islands/CreditScore.tsx": $CreditScore,
     "./islands/InsuranceCalc.tsx": $InsuranceCalc,
     "./islands/ScoreResult.tsx": $ScoreResult,
+    "./islands/test.tsx": $test_1,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

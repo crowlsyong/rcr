@@ -77,7 +77,7 @@ export default function InsuranceCalc() {
       default:
         break;
     }
-    
+
     const loanDurationMonths = 18; // example number of months
     let durationFee = 1;
 
@@ -96,7 +96,7 @@ export default function InsuranceCalc() {
     } else {
       durationFee = 1.80;
     }
-    
+
     const coveragePercentage = selectedCoverage.value / 100;
     const fee = loanAmount.value * coveragePercentage * adjustedMultiplier;
     setInsuranceFee(fee);
