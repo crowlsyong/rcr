@@ -26,6 +26,14 @@ export default function MenuBar() {
           Dashboard
         </a>
         <a
+          href="https://manifold.markets/GastonKessler/test-bounty-gtduUIZPQR"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-white hover:underline"
+        >
+          IMF
+        </a>
+        <a
           href="https://manifold.markets/crowlsyong"
           target="_blank"
           rel="noopener noreferrer"
