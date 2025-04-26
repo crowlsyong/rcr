@@ -59,30 +59,48 @@ export default function InsuranceCalc() {
       !selectedCoverage.value ||
       riskMultiplier === 0
     ) return;
-  
+
     let adjustedMultiplier = riskMultiplier;
     switch (selectedCoverage.value) {
       case 25:
-        adjustedMultiplier = riskMultiplier;
+        adjustedMultiplier = riskMultiplier * 1.05;
         break;
       case 50:
-        adjustedMultiplier = riskMultiplier * 1.33;
+        adjustedMultiplier = riskMultiplier * 1.12;
         break;
       case 75:
-        adjustedMultiplier = riskMultiplier * 1.5;
+        adjustedMultiplier = riskMultiplier * 1.24;
         break;
       case 100:
-        adjustedMultiplier = riskMultiplier * 2;
+        adjustedMultiplier = riskMultiplier * 1.54;
         break;
       default:
         break;
     }
-  
+    
+    const loanDurationMonths = 18; // example number of months
+    let durationFee = 1;
+
+    if (loanDurationMonths < 1) {
+      durationFee = 1.02;
+    } else if (loanDurationMonths < 3) {
+      durationFee = 1.06;
+    } else if (loanDurationMonths < 6) {
+      durationFee = 1.10;
+    } else if (loanDurationMonths < 12) {
+      durationFee = 1.25;
+    } else if (loanDurationMonths < 24) {
+      durationFee = 1.35;
+    } else if (loanDurationMonths < 48) {
+      durationFee = 1.60;
+    } else {
+      durationFee = 1.80;
+    }
+    
     const coveragePercentage = selectedCoverage.value / 100;
     const fee = loanAmount.value * coveragePercentage * adjustedMultiplier;
     setInsuranceFee(fee);
   }
-  
 
   // Handle the selection of coverage percentages
   const handleCoverageClick = (percentage: number | null) => {
