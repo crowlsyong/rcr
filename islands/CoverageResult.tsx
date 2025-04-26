@@ -1,6 +1,3 @@
-import { h } from "preact";
-import { useEffect, useState } from "preact/hooks";
-
 // Function to calculate the Insurance Fee
 function calculateInsuranceFee(
   coverage: number,

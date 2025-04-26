@@ -19,10 +19,10 @@ export default function InsuranceCalc() {
 
   // Coverage fees mapping
   const coverageFees: { [key: number]: number } = {
-    25: 0.06,
-    50: 0.12,
-    75: 0.23,
-    100: 0.49,
+    25: 0.02,
+    50: 0.05,
+    75: 0.11,
+    100: 0.21,
   };
 
   // Debounced username effect
