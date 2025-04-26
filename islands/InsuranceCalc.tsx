@@ -63,16 +63,16 @@ export default function InsuranceCalc() {
     let adjustedMultiplier = riskMultiplier;
     switch (selectedCoverage.value) {
       case 25:
-        adjustedMultiplier = riskMultiplier * 1.05;
-        break;
-      case 50:
         adjustedMultiplier = riskMultiplier * 1.12;
         break;
+      case 50:
+        adjustedMultiplier = riskMultiplier * 1.23;
+        break;
       case 75:
-        adjustedMultiplier = riskMultiplier * 1.24;
+        adjustedMultiplier = riskMultiplier * 1.41;
         break;
       case 100:
-        adjustedMultiplier = riskMultiplier * 1.54;
+        adjustedMultiplier = riskMultiplier * 1.81;
         break;
       default:
         break;
