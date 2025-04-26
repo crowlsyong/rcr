@@ -1,15 +1,12 @@
-// InsuranceCalc.tsx
 import { useSignal } from "@preact/signals";
 import { useEffect, useRef, useState } from "preact/hooks";
 import ScoreResult from "./ScoreResult.tsx";
-
 interface CreditScoreData {
   username: string;
   creditScore: number;
   riskMultiplier: number;
   avatarUrl: string | null;
 }
-
 export default function InsuranceCalc() {
   const username = useSignal("");
   const loanAmount = useSignal(0);
@@ -18,7 +15,6 @@ export default function InsuranceCalc() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [insuranceFee, setInsuranceFee] = useState<number | null>(null);
   const [riskMultiplier, setRiskMultiplier] = useState(0);
-
   const scoreData = useSignal<CreditScoreData | null>(null);
 
   // Debounced username effect
@@ -26,7 +22,6 @@ export default function InsuranceCalc() {
     const timer = setTimeout(() => setDebouncedUsername(username.value), 100);
     return () => clearTimeout(timer);
   }, [username.value]);
-
   useEffect(() => {
     if (debouncedUsername) fetchScoreData(debouncedUsername);
     else resetState();
@@ -47,7 +42,6 @@ export default function InsuranceCalc() {
       scoreData.value = null;
     }
   }
-
   function resetState() {
     scoreData.value = null;
   }
@@ -55,50 +49,10 @@ export default function InsuranceCalc() {
   // Calculate the insurance fee
   function calculateInsuranceFee() {
     if (
-      loanAmount.value <= 0 ||
-      !selectedCoverage.value ||
-      riskMultiplier === 0
+      loanAmount.value <= 0 || !selectedCoverage.value || riskMultiplier === 0
     ) return;
-
-    let adjustedMultiplier = riskMultiplier;
-    switch (selectedCoverage.value) {
-      case 25:
-        adjustedMultiplier = riskMultiplier * 1.12;
-        break;
-      case 50:
-        adjustedMultiplier = riskMultiplier * 1.23;
-        break;
-      case 75:
-        adjustedMultiplier = riskMultiplier * 1.41;
-        break;
-      case 100:
-        adjustedMultiplier = riskMultiplier * 1.81;
-        break;
-      default:
-        break;
-    }
-
-    const loanDurationMonths = 18; // example number of months
-    let durationFee = 1;
-
-    if (loanDurationMonths < 1) {
-      durationFee = 1.02;
-    } else if (loanDurationMonths < 3) {
-      durationFee = 1.06;
-    } else if (loanDurationMonths < 6) {
-      durationFee = 1.10;
-    } else if (loanDurationMonths < 12) {
-      durationFee = 1.25;
-    } else if (loanDurationMonths < 24) {
-      durationFee = 1.35;
-    } else if (loanDurationMonths < 48) {
-      durationFee = 1.60;
-    } else {
-      durationFee = 1.80;
-    }
-
     const coveragePercentage = selectedCoverage.value / 100;
-    const fee = loanAmount.value * coveragePercentage * adjustedMultiplier;
+    const fee = loanAmount.value * coveragePercentage * riskMultiplier;
     setInsuranceFee(fee);
   }
 
@@ -158,7 +112,6 @@ export default function InsuranceCalc() {
       </div>
 
       {/* Loan Amount Input */}
-
       <div class="mt-4">
         <label htmlFor="loanAmount" class="text-gray-400 mb-1 block">
           Enter loan amount
@@ -173,6 +126,7 @@ export default function InsuranceCalc() {
           class="w-full p-3 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
+
       <label htmlFor="loanAmount" class="text-gray-400 mb-1 pt-3 block">
         Select coverage
       </label>
@@ -199,7 +153,6 @@ export default function InsuranceCalc() {
       </div>
 
       {/* Insurance Fee */}
-
       <div class="mt-4 text-right space-y-2">
         <p class="text-gray-400 text-xs">
           {loanAmount.value ? `Loan Amount: M${loanAmount.value}` : ""}
