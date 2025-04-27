@@ -1,5 +1,5 @@
 import { useSignal } from "@preact/signals";
-import { useEffect, } from "preact/hooks";
+import { useEffect } from "preact/hooks";
 import ScoreResult from "./ScoreResult.tsx";
 
 interface CreditScoreData {
