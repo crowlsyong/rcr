@@ -1,5 +1,5 @@
 import { useSignal } from "@preact/signals";
-import { useEffect } from "preact/hooks";
+import { useEffect, } from "preact/hooks";
 import ScoreResult from "./ScoreResult.tsx";
 
 interface CreditScoreData {
@@ -53,6 +53,7 @@ export default function CreditScore({ username }: CreditScoreProps) {
         avatarUrl={scoreData.value?.avatarUrl || null}
         isWaiting={!scoreData.value && !error.value}
       />
+      {/* Input field for username 
       <div class="text-center pt-4">
         {error.value
           ? <p class="text-red-400">{error.value}</p>
@@ -71,6 +72,7 @@ export default function CreditScore({ username }: CreditScoreProps) {
           )
           : <p class="text-gray-400">...</p>}
       </div>
+      */}
     </div>
   );
 }
