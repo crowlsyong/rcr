@@ -132,7 +132,7 @@ export async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const username = url.searchParams.get("username");
 
-  if (!username || username.length < 3) {
+  if (!username || username.length < 1) {
     return new Response("Username missing or too short", { status: 400 });
   }
 
