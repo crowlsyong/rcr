@@ -5,7 +5,7 @@ export default function UserPage({ params }: PageProps) {
   const { username } = params; // Extracting the username from the URL
 
   return (
-    <div class="bg-[#0F1729] min-h-screen">
+    <div class="bg-[#0F1729]">
       {/* Added background color */}
       {/* Pass the username to the CreditScore island component */}
       <CreditScore username={username} />
