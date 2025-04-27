@@ -20,6 +20,7 @@ import * as $CreditScoreChExt from "./islands/CreditScoreChExt.tsx";
 import * as $InsuranceCalc from "./islands/InsuranceCalc.tsx";
 import * as $PasswordGate from "./islands/PasswordGate.tsx";
 import * as $ScoreResult from "./islands/ScoreResult.tsx";
+import * as $ScoreResultsChExt from "./islands/ScoreResultsChExt.tsx";
 import * as $test_1 from "./islands/test.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
@@ -46,6 +47,7 @@ const manifest = {
     "./islands/InsuranceCalc.tsx": $InsuranceCalc,
     "./islands/PasswordGate.tsx": $PasswordGate,
     "./islands/ScoreResult.tsx": $ScoreResult,
+    "./islands/ScoreResultsChExt.tsx": $ScoreResultsChExt,
     "./islands/test.tsx": $test_1,
   },
   baseUrl: import.meta.url,
