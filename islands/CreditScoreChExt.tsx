@@ -45,7 +45,7 @@ export default function CreditScore({ username }: CreditScoreProps) {
   }
 
   return (
-    <div class="w-full max-w-md mx-auto pt-6 pb-6 px-0 sm:px-6">
+    <div style="background-color: #0F1729;" class="w-full h-full max-w-md mx-auto pt-6 pb-6 px-0 sm:px-6">
       <ScoreResult
         username={scoreData.value?.username || "N/A"}
         creditScore={scoreData.value?.creditScore || 0}

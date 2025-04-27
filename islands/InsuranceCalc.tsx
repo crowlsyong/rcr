@@ -62,15 +62,17 @@ export default function InsuranceCalc() {
       loanAmount.value <= 0 || !selectedCoverage.value || riskMultiplier === 0
     ) return;
 
-    // Calculate the base fee with the risk multiplier
-    const baseFee = loanAmount.value * riskMultiplier;
-
     // Get the selected coverage fee
     const coverageFee = coverageFees[selectedCoverage.value];
 
     // Calculate the final fee I=(L×P)+(L×C)
-    const finalFee = (baseFee * loanAmount.value) + (loanAmount.value * coverageFee);
-    setInsuranceFee(finalFee - loanAmount.value); // Calculate only the additional fee
+    const totalFee = (riskMultiplier * loanAmount.value) + (loanAmount.value * coverageFee);
+    setInsuranceFee(totalFee); // Calculate only the additional fee
+    console.log("Coverage fee", coverageFee)
+    console.log("riskMultiplier", riskMultiplier)
+    console.log("Loan amount", loanAmount.value)
+    console.log("Final fee", totalFee)
+    console.log("Insurance fee", totalFee)
   }
 
   // Handle the selection of coverage percentages

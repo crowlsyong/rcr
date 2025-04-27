@@ -171,6 +171,7 @@ export async function handler(req: Request): Promise<Response> {
     console.log(`  Age (days): ${ageDays}`);
     console.log(`  Credit Score: ${creditScore}`);
     console.log(`  fetchSuccess: ${fetchSuccess}`);
+    console.log(`  Risk Multiplier: ${risk}`);
     console.log("---");
 
     // Return response with the relevant data
