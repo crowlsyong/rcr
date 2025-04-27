@@ -68,8 +68,8 @@ export default function InsuranceCalc() {
     // Get the selected coverage fee
     const coverageFee = coverageFees[selectedCoverage.value];
 
-    // Calculate the final fee considering coverage
-    const finalFee = (baseFee + loanAmount.value) * (1 + coverageFee);
+    // Calculate the final fee I=(L×P)+(L×C)
+    const finalFee = (baseFee * loanAmount.value) + (loanAmount.value * coverageFee);
     setInsuranceFee(finalFee - loanAmount.value); // Calculate only the additional fee
   }
 
