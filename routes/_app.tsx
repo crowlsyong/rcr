@@ -23,7 +23,7 @@ export default function App({ Component }: PageProps) {
           property="og:description"
           content="Check a Manifold Markets user's credit risk instantly."
         />
-        <meta property="og:image" content="/risk-logo-mini.png" />{" "}
+        <meta property="og:image" content="/risk-logo-manifold-seo.png" />{" "}
         {/* Optional if you have a social preview image */}
         <meta property="og:url" content="https://risk.deno.dev" />{" "}
         {/* Update this */}
@@ -35,7 +35,7 @@ export default function App({ Component }: PageProps) {
           name="twitter:description"
           content="Analyze Manifold Markets' users in seconds. Credit risk scores."
         />
-        <meta name="twitter:image" content="/risk-logo-mini.png" />{" "}
+        <meta name="twitter:image" content="/risk-logo-manifold-seo.png" />{" "}
         {/* Optional */}
 
         <link rel="canonical" href="https://risk.deno.dev" />{" "}
