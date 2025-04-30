@@ -53,7 +53,7 @@ export default function MenuBar() {
           </div>
 
           {/* Added margin-top to create space between the close button and menu items */}
-          <div class="space-y-4 mt-5">
+          <div class="space-y-4 mt-10">
             {links.map((link) => (
               <a
                 key={link.url}
