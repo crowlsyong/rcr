@@ -1,5 +1,5 @@
 import Test from "../islands/test.tsx";
-import MenuBar from "../components/MenuBar.tsx";
+import MenuBar from "../islands/MenuBar.tsx"; // Import the MenuBar
 
 export default function Home() {
   return (

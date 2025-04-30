@@ -1,6 +1,6 @@
 import CreditScore from "../islands/CreditScore.tsx";
 // import TechnicalDifficulties from "../components/TechnicalDifficulties.tsx";
-import MenuBar from "../components/MenuBar.tsx"; // Import the MenuBar
+import MenuBar from "../islands/MenuBar.tsx"; // Import the MenuBar
 
 export default function Home() {
   return (
