@@ -1,85 +1,89 @@
-import { useState } from "preact/hooks";
+import { useSignal } from "@preact/signals";
 
-export default function Test() {
-  const [lender, setLender] = useState("");
-  const [loanAmount, setLoanAmount] = useState<number | "">("");
-  const [borrower, setBorrower] = useState("");
-  const [lenderFee, setLenderFee] = useState<number | "">("");
-  const [dueDate, setDueDate] = useState("");
-  const [coverage, setCoverage] = useState("");
+const links = [
+  { label: "📰 Dashboard", url: "https://manifold.markets/news/risk" },
+  { label: "📈 Credit Score", url: "https://risk.deno.dev" },
+  { label: "📊 Insurance", url: "https://risk.deno.dev/insurance" },
+  { label: "🏦 Payment Portal", url: "https://manifold.markets/crowlsyong/risk-payment-portal" },
+  { label: "💰 IMF", url: "https://manifold.markets/GastonKessler/test-bounty-gtduUIZPQR" },
+  { label: "✉️ Contact", url: "https://manifold.markets/crowlsyong" },
+];
+
+export default function MenuBar() {
+  const isMenuOpen = useSignal(false);
 
   return (
-    <div class="bg-[#0F1729] p-6 rounded-lg shadow-lg w-full max-w-md space-y-6">
-      {/* Grid container for all three lines */}
-      <div class="grid grid-cols-[5fr_1fr_5fr_1fr] gap-4 mb-6">
-        {/* Line 1 */}
-        <input
-          type="text"
-          placeholder="Lender Username"
-          value={lender}
-          onInput={(e) => setLender((e.target as HTMLInputElement).value)}
-          class="w-full p-2 rounded bg-[#1D2A46] text-[#98A9CE] placeholder-[#3D4E73] focus:outline-none"
-        />
-        <p class="text-[#98A9CE] text-xs sm:text-sm flex items-center justify-center">
-          lending
-        </p>
-        <input
-          type="number"
-          placeholder="Loan Amount"
-          value={loanAmount}
-          onInput={(e) =>
-            setLoanAmount(Number((e.target as HTMLInputElement).value) || "")}
-          class="w-full p-2 rounded bg-[#1D2A46] text-[#98A9CE] placeholder-[#3D4E73] focus:outline-none"
-        />
-        <p class="text-[#98A9CE] text-xs sm:text-sm flex items-center justify-center">
-          to
-        </p>
+    <div class="fixed top-0 left-0 w-full flex items-center justify-between px-4 py-3 bg-[#0F1729] text-white z-50">
+      <a href="/">
+        <img class="hidden md:block h-10" src="/risk.png" alt="the RISK mascot: a raccoon" />
+        <img class="md:hidden h-8" src="/risk-logo-mini.png" alt="the RISK mini mascot: a raccoon" />
+      </a>
 
-        {/* Line 2 */}
-        <input
-          type="text"
-          placeholder="Borrower Username"
-          value={borrower}
-          onInput={(e) => setBorrower((e.target as HTMLInputElement).value)}
-          class="w-full p-2 rounded bg-[#1D2A46] text-[#98A9CE] placeholder-[#3D4E73] focus:outline-none"
-        />
-        <p class="text-[#98A9CE] text-xs sm:text-sm flex items-center justify-center">
-          with
-        </p>
-        <input
-          type="number"
-          placeholder="Lender Fee"
-          value={lenderFee}
-          onInput={(e) =>
-            setLenderFee(Number((e.target as HTMLInputElement).value) || "")}
-          class="w-full p-2 rounded bg-[#1D2A46] text-[#98A9CE] placeholder-[#3D4E73] focus:outline-none"
-        />
-        <p class="text-[#98A9CE] text-xs sm:text-sm flex items-center justify-center">
-          due
-        </p>
-
-        {/* Line 3 */}
-        <input
-          type="date"
-          value={dueDate}
-          onInput={(e) => setDueDate((e.target as HTMLInputElement).value)}
-          class="w-full p-2 rounded bg-[#1D2A46] text-[#98A9CE] placeholder-[#3D4E73] focus:outline-none"
-        />
-        <p class="text-[#98A9CE] text-xs sm:text-sm flex items-center justify-center">
-          using
-        </p>
-        <select
-          value={coverage}
-          onInput={(e) => setCoverage((e.target as HTMLSelectElement).value)}
-          class="w-full p-2 rounded bg-[#1D2A46] text-[#98A9CE] focus:outline-none"
-        >
-          <option value="">Select Coverage</option>
-          <option value="0.1">10%</option>
-          <option value="0.25">25%</option>
-          <option value="0.5">50%</option>
-          <option value="1.0">100%</option>
-        </select>
+      {/* Desktop buttons */}
+      <div class="hidden md:flex space-x-2 md:space-x-1 text-xs md:text-base">
+        {links.map((link) => (
+          <a
+            key={link.url}
+            href={link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-xs px-3 py-1 border border-[#334155] rounded-md hover:bg-[#1E293B] transition-colors duration-200"
+          >
+            {link.label}
+          </a>
+        ))}
       </div>
+
+      {/* Mobile menu icon */}
+      <div class="md:hidden">
+        <button
+          type="button"
+          class="text-white"
+          onClick={() => (isMenuOpen.value = !isMenuOpen.value)}
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Mobile menu overlay */}
+      {isMenuOpen.value && (
+        <div class="md:hidden fixed inset-0 bg-[#0F1729] bg-opacity-90 backdrop-blur-lg text-white p-6 z-50">
+          <button
+            type="button"
+            onClick={() => (isMenuOpen.value = false)}
+            class="absolute top-2 right-5 text-white text-2xl"
+          >
+            &times;
+          </button>
+
+          <div class="flex justify-center mb-8">
+            <img src="/risk-logo-mini.svg" alt="the RISK mascot: a raccoon" class="h-12" />
+          </div>
+
+          {/* Mobile buttons */}
+          <div class="space-y-4">
+            {links.map((link) => (
+              <a
+                key={link.url}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="block w-full text-center border border-[#334155] text-white text-lg py-3 px-4 rounded-md hover:bg-[#1E293B] transition-colors duration-200"
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
