@@ -6,13 +6,15 @@ import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $_middleware from "./routes/_middleware.ts";
 import * as $api_score from "./routes/api/score.ts";
+import * as $ext_username_ from "./routes/ext/[username].tsx";
 import * as $iframe_chrome_ext from "./routes/iframe/chrome-ext.tsx";
 import * as $iframe_credit_score from "./routes/iframe/credit-score.tsx";
 import * as $iframe_insurance_fee_calculator from "./routes/iframe/insurance-fee-calculator.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $insurance from "./routes/insurance.tsx";
 import * as $test from "./routes/test.tsx";
-import * as $user_username_ from "./routes/user/[username].tsx";
+import * as $u_username_ from "./routes/u/[username].tsx";
+import * as $Button from "./islands/Button.tsx";
 import * as $CoverageResult from "./islands/CoverageResult.tsx";
 import * as $CreditScore from "./islands/CreditScore.tsx";
 import * as $CreditScoreChExt from "./islands/CreditScoreChExt.tsx";
@@ -30,6 +32,7 @@ const manifest = {
     "./routes/_app.tsx": $_app,
     "./routes/_middleware.ts": $_middleware,
     "./routes/api/score.ts": $api_score,
+    "./routes/ext/[username].tsx": $ext_username_,
     "./routes/iframe/chrome-ext.tsx": $iframe_chrome_ext,
     "./routes/iframe/credit-score.tsx": $iframe_credit_score,
     "./routes/iframe/insurance-fee-calculator.tsx":
@@ -37,9 +40,10 @@ const manifest = {
     "./routes/index.tsx": $index,
     "./routes/insurance.tsx": $insurance,
     "./routes/test.tsx": $test,
-    "./routes/user/[username].tsx": $user_username_,
+    "./routes/u/[username].tsx": $u_username_,
   },
   islands: {
+    "./islands/Button.tsx": $Button,
     "./islands/CoverageResult.tsx": $CoverageResult,
     "./islands/CreditScore.tsx": $CreditScore,
     "./islands/CreditScoreChExt.tsx": $CreditScoreChExt,
