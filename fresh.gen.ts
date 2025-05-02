@@ -23,6 +23,7 @@ import * as $MenuBar from "./islands/MenuBar.tsx";
 import * as $PasswordGate from "./islands/PasswordGate.tsx";
 import * as $ScoreResult from "./islands/ScoreResult.tsx";
 import * as $ScoreResultsChExt from "./islands/ScoreResultsChExt.tsx";
+import * as $ShareButton from "./islands/ShareButton.tsx";
 import * as $test_1 from "./islands/test.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
@@ -52,6 +53,7 @@ const manifest = {
     "./islands/PasswordGate.tsx": $PasswordGate,
     "./islands/ScoreResult.tsx": $ScoreResult,
     "./islands/ScoreResultsChExt.tsx": $ScoreResultsChExt,
+    "./islands/ShareButton.tsx": $ShareButton,
     "./islands/test.tsx": $test_1,
   },
   baseUrl: import.meta.url,

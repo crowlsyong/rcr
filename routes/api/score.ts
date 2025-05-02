@@ -60,8 +60,12 @@ async function fetchManaAndRecentRank(
 
 async function fetchTransactionCount(username: string): Promise<number> {
   try {
-    const res = await fetch(`https://api.manifold.markets/v0/bets?username=${username}`);
-    if (!res.ok) throw new Error(`Failed to fetch transactions: ${res.statusText}`);
+    const res = await fetch(
+      `https://api.manifold.markets/v0/bets?username=${username}`,
+    );
+    if (!res.ok) {
+      throw new Error(`Failed to fetch transactions: ${res.statusText}`);
+    }
     const data = await res.json();
     return Array.isArray(data) ? data.length : 0;
   } catch (err) {
@@ -96,9 +100,9 @@ function computeMMR(
   } else {
     transactionMMR = 10000;
   }
-  
 
-  return ((balance * 0.4) + (ageDays * 0.1) + (totalMana * 0.3)) + rankMMR + transactionMMR;
+  return ((balance * 0.4) + (ageDays * 0.1) + (totalMana * 0.3)) + rankMMR +
+    transactionMMR;
 }
 
 function mapToCreditScore(clampedMMRBalance: number): number {
@@ -111,9 +115,11 @@ function mapToCreditScore(clampedMMRBalance: number): number {
   } else if (clampedMMRBalance <= 10000) {
     score = 300 + ((clampedMMRBalance - 5000) / (10000 - 5000)) * (600 - 300);
   } else if (clampedMMRBalance <= 100000) {
-    score = 600 + ((clampedMMRBalance - 10000) / (100000 - 10000)) * (800 - 600);
+    score = 600 +
+      ((clampedMMRBalance - 10000) / (100000 - 10000)) * (800 - 600);
   } else if (clampedMMRBalance <= 1000000) {
-    score = 800 + ((clampedMMRBalance - 100000) / (1000000 - 100000)) * (1000 - 800);
+    score = 800 +
+      ((clampedMMRBalance - 100000) / (1000000 - 100000)) * (1000 - 800);
   } else {
     score = 1000;
   }
@@ -148,9 +154,12 @@ export async function handler(req: Request): Promise<Response> {
     const balance = userData.balance ?? 0;
     const createdTime = userData.createdTime ?? Date.now();
     const ageDays = (Date.now() - createdTime) / 86_400_000;
-    const { total: totalManaEarned, latestRank } = await fetchManaAndRecentRank(userData.id);
+    const { total: totalManaEarned, latestRank } = await fetchManaAndRecentRank(
+      userData.id,
+    );
     const transactionCount = await fetchTransactionCount(username);
-    const transactionMMR = Math.max(0, Math.min(1, 1 - (transactionCount - 1) / (1000 - 1))) * 10000;
+    const transactionMMR =
+      Math.max(0, Math.min(1, 1 - (transactionCount - 1) / (1000 - 1))) * 10000;
 
     const mmr = computeMMR(
       balance,
@@ -185,9 +194,9 @@ export async function handler(req: Request): Promise<Response> {
     console.log(`  Risk Multiplier: ${risk}`);
     console.log(`  Transaction Count: ${transactionCount}`);
     console.log(`  Transaction MMR: ${transactionMMR}`);
-    console.log(`  fetchSuccess: ${fetchSuccess}`);    
+    console.log(`  fetchSuccess: ${fetchSuccess}`);
     console.log("---");
-    
+
     return new Response(JSON.stringify(output), {
       headers: { "Content-Type": "application/json" },
     });

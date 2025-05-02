@@ -1,23 +1,29 @@
 import { JSX } from "preact";
 import { IS_BROWSER } from "$fresh/runtime.ts";
 
-export function Button(props: JSX.HTMLAttributes<HTMLButtonElement>) {
-  const redirectToUrl = "https://risk.deno.dev"; // Hardcoded URL for the button
+interface ButtonProps extends JSX.HTMLAttributes<HTMLAnchorElement> {
+  url: string;
+  disabled?: boolean;
+}
 
-  // Handle button click to navigate
-  const handleClick = () => {
-    // Use globalThis.location to navigate
-    globalThis.location.href = redirectToUrl;
-  };
+export function Button({ url, disabled, ...props }: ButtonProps) {
+  const isDisabled = disabled || !IS_BROWSER || !url;
 
   return (
-    <button
+    <a
       {...props}
-      onClick={handleClick} // On click, navigate to the hardcoded URL
-      disabled={!IS_BROWSER || props.disabled} // Make sure it's enabled only in the browser
-      class={`px-4 py-2 rounded-md bg-gray-800 text-white border border-gray-600 hover:bg-blue-600 transition-colors duration-150 disabled:opacity-50 ${props.class || ""}`}
+      href={isDisabled ? undefined : url}
+      onClick={(e) => {
+        if (isDisabled) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }}
+      class={`inline-block px-4 py-2 rounded-md bg-gray-800 text-white border border-gray-600 hover:bg-blue-600 transition-colors duration-150 ${
+        isDisabled ? "opacity-50 pointer-events-none" : ""
+      } ${props.class || ""}`}
     >
       {props.children}
-    </button>
+    </a>
   );
 }

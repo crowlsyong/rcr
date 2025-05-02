@@ -7,7 +7,7 @@ export default function UserPage({ params }: PageProps) {
   const { username } = params; // Extracting the username from the URL
 
   // Define the URL for redirection
-  const backToSearchUrl = "https://deno.risk.dev"; // URL can be customized here
+  const backToSearchUrl = "/"; // URL can be customized here
 
   return (
     <div class="min-h-screen bg-[#0F1729] text-white dark:bg-[#0F1729] dark:text-white">

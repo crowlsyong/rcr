@@ -1,8 +1,7 @@
-// CreditScore.tsx
-
 import { useSignal } from "@preact/signals";
 import { useEffect, useRef, useState } from "preact/hooks"; // add useRef
 import ScoreResult from "./ScoreResult.tsx";
+import ShareButton from "./ShareButton.tsx"; // Import the ShareButton
 
 interface CreditScoreData {
   username: string;
@@ -92,16 +91,20 @@ export default function CreditScore() {
           ? <p class="text-red-400">{error.value}</p>
           : scoreData.value
           ? (
-            <p class="text-green-400">
-              ✅User found
-              <a
-                href={`https://manifold.markets/${scoreData.value?.username}`}
-                target="_blank"
-                class="text-blue-400 hover:underline ml-2"
-              >
-                Visit {scoreData.value.username}'s Manifold page
-              </a>
-            </p>
+            <div>
+              <p class="text-green-400">
+                ✅User found
+                <a
+                  href={`https://manifold.markets/${scoreData.value?.username}`}
+                  target="_blank"
+                  class="text-blue-400 hover:underline ml-2"
+                >
+                  Visit {scoreData.value.username}'s Manifold page
+                </a>
+              </p>
+              {/* ShareButton Component */}
+              <ShareButton username={scoreData.value.username} />
+            </div>
           )
           : <p class="text-gray-400">...</p>}
       </div>
