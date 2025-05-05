@@ -100,7 +100,7 @@ function computeMMR(
   } else {
     transactionMMR = 10000;
   }
-
+  // The Credit Score Equation
   return ((balance * 0.4) + (ageDays * 0.1) + (totalMana * 0.3)) + rankMMR +
     transactionMMR;
 }

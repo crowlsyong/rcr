@@ -10,7 +10,7 @@ export default function App({ Component }: PageProps) {
         <title>🦝RISK Credit Report | Manifold Markets Analysis</title>
         <meta
           name="description"
-          content="Instantly get a credit risk score for any Manifold Markets user."
+          content="Instantly get a credit risk score for any Manifold user."
         />
         <meta
           name="keywords"
