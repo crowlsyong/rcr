@@ -13,7 +13,7 @@ export default function Home() {
         <h1 class="text-3xl sm:text-4xl font-bold text-center mb-4">
           🦝RISK Credit Score
         </h1>
-        <p class="text-xs text-center mb-4 text-gray-500">
+        <p class="text-sm text-center mb-4 text-gray-500">
           Built for{" "}
           <a
             href="https://manifold.markets/"
@@ -24,11 +24,23 @@ export default function Home() {
             manifold.markets
           </a>
         </p>
+
+        {
+          /*
         <p class="text-xxs font-bold">
           ⚠️ This product is in Beta Testing
         </p>
+        */
+        }
+
         <CreditScore />
       </div>
+      <footer class="fixed bottom-1 text-sm w-full text-center text-[10px] text-gray-500 z-[70]">
+        this is a 3rd party app | built by{" "}
+        <a href="https://manifold.markets/crowlsyong" class="underline">
+          crowlsyong
+        </a>
+      </footer>
     </div>
   );
 }
