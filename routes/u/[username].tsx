@@ -1,6 +1,5 @@
 import { PageProps } from "$fresh/server.ts";
 import CreditScore from "../../islands/CreditScoreChExt.tsx"; // Importing the island
-import MenuBar from "../../islands/MenuBar.tsx"; // Importing the MenuBar
 import { Button } from "../../islands/Button.tsx"; // Importing the Button island
 
 export default function UserPage({ params }: PageProps) {
@@ -11,7 +10,6 @@ export default function UserPage({ params }: PageProps) {
 
   return (
     <div class="min-h-screen bg-[#0F1729] text-white dark:bg-[#0F1729] dark:text-white">
-      <MenuBar />
       <div class="max-w-screen-md mx-auto flex flex-col items-center justify-center min-h-screen px-4 py-8">
         <div class="w-full mb-6">
           {/* <TechnicalDifficulties /> */}
@@ -29,9 +27,6 @@ export default function UserPage({ params }: PageProps) {
           >
             manifold.markets
           </a>
-        </p>
-        <p class="text-xxs font-bold">
-          ⚠️ This product is in Beta Testing
         </p>
         <CreditScore username={username} />
 

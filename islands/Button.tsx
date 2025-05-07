@@ -19,8 +19,10 @@ export function Button({ url, disabled, ...props }: ButtonProps) {
           e.stopPropagation();
         }
       }}
-      class={`inline-block px-4 py-2 rounded-md bg-gray-800 text-white border border-gray-600 hover:bg-blue-600 transition-colors duration-150 ${
-        isDisabled ? "opacity-50 pointer-events-none" : ""
+      class={`inline-block px-4 py-2 rounded-lg bg-slate-900 text-white border border-gray-700 transition-all duration-200 ${
+        isDisabled
+          ? "opacity-50 pointer-events-none"
+          : "hover:bg-slate-800 cursor-pointer"
       } ${props.class || ""}`}
     >
       {props.children}

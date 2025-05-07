@@ -1,11 +1,9 @@
 import CreditScore from "../islands/CreditScore.tsx";
 // import TechnicalDifficulties from "../components/TechnicalDifficulties.tsx";
-import MenuBar from "../islands/MenuBar.tsx"; // Import the MenuBar
 
 export default function Home() {
   return (
     <div class="min-h-screen bg-[#0F1729] text-white dark:bg-[#0F1729] dark:text-white">
-      <MenuBar />
       <div class="max-w-screen-md mx-auto flex flex-col items-center justify-center min-h-screen px-4 py-8">
         <div class="w-full mb-6">
           {/* <TechnicalDifficulties /> */}
@@ -35,12 +33,6 @@ export default function Home() {
 
         <CreditScore />
       </div>
-      <footer class="fixed bottom-1 text-sm w-full text-center text-[10px] text-gray-500 z-[70]">
-        this is a 3rd party app | built by{" "}
-        <a href="https://manifold.markets/crowlsyong" class="underline">
-          crowlsyong
-        </a>
-      </footer>
     </div>
   );
 }

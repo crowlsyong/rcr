@@ -1,5 +1,3 @@
-// ShareButton.tsx
-
 import { useState } from "preact/hooks";
 
 interface ShareButtonProps {
@@ -18,20 +16,29 @@ export default function ShareButton({ username }: ShareButtonProps) {
 
     navigator.clipboard.writeText(fullUrlToCopy).then(() => {
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000); // Hide "Copied" message after 2 seconds
+      setTimeout(() => setCopied(false), 2000);
     });
   };
 
+  const isClickable = true;
+
   return (
-    <div>
+    <div class="relative inline-block">
+      {copied && (
+        <div class="absolute top-full mt-1 left-1/2 transform -translate-x-1/2 text-green-400 text-sm pointer-events-none">
+          Copied to clipboard!
+        </div>
+      )}
+
       <button
         type="button"
         onClick={handleCopyClick}
-        class="mt-4 inline-block px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-300"
+        class={`px-6 py-2 rounded-md bg-slate-900 text-white border border-slate-700 transition-all duration-200 ${
+          isClickable ? "hover:bg-slate-800 cursor-pointer" : "cursor-default"
+        }`}
       >
         Share
       </button>
-      {copied && <p class="mt-2 text-green-400">Copied to clipboard!</p>}
     </div>
   );
 }

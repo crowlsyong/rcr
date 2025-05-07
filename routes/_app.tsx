@@ -1,4 +1,5 @@
 import { type PageProps } from "$fresh/server.ts";
+import MenuBar from "../islands/MenuBar.tsx"; // Import the MenuBar
 
 export default function App({ Component }: PageProps) {
   return (
@@ -7,7 +8,7 @@ export default function App({ Component }: PageProps) {
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        <title>🦝RISK Credit Report | Manifold Markets Analysis</title>
+        <title>🦝RISK Credit Report | For Manifold Markets</title>
         <meta
           name="description"
           content="Instantly get a credit risk score for any Manifold user."
@@ -43,7 +44,14 @@ export default function App({ Component }: PageProps) {
         <link rel="stylesheet" href="/styles.css" />
       </head>
       <body>
+        <MenuBar />
         <Component />
+        <footer class="fixed bottom-4 text-sm w-full text-center text-[10px] text-gray-500 z-[70]">
+          this is a 3rd party app | built by{" "}
+          <a href="https://manifold.markets/crowlsyong" class="underline">
+            crowlsyong
+          </a>
+        </footer>
       </body>
     </html>
   );

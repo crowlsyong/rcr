@@ -91,19 +91,18 @@ export default function CreditScore() {
           ? <p class="text-red-400">{error.value}</p>
           : scoreData.value
           ? (
-            <div>
-              <p class="text-green-400">
-                ✅User found
-                <a
-                  href={`https://manifold.markets/${scoreData.value?.username}`}
-                  target="_blank"
-                  class="text-blue-400 hover:underline ml-2"
-                >
-                  Visit {scoreData.value.username}'s Manifold page
-                </a>
-              </p>
-              {/* ShareButton Component */}
-              <ShareButton username={scoreData.value.username} />
+            <div class="flex flex-wrap justify-center items-center gap-2 text-sm text-green-400">
+              <span>✅User found</span>
+              <a
+                href={`https://manifold.markets/${scoreData.value?.username}`}
+                target="_blank"
+                class="text-blue-400 hover:underline"
+              >
+                Visit {scoreData.value.username}'s Manifold page
+              </a>
+              <div class="ml-auto">
+                <ShareButton username={scoreData.value.username} />
+              </div>
             </div>
           )
           : <p class="text-gray-400">...</p>}
