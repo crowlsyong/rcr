@@ -33,15 +33,15 @@ export default function ShareButton({ username }: ShareButtonProps) {
         </div>
       )}
 
-<button
-  type="button"
-  onClick={handleCopyClick}
-  class={`px-6 py-2 rounded-md bg-slate-900 text-white border border-slate-700 transition-all duration-200 ${
-    isClickable ? "hover:bg-slate-800 cursor-pointer" : "cursor-default"
-  }`}
->
-  <TbShare2 class="w-5 h-5" />
-</button>
+      <button
+        type="button"
+        onClick={handleCopyClick}
+        class={`px-6 py-2 rounded-md bg-slate-900 text-white border border-slate-700 transition-all duration-200 ${
+          isClickable ? "hover:bg-slate-800 cursor-pointer" : "cursor-default"
+        }`}
+      >
+        <TbShare2 class="w-5 h-5" />
+      </button>
     </div>
   );
 }
