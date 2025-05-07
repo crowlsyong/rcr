@@ -1,3 +1,6 @@
+import { TbShare2 } from "@preact-icons/tb";
+// import { TbExternalLink } from "@preact-icons/tb";
+
 import { useState } from "preact/hooks";
 
 interface ShareButtonProps {
@@ -25,20 +28,20 @@ export default function ShareButton({ username }: ShareButtonProps) {
   return (
     <div class="relative inline-block">
       {copied && (
-        <div class="absolute top-full mt-1 left-1/2 transform -translate-x-1/2 text-green-400 text-sm pointer-events-none">
+        <div class="absolute top-full mt-1 left-1/2 transform -translate-x-1/2 text-green-400 text-xs pointer-events-none">
           Copied to clipboard!
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={handleCopyClick}
-        class={`px-6 py-2 rounded-md bg-slate-900 text-white border border-slate-700 transition-all duration-200 ${
-          isClickable ? "hover:bg-slate-800 cursor-pointer" : "cursor-default"
-        }`}
-      >
-        Share
-      </button>
+<button
+  type="button"
+  onClick={handleCopyClick}
+  class={`px-6 py-2 rounded-md bg-slate-900 text-white border border-slate-700 transition-all duration-200 ${
+    isClickable ? "hover:bg-slate-800 cursor-pointer" : "cursor-default"
+  }`}
+>
+  <TbShare2 class="w-5 h-5" />
+</button>
     </div>
   );
 }
