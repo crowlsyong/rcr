@@ -91,7 +91,7 @@ export default function CreditScore() {
           ? <p class="text-red-400">{error.value}</p>
           : scoreData.value
           ? (
-            <div class="flex flex-wrap justify-center items-center gap-2 text-sm text-green-400">
+            <div class="flex flex-wrap justify-center items-center gap-2 text-xs text-green-400">
               <span>✅User found</span>
               <a
                 href={`https://manifold.markets/${scoreData.value?.username}`}
