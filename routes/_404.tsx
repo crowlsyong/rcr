@@ -1,5 +1,5 @@
 import { Head } from "$fresh/runtime.ts";
-import { Button } from "../islands/Button.tsx";
+import { Button } from "../islands/buttons/Button.tsx";
 
 export default function Error404() {
   return (

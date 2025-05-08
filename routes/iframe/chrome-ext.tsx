@@ -1,9 +1,8 @@
 // routes/iframe/credit-score.tsx
-
 // import { useSignal } from "@preact/signals";
 // import CreditScore from "../../islands/CreditScore.tsx";
-import CreditScore from "../../islands/CreditScore.tsx";
 // import MenuBar from "../../components/MenuBar.tsx";
+import CreditScore from "../../islands/CreditScore.tsx";
 
 export default function Home() {
   return (

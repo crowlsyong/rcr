@@ -1,7 +1,7 @@
 import { useSignal } from "@preact/signals";
 import { useEffect, useRef, useState } from "preact/hooks"; // add useRef
 import ScoreResult from "./ScoreResult.tsx";
-import ShareButton from "./ShareButton.tsx"; // Import the ShareButton
+import ShareButton from "./buttons/ShareButton.tsx"; // Import the ShareButton
 
 interface CreditScoreData {
   username: string;
