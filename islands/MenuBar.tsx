@@ -58,7 +58,7 @@ export default function MenuBar() {
   return (
     <div>
       {/* Top Bar */}
-      <div class="fixed top-0 left-0 w-full flex items-center justify-between px-4 py-3 bg-[#0F1729] text-white z-50">
+      <div class="fixed top-0 left-0 w-full flex items-center justify-between px-4 py-3 bg-[#0F1729] text-white bg-opacity-70 backdrop-blur-lg z-50">
         <a href="/">
           <img
             class="hidden md:block h-10"
@@ -67,7 +67,7 @@ export default function MenuBar() {
           />
           <img
             class="md:hidden h-8"
-            src="/risk-logo-mini.png"
+            src="/risk-logo-mini.svg"
             alt="the RISK mini mascot: a raccoon"
           />
         </a>

@@ -1,4 +1,5 @@
 import { Head } from "$fresh/runtime.ts";
+import { Button } from "../islands/Button.tsx";
 
 export default function Error404() {
   return (
@@ -7,19 +8,22 @@ export default function Error404() {
         <title>404 - Page not found</title>
       </Head>
       <div class="min-h-screen bg-[#0F1729] text-white flex items-center justify-center">
-        <div class="text-center px-4 py-8">
-          <img
-            class="my-6"
-            src="/risk.png"
-            width="128"
-            height="128"
-            alt="the RISK mascot: a raccoon"
-          />
-          <h1 class="text-4xl font-bold mb-4">404 - Page not found</h1>
+        <div class="px-4 py-8">
+          <h1 class="text-4xl font-bold mb-4">404</h1>
           <p class="my-4">The page you were looking for doesn't exist.</p>
-          <a href="/" class="underline text-green-400 hover:text-green-500">
-            Go back home
-          </a>
+          <p class="my-4 text-sm">
+            If you think this is an error,{" "}
+            <a
+              href="https://manifold.markets/crowlsyong"
+              target="_blank"
+              class="underline text-blue-400 hover:text-blue-500"
+            >
+              contact crowlsyong
+            </a>
+          </p>
+          <div class="mt-4">
+            <Button url="/">Go back home</Button>
+          </div>
         </div>
       </div>
     </>
