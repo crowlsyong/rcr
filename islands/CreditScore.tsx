@@ -92,7 +92,7 @@ export default function CreditScore() {
           : scoreData.value
           ? (
             <div class="flex flex-wrap justify-center items-center gap-2 text-xs text-green-400">
-              <span>✅User found</span>
+              <span>✅</span>
               <a
                 href={`https://manifold.markets/${scoreData.value?.username}`}
                 target="_blank"

@@ -1,4 +1,5 @@
 import { useSignal } from "@preact/signals";
+import { useEffect, useRef } from "preact/hooks";
 import { TbExternalLink } from "@preact-icons/tb";
 
 const links = [
@@ -36,6 +37,23 @@ const links = [
 
 export default function MenuBar() {
   const isMenuOpen = useSignal(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target as Node)
+      ) {
+        isMenuOpen.value = false;
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <div>
@@ -79,7 +97,8 @@ export default function MenuBar() {
 
       {/* Slide-in Menu Panel */}
       <div
-        class={`fixed top-0 right-0 h-full w-full md:w-[300px] bg-[#0F1729] bg-opacity-90 backdrop-blur-lg text-white p-6 z-50 md:rounded-l-lg md:border-l-2 border-[#334155] transform transition-transform duration-300 ease-in-out ${
+        ref={menuRef}
+        class={`fixed top-0 right-0 h-full w-full md:w-[300px] bg-[#0F1729] bg-opacity-70 backdrop-blur-lg text-white p-6 z-50 md:rounded-l-lg md:border-l-2 border-[#334155] transform transition-transform duration-300 ease-in-out ${
           isMenuOpen.value
             ? "translate-x-0 pointer-events-auto"
             : "translate-x-full pointer-events-none"
@@ -120,7 +139,6 @@ export default function MenuBar() {
             </a>
           ))}
         </div>
-        {/* Footer inside the Menu Bar */}
         <div class="pt-10 text-xs w-full text-center text-[10px] text-gray-500 mt-auto">
           this is a 3rd party app | built by{" "}
           <a href="https://manifold.markets/crowlsyong" class="underline">

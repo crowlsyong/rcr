@@ -1,4 +1,5 @@
 // ScoreResults.tsx
+import { TbExternalLink } from "@preact-icons/tb";
 
 // Function to interpolate colors based on credit score
 function lerpColor(
@@ -67,13 +68,13 @@ export default function ScoreResult({
 
   // Common container classes
   const containerClasses =
-    `block p-6 rounded-lg bg-slate-900 text-white transition-all duration-200 ${
+    `block p-4 md:p-6 rounded-lg bg-slate-900 text-white transition-all duration-200 ${
       isClickable ? "hover:bg-slate-800 cursor-pointer" : "cursor-default"
     }`;
 
   // Card content
   const content = (
-    <div class="flex-col items-center mb-4">
+    <div class="flex-col items-center">
       <div class="flex items-center mb-4">
         {avatarUrl
           ? (
@@ -115,6 +116,9 @@ export default function ScoreResult({
             {getRiskLevelText(creditScore)}
           </p>
         </div>
+
+        {/* External Link Icon */}
+        <TbExternalLink class="absolute top-4 right-2 w-5 h-5 text-white" />
       </div>
     </div>
   );
