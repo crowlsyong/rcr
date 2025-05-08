@@ -1,41 +1,6 @@
-// ScoreResults.tsx
-
-// Function to interpolate colors based on credit score
-function lerpColor(
-  color1: [number, number, number],
-  color2: [number, number, number],
-  t: number,
-): string {
-  const r = Math.round(color1[0] + (color2[0] - color1[0]) * t);
-  const g = Math.round(color1[1] + (color2[1] - color1[1]) * t);
-  const b = Math.round(color1[2] + (color2[2] - color1[2]) * t);
-  return `rgb(${r}, ${g}, ${b})`;
-}
-
-function getRiskLevelText(score: number): string {
-  if (score < 100) return "Outrageously Dangerous";
-  if (score < 200) return "Extremely Risky";
-  if (score < 300) return "Highly Risky";
-  if (score < 400) return "Risky";
-  if (score < 500) return "A Bit Risky";
-  if (score < 600) return "Moderately Safe";
-  if (score < 700) return "Safe";
-  if (score < 800) return "Very Safe";
-  if (score < 900) return "Super Safe";
-  return "Extremely Safe";
-}
-function getScoreColor(score: number): string {
-  if (score >= 800) {
-    const t = (score - 800) / 200; // 800 → 1000
-    return lerpColor([100, 100, 255], [96, 225, 105], t); // soft purple → soft green
-  } else if (score >= 600) {
-    const t = (score - 600) / 200; // 600 → 800
-    return lerpColor([50, 150, 200], [100, 100, 255], t); // soft blue → soft purple
-  } else {
-    const t = score / 600; // 0 → 600
-    return lerpColor([255, 100, 100], [180, 100, 255], t); // soft red → soft purple
-  }
-}
+// ScoreResultChExt.tsx
+import { TbExternalLink } from "@preact-icons/tb";
+import { getScoreColor, getRiskLevelText } from "../utils/ScoreUtils.ts"; // Updated import
 
 interface ScoreResultProps {
   username: string;
@@ -105,9 +70,7 @@ export default function ScoreResultChExt({
         <div
           class="absolute inset-0 bg-black opacity-40 rounded-md"
           aria-hidden="true"
-        >
-        </div>
-
+        />
         {/* Text remains on top, unaffected */}
         <div class="relative z-10">
           <p class="text-xs text-gray-100">Lending to this user is</p>
@@ -115,6 +78,7 @@ export default function ScoreResultChExt({
             {getRiskLevelText(creditScore)}
           </p>
         </div>
+        <TbExternalLink class="absolute top-4 right-2 w-5 h-5 text-white" />
       </div>
     </div>
   );

@@ -26,9 +26,6 @@ export default function Home() {
             manifold.markets
           </a>
         </p>
-        <p class="text-xs font-bold mb-1">
-          ⚠️ This product is in Alpha Testing
-        </p>
 
         <div class="w-full space-y-2 mt-2">
           <CreditScore />
