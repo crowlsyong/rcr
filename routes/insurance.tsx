@@ -24,9 +24,7 @@ export default function Home() {
           </a>
         </p>
 
-        <div class="w-full space-y-8 mt-6">
-          <InsuranceCalc />
-        </div>
+        <InsuranceCalc />
       </div>
     </div>
     /* </PasswordGate> */

@@ -1,4 +1,5 @@
 import { useSignal } from "@preact/signals";
+import { TbExternalLink } from "@preact-icons/tb";
 
 const links = [
   {
@@ -109,9 +110,13 @@ export default function MenuBar() {
               href={link.url}
               target={link.targetBlank ? "_blank" : "_self"}
               rel={link.targetBlank ? "noopener noreferrer" : undefined}
-              class="block w-full text-center border border-[#334155] text-white py-3 px-4 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-base md:text-xs"
+              class="flex items-center justify-center gap-1 border border-[#334155] text-white py-3 px-4 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-base md:text-xs"
             >
-              {link.label}
+              <span>{link.label}</span>
+              {link.targetBlank &&
+                typeof window !== "undefined" && (
+                <TbExternalLink class="w-4 h-4 opacity-70 absolute right-10" />
+              )}
             </a>
           ))}
         </div>
