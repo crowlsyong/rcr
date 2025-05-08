@@ -18,6 +18,7 @@ export default function InsuranceCalc() {
   const [insuranceFee, setInsuranceFee] = useState<number | null>(null);
   const [riskMultiplier, setRiskMultiplier] = useState(0);
   const scoreData = useSignal<CreditScoreData | null>(null);
+  const error = useSignal<string>("");
 
   // Coverage fees mapping
   const coverageFees: { [key: number]: number } = {
@@ -45,12 +46,15 @@ export default function InsuranceCalc() {
       const data = await res.json();
       if (data.error) {
         scoreData.value = null;
+        error.value = data.error; // e.g., "User not found"
       } else {
         scoreData.value = data;
         setRiskMultiplier(data.riskMultiplier);
+        error.value = "";
       }
     } catch {
       scoreData.value = null;
+      error.value = "User not found";
     }
   }
 
@@ -137,6 +141,9 @@ export default function InsuranceCalc() {
             class="w-full pl-8 p-3 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
+        {error.value && (
+          <p class="text-red-400 text-sm text-center mt-2">{error.value}</p>
+        )}
       </div>
 
       {/* Loan Amount Input */}
