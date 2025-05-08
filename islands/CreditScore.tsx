@@ -62,7 +62,7 @@ export default function CreditScore() {
   }, []);
 
   return (
-    <div class="w-full max-w-md mx-auto pb-6 px-0 sm:px-6">
+    <div class="w-full max-w-md mx-auto pt-6 pb-6 px-0 sm:px-6">
       <ScoreResult
         username={scoreData.value?.username || "N/A"}
         creditScore={scoreData.value?.creditScore || 0}
