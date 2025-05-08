@@ -3,7 +3,8 @@ import MenuBar from "../islands/MenuBar.tsx"; // Import the MenuBar
 
 export default function App({ Component, url }: PageProps) {
   // Check if the route is a main route (not starting with /iframe or /ext)
-  const showMenuBar = !url.pathname.startsWith("/iframe") && !url.pathname.startsWith("/ext");
+  const showMenuBar = !url.pathname.startsWith("/iframe") &&
+    !url.pathname.startsWith("/ext");
 
   return (
     <html lang="en">

@@ -1,6 +1,6 @@
 // ScoreResult.tsx
 import { TbExternalLink } from "@preact-icons/tb";
-import { getScoreColor, getRiskLevelText } from "../utils/ScoreUtils.ts"; // adjust path
+import { getRiskLevelText, getScoreColor } from "../utils/ScoreUtils.ts"; // adjust path
 
 interface ScoreResultProps {
   username: string;
