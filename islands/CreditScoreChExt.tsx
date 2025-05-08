@@ -57,28 +57,6 @@ export default function CreditScore({ username }: CreditScoreProps) {
         avatarUrl={scoreData.value?.avatarUrl || null}
         isWaiting={!scoreData.value && !error.value}
       />
-      {
-        /* Input field for username
-      <div class="text-center pt-4">
-        {error.value
-          ? <p class="text-red-400">{error.value}</p>
-          : scoreData.value
-          ? (
-            <p class="text-green-400">
-              ✅User found
-              <a
-                href={`https://manifold.markets/${scoreData.value?.username}`}
-                target="_blank"
-                class="text-blue-400 hover:underline ml-2"
-              >
-                Visit {scoreData.value.username}'s Manifold page
-              </a>
-            </p>
-          )
-          : <p class="text-gray-400">...</p>}
-      </div>
-      */
-      }
     </div>
   );
 }
