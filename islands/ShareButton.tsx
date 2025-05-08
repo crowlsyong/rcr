@@ -1,6 +1,4 @@
 import { TbShare2 } from "@preact-icons/tb";
-// import { TbExternalLink } from "@preact-icons/tb";
-
 import { useState } from "preact/hooks";
 
 interface ShareButtonProps {
