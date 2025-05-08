@@ -81,7 +81,7 @@ export default function ScoreResult({
             <img
               src={avatarUrl}
               alt={`${username}'s avatar`}
-              class="w-12 h-12 rounded-full mr-4"
+              class="w-12 h-12 rounded-full mr-2"
             />
           )
           : <div class="w-12 h-12 rounded-full bg-gray-500 mr-4" />}
