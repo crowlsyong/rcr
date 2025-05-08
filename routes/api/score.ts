@@ -113,13 +113,13 @@ function mapToCreditScore(clampedMMRBalance: number): number {
   } else if (clampedMMRBalance <= 5000) {
     score = 50 + (clampedMMRBalance / 5000) * (300 - 50);
   } else if (clampedMMRBalance <= 10000) {
-    score = 300 + ((clampedMMRBalance - 5000) / (10000 - 5000)) * (600 - 300);
+    score = 300 + ((clampedMMRBalance - 5000) / 5000) * (600 - 300);
   } else if (clampedMMRBalance <= 100000) {
-    score = 600 +
-      ((clampedMMRBalance - 10000) / (100000 - 10000)) * (800 - 600);
+    score = 600 + ((clampedMMRBalance - 10000) / 90000) * (800 - 600);
   } else if (clampedMMRBalance <= 1000000) {
-    score = 800 +
-      ((clampedMMRBalance - 100000) / (1000000 - 100000)) * (1000 - 800);
+    score = 800 + ((clampedMMRBalance - 100000) / 900000) * (900 - 800);
+  } else if (clampedMMRBalance <= 5000000) {
+    score = 900 + ((clampedMMRBalance - 1000000) / 4000000) * (1000 - 900);
   } else {
     score = 1000;
   }
