@@ -94,7 +94,7 @@ export default function ScoreResultChExt({
   return isClickable
     ? (
       <a
-        href={`https://manifold.markets/${username}?tab=balance-changes`}
+        href={`https://risk.markets/u/${username}`}
         target="_blank"
         rel="noopener noreferrer"
         class={containerClasses}
