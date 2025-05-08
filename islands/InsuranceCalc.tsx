@@ -1,12 +1,14 @@
 import { useSignal } from "@preact/signals";
 import { useEffect, useRef, useState } from "preact/hooks";
 import ScoreResult from "./ScoreResult.tsx";
+
 interface CreditScoreData {
   username: string;
   creditScore: number;
   riskMultiplier: number;
   avatarUrl: string | null;
 }
+
 export default function InsuranceCalc() {
   const username = useSignal("");
   const loanAmount = useSignal(0);
@@ -93,10 +95,16 @@ export default function InsuranceCalc() {
     setInsuranceFee(null); // Optional: reset fee to avoid showing stale results
   };
 
-  // Handle loan amount input
+  // Handle loan amount input (text field with integer validation)
   const handleLoanInput = (e: Event) => {
-    const value = parseFloat((e.target as HTMLInputElement).value);
-    loanAmount.value = value > 0 ? value : 0;
+    const inputValue = (e.target as HTMLInputElement).value;
+
+    // Regex to allow only numbers (integer) and prevent any non-integer input
+    const validValue = inputValue.replace(/[^0-9]/g, "");
+
+    // Update loanAmount with the valid value (convert to number, or 0 if empty)
+    loanAmount.value = validValue ? parseInt(validValue) : 0;
+
     calculateInsuranceFee();
   };
 
@@ -138,11 +146,10 @@ export default function InsuranceCalc() {
         </label>
         <input
           id="loanAmount"
-          type="number"
-          value={loanAmount.value}
+          type="text" // Changed to text input
+          value={loanAmount.value.toString()} // Ensure value is a string
           placeholder="Loan amount"
           onInput={handleLoanInput}
-          min="0"
           class="w-full p-3 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>

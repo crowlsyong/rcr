@@ -141,7 +141,10 @@ export default function MenuBar() {
         </div>
         <div class="pt-10 text-xs w-full text-center text-[10px] text-gray-500 mt-auto">
           this is a 3rd party app | built by{" "}
-          <a href="https://manifold.markets/crowlsyong" class="underline">
+          <a
+            href="https://manifold.markets/crowlsyong"
+            class="underline hover:text-blue-500"
+          >
             crowlsyong
           </a>
         </div>
