@@ -46,12 +46,6 @@ export default function App({ Component }: PageProps) {
       <body>
         <MenuBar />
         <Component />
-        <footer class="fixed bottom-4 text-sm w-full text-center text-[10px] text-gray-500 z-[70]">
-          this is a 3rd party app | built by{" "}
-          <a href="https://manifold.markets/crowlsyong" class="underline">
-            crowlsyong
-          </a>
-        </footer>
       </body>
     </html>
   );

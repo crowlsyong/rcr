@@ -120,6 +120,13 @@ export default function MenuBar() {
             </a>
           ))}
         </div>
+        {/* Footer inside the Menu Bar */}
+        <div class="pt-10 text-xs w-full text-center text-[10px] text-gray-500 mt-auto">
+          this is a 3rd party app | built by{" "}
+          <a href="https://manifold.markets/crowlsyong" class="underline">
+            crowlsyong
+          </a>
+        </div>
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ export default function Home() {
         <div class="w-full mb-6">
           {/* <TechnicalDifficulties /> */}
         </div>
-        <h1 class="text-3xl sm:text-4xl font-bold text-center mb-4">
+        <h1 class="text-xl sm:text-4xl font-bold text-center mb-4">
           🦝RISK Credit Score
         </h1>
         <p class="text-sm text-center mb-4 text-gray-500">
