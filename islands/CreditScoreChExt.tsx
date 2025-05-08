@@ -1,7 +1,7 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
-import ScoreResult from "./ScoreResult.tsx";
-// import ScoreResultChExt from "./ScoreResultsChExt.tsx";
+// import ScoreResult from "./ScoreResult.tsx";
+import ScoreResultChExt from "./ScoreResultsChExt.tsx";
 
 interface CreditScoreData {
   username: string;
@@ -48,9 +48,9 @@ export default function CreditScore({ username }: CreditScoreProps) {
   return (
     <div
       style="background-color: #0F1729;"
-      class="w-full h-full max-w-md mx-auto pt-6 pb-6 px-0 sm:px-6"
+      class="w-full h-full max-w-md mx-auto px-0 sm:px-6"
     >
-      <ScoreResult
+      <ScoreResultChExt
         username={scoreData.value?.username || "N/A"}
         creditScore={scoreData.value?.creditScore || 0}
         riskMultiplier={scoreData.value?.riskMultiplier || 0}
