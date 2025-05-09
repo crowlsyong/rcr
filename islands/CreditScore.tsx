@@ -106,7 +106,7 @@ export default function CreditScore() {
               </div>
             </div>
           )
-          : <p class="text-gray-400">...</p>}
+          : null}
       </div>
     </div>
   );

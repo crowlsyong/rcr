@@ -1,8 +1,8 @@
 import { type PageProps } from "$fresh/server.ts";
 import MenuBar from "../islands/MenuBar.tsx"; // Import the MenuBar
 
+//Conditionally show MenuBar based on the route
 export default function App({ Component, url }: PageProps) {
-  // Check menuBar if the route is a main route (not starting with /iframe or /ext)
   const showMenuBar = !url.pathname.startsWith("/iframe") &&
     !url.pathname.startsWith("/ext");
 
