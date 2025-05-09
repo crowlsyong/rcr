@@ -14,7 +14,6 @@ import * as $index from "./routes/index.tsx";
 import * as $insurance from "./routes/insurance.tsx";
 import * as $test from "./routes/test.tsx";
 import * as $u_username_ from "./routes/u/[username].tsx";
-import * as $CoverageResult from "./islands/CoverageResult.tsx";
 import * as $CreditScore from "./islands/CreditScore.tsx";
 import * as $CreditScoreChExt from "./islands/CreditScoreChExt.tsx";
 import * as $InsuranceCalc from "./islands/InsuranceCalc.tsx";
@@ -24,7 +23,8 @@ import * as $ScoreResult from "./islands/ScoreResult.tsx";
 import * as $ScoreResultsChExt from "./islands/ScoreResultsChExt.tsx";
 import * as $buttons_Button from "./islands/buttons/Button.tsx";
 import * as $buttons_ShareButton from "./islands/buttons/ShareButton.tsx";
-import * as $test_1 from "./islands/test.tsx";
+import * as $trash_CoverageResult from "./islands/trash/CoverageResult.tsx";
+import * as $trash_test from "./islands/trash/test.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -44,7 +44,6 @@ const manifest = {
     "./routes/u/[username].tsx": $u_username_,
   },
   islands: {
-    "./islands/CoverageResult.tsx": $CoverageResult,
     "./islands/CreditScore.tsx": $CreditScore,
     "./islands/CreditScoreChExt.tsx": $CreditScoreChExt,
     "./islands/InsuranceCalc.tsx": $InsuranceCalc,
@@ -54,7 +53,8 @@ const manifest = {
     "./islands/ScoreResultsChExt.tsx": $ScoreResultsChExt,
     "./islands/buttons/Button.tsx": $buttons_Button,
     "./islands/buttons/ShareButton.tsx": $buttons_ShareButton,
-    "./islands/test.tsx": $test_1,
+    "./islands/trash/CoverageResult.tsx": $trash_CoverageResult,
+    "./islands/trash/test.tsx": $trash_test,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;
