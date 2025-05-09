@@ -77,7 +77,7 @@ export default function CreditScore() {
         <input
           ref={inputRef}
           type="text"
-          placeholder="Enter a manifold username"
+          placeholder="Ex. Tumbles"
           value={username.value}
           onInput={(
             e,
