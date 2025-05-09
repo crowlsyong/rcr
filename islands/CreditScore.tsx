@@ -15,7 +15,6 @@ export default function CreditScore() {
   const username = useSignal("");
   const scoreData = useSignal<CreditScoreData | null>(null);
   const error = useSignal<string>("");
-
   const [debouncedUsername, setDebouncedUsername] = useState("");
   const inputRef = useRef<HTMLInputElement>(null); // create ref for input
 
