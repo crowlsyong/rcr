@@ -1,7 +1,7 @@
+// CreditScoreChExt.tsx
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 import ScoreResult from "./ScoreResult.tsx";
-// import ScoreResultChExt from "./ScoreResultsChExt.tsx";
 
 interface CreditScoreData {
   username: string;

@@ -1,3 +1,4 @@
+// InsuranceCalc.tsx
 import { useSignal } from "@preact/signals";
 import { useEffect, useRef, useState } from "preact/hooks";
 import ScoreResult from "./ScoreResult.tsx";
