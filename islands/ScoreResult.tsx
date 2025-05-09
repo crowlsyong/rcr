@@ -10,6 +10,7 @@ interface ScoreResultProps {
   isWaiting: boolean;
   userExists?: boolean;
   fetchSuccess?: boolean;
+  urlPrefix?: string; // optional override
 }
 
 export default function ScoreResult({
@@ -18,6 +19,7 @@ export default function ScoreResult({
   riskMultiplier,
   avatarUrl,
   isWaiting,
+  urlPrefix = "https://manifold.markets", // default
 }: ScoreResultProps) {
   const colorClass = getScoreColor(creditScore);
 
@@ -32,7 +34,6 @@ export default function ScoreResult({
       isClickable ? "hover:bg-slate-800 cursor-pointer" : "cursor-default"
     }`;
 
-  // Card content
   const content = (
     <div class="flex-col items-center">
       <div class="flex items-center mb-4">
@@ -62,22 +63,16 @@ export default function ScoreResult({
         class="mt-3 px-3 py-2 rounded-md relative"
         style={{ backgroundColor: colorClass }}
       >
-        {/* Overlay to dull the background */}
         <div
           class="absolute inset-0 bg-black opacity-40 rounded-md"
           aria-hidden="true"
-        >
-        </div>
-
-        {/* Text remains on top, unaffected */}
+        />
         <div class="relative z-10">
           <p class="text-xs text-gray-100">Lending to this user is</p>
           <p class="text-sm text-white font-semibold">
             {getRiskLevelText(creditScore)}
           </p>
         </div>
-
-        {/* External Link Icon */}
         <TbExternalLink class="absolute top-4 right-2 w-5 h-5 text-white" />
       </div>
     </div>
@@ -94,7 +89,7 @@ export default function ScoreResult({
   return isClickable
     ? (
       <a
-        href={`https://manifold.markets/${username}`}
+        href={`${urlPrefix}/${username}`}
         target="_blank"
         rel="noopener noreferrer"
         class={containerClasses}
