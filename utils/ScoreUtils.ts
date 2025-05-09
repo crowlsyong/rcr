@@ -26,14 +26,22 @@ export function getRiskLevelText(score: number): string {
 }
 
 export function getScoreColor(score: number): string {
-  if (score >= 800) {
-    const t = (score - 800) / 200;
-    return lerpColor([100, 100, 255], [96, 225, 105], t);
+  if (score >= 900) {
+    // For scores between 900 and 1000, interpolate from the softer green (54, 186, 63) to the full green (96, 225, 105)
+    const t = (score - 900) / 100;
+    return lerpColor([54, 186, 63], [96, 225, 105], t);  // Softer green to full green
+  } else if (score >= 800) {
+    // For scores between 800 and 900, return the original blue-to-green transition
+    const t = (score - 800) / 100;
+    return lerpColor([100, 100, 255], [96, 225, 105], t);  // Blue to green
   } else if (score >= 600) {
+    // For scores between 600 and 799, return the light blue-to-blue transition
     const t = (score - 600) / 200;
-    return lerpColor([50, 150, 200], [100, 100, 255], t);
+    return lerpColor([50, 150, 200], [100, 100, 255], t);  // Light blue to blue
   } else {
+    // For scores below 600, return the red-to-purple transition
     const t = score / 600;
-    return lerpColor([255, 100, 100], [180, 100, 255], t);
+    return lerpColor([255, 100, 100], [180, 100, 255], t);  // Red to purple
   }
 }
+
