@@ -3,8 +3,8 @@ import CreditScore from "../islands/CreditScore.tsx";
 
 export default function Home() {
   return (
-    <div class="min-h-screen bg-[#0F1729] text-white dark:bg-[#0F1729] dark:text-white">
-      <div class="max-w-screen-md mx-auto flex flex-col items-center justify-center min-h-screen px-4 py-8 pt-14 md:pt-8">
+    <div class="min-h-screen pt-14  bg-[#0F1729] text-white dark:bg-[#0F1729] dark:text-white">
+      <div class="max-w-screen-md mx-auto flex flex-col items-center justify-center px-4 py-8 md:pt-8">
         <h1 class="text-xl sm:text-4xl font-bold text-center mb-4">
           🦝RISK Credit Score
         </h1>
