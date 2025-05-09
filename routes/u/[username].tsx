@@ -1,3 +1,4 @@
+// routes/u/[username].tsx
 import { PageProps } from "$fresh/server.ts";
 import CreditScore from "../../islands/CreditScoreChExt.tsx"; // Importing the island
 import { Button } from "../../islands/buttons/Button.tsx"; // Importing the Button island

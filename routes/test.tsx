@@ -1,3 +1,5 @@
+// routes/test.tsx
+
 import Test from "../islands/trash/test.tsx";
 import MenuBar from "../islands/MenuBar.tsx"; // Import the MenuBar
 

@@ -1,4 +1,5 @@
-// CreditScoreChExt.tsx
+// islands/CreditScoreChExt.tsx
+
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 import ScoreResult from "./ScoreResult.tsx";

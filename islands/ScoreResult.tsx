@@ -1,4 +1,4 @@
-// ScoreResult.tsx
+// islands/ScoreResult.tsx
 import { TbExternalLink } from "@preact-icons/tb";
 import { getRiskLevelText, getScoreColor } from "../utils/ScoreUtils.ts"; // adjust path
 

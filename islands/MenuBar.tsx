@@ -1,4 +1,5 @@
-// MenuBar.tsx
+// islands/MenuBar.tsx
+
 import { useSignal } from "@preact/signals";
 import { useEffect, useRef } from "preact/hooks";
 import { TbExternalLink } from "@preact-icons/tb";

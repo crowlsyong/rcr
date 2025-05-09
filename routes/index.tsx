@@ -1,3 +1,5 @@
+// routes/index.tsx
+
 import CreditScore from "../islands/CreditScore.tsx";
 // import TechnicalDifficulties from "../components/TechnicalDifficulties.tsx";
 
@@ -19,15 +21,6 @@ export default function Home() {
             manifold.markets
           </a>
         </p>
-
-        {
-          /*
-        <p class="text-xxs font-bold">
-          ⚠️ This product is in Beta Testing
-        </p>
-        */
-        }
-
         <CreditScore />
       </div>
     </div>

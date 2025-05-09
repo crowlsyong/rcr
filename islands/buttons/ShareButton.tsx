@@ -1,3 +1,5 @@
+// islands/buttons/ShareButton.tsx
+
 import { TbShare2 } from "@preact-icons/tb";
 import { useState } from "preact/hooks";
 

@@ -1,3 +1,4 @@
+// routes/ext/[username].tsx
 import { PageProps } from "$fresh/server.ts";
 import CreditScore from "../../islands/CreditScoreChExt.tsx"; // Importing the island
 

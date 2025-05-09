@@ -1,3 +1,5 @@
+// routes/insurance.tsx
+
 // import PasswordGate from "../islands/PasswordGate.tsx";
 import InsuranceCalc from "../islands/InsuranceCalc.tsx";
 
@@ -20,7 +22,6 @@ export default function Home() {
             manifold.markets
           </a>
         </p>
-
         <InsuranceCalc />
       </div>
     </div>
