@@ -1,4 +1,4 @@
-import { JSX } from "preact";
+// components/TechnicalDifficulties.tsx
 
 export default function TechnicalDifficulties() {
   return (

@@ -1,4 +1,5 @@
 // routes/api/score.ts
+
 // Fetch raw user data
 async function fetchUserData(username: string) {
   let fetchSuccess = false;
