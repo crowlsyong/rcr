@@ -86,24 +86,27 @@ function computeMMR(
   maxRank: number = 100,
 ): number {
   const rankWeight = Math.max(0, Math.min(1, 1 - (rank - 1) / (maxRank - 1)));
-  const rankMMR = rankWeight * 10000;
+  const rankMMR = rankWeight * 1000;
 
-  let transactionMMR = 0;
+let transactionMMR = 0;
 
-  // Check if transaction count is fewer than 5
-  if (transactionCount < 5) {
-    transactionMMR = -1000000;
-  } else if (transactionCount <= 20) {
-    transactionMMR = -100000 + ((transactionCount / 10) * 10000);
-  } else if (transactionCount <= 100) {
-    transactionMMR = -10000 + (((transactionCount - 10) / 90) * 10000);
-  } else if (transactionCount <= 1000) {
-    transactionMMR = ((transactionCount - 100) / 900) * 10000;
-  } else {
-    transactionMMR = 10000;
-  }
+if (transactionCount < 5) {
+  transactionMMR = -1000000;
+} else if (transactionCount <= 20) {
+  // From -100,000 to -10,000
+  transactionMMR = -100000 + ((transactionCount / 10) * 9000);
+} else if (transactionCount <= 100) {
+  // From -10,000 to 0
+  transactionMMR = -10000 + (((transactionCount - 20) / 80) * 10000);
+} else if (transactionCount <= 1000) {
+  // From 0 to 1000, linearly over 900 txns
+  transactionMMR = ((transactionCount - 100) / 900) * 1000;
+} else {
+  transactionMMR = 1000;
+}
+
   // The Credit Score Equation
-  return ((balance * 0.4) + (ageDays * 0.1) + (totalMana * 0.3)) + rankMMR +
+  return ((balance * 0.15) + (ageDays * 0.1) + (totalMana * 0.5)) + rankMMR +
     transactionMMR;
 }
 
