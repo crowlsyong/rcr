@@ -67,7 +67,7 @@ export default function MenuBar() {
           />
           <img
             class="md:hidden h-8"
-            src="/risk-logo-mini.svg"
+            src="/risk-logo-mini-t.png"
             alt="the RISK mini mascot: a raccoon"
           />
         </a>
@@ -75,7 +75,7 @@ export default function MenuBar() {
         {/* Hamburger */}
         <button
           type="button"
-          class="text-white"
+          class="text-white p-3 -m-3" // increases tappable area without changing layout
           onClick={() => (isMenuOpen.value = !isMenuOpen.value)}
         >
           <svg
@@ -107,7 +107,7 @@ export default function MenuBar() {
         <button
           type="button"
           onClick={() => (isMenuOpen.value = false)}
-          class="absolute top-2 right-5 text-white text-2xl"
+          class="absolute top-2 right-5 text-white text-2xl p-3 -m-3"
         >
           &times;
         </button>
@@ -115,7 +115,7 @@ export default function MenuBar() {
         {/* Mobile mascot */}
         <div class="flex justify-center mb-8 md:hidden">
           <img
-            src="/risk-logo-mini.svg"
+            src="/risk-logo-mini-t.png"
             alt="the RISK mascot: a raccoon"
             class="h-12"
           />
