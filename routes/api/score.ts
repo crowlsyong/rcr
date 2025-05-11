@@ -93,14 +93,17 @@ function computeMMR(
   if (transactionCount < 5) {
     transactionMMR = -1000000;
   } else if (transactionCount <= 20) {
-    // From -100,000 to -10,000
-    transactionMMR = -100000 + ((transactionCount / 10) * 9000);
+    // From -100,000 to -10,000 linearly over 15 txns (5 to 20)
+    const t = (transactionCount - 5) / 15;
+    transactionMMR = -100000 + t * 90000;
   } else if (transactionCount <= 100) {
-    // From -10,000 to 0
-    transactionMMR = -10000 + (((transactionCount - 20) / 80) * 10000);
+    // From -10,000 to 0 linearly over 80 txns (20 to 100)
+    const t = (transactionCount - 20) / 80;
+    transactionMMR = -10000 + t * 10000;
   } else if (transactionCount <= 1000) {
-    // From 0 to 1000, linearly over 900 txns
-    transactionMMR = ((transactionCount - 100) / 900) * 1000;
+    // From 0 to 1000 linearly over 900 txns (100 to 1000)
+    const t = (transactionCount - 100) / 900;
+    transactionMMR = t * 1000;
   } else {
     transactionMMR = 1000;
   }
@@ -113,8 +116,12 @@ function computeMMR(
 function mapToCreditScore(clampedMMRBalance: number): number {
   let score: number;
 
-  if (clampedMMRBalance <= 0) {
-    score = (clampedMMRBalance + 1000000) * (50 / 1000000);
+  if (clampedMMRBalance <= -100000) {
+    // Anything below -100,000 gets the minimum score
+    score = 0;
+  } else if (clampedMMRBalance <= 0) {
+    // Map -100,000 → 0 to score 0 → 50
+    score = (clampedMMRBalance + 100000) * (50 / 100000);
   } else if (clampedMMRBalance <= 5000) {
     score = 50 + (clampedMMRBalance / 5000) * (300 - 50);
   } else if (clampedMMRBalance <= 10000) {
