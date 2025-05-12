@@ -1,12 +1,23 @@
 // routes/insurance.tsx
 
-// import PasswordGate from "../islands/PasswordGate.tsx";
 import InsuranceCalc from "../islands/InsuranceCalc.tsx";
+import { useCSP } from "$fresh/runtime.ts";
+import { RouteConfig, RouteContext } from "$fresh/server.ts";
 
-export default function Home() {
+export default function Insurance(_req: Request, _ctx: RouteContext) {
+  useCSP((csp) => {
+    csp.directives.defaultSrc = ["'self'"];
+    csp.directives.scriptSrc = ["'self'", "https://manifold.markets"];
+    csp.directives.styleSrc = ["'self'", "https://manifold.markets"];
+    csp.directives.imgSrc = [
+      "'self'",
+      "https://firebasestorage.googleapis.com",
+    ];
+    csp.directives.fontSrc = ["'self'", "https://manifold.markets"];
+  });
+
   return (
-    /*<PasswordGate> */
-    <div class="pt-14  bg-[#0F1729] text-white dark:bg-[#0F1729] dark:text-white">
+    <div class="pt-14 bg-[#0F1729] text-white dark:bg-[#0F1729] dark:text-white">
       <div class="max-w-screen-md mx-auto flex flex-col items-center justify-center px-4 py-8 md:pt-8">
         <h1 class="text-xl sm:text-4xl font-bold text-center mb-4">
           🦝Insurance Calculator
@@ -25,6 +36,9 @@ export default function Home() {
         <InsuranceCalc />
       </div>
     </div>
-    /* </PasswordGate> */
   );
 }
+
+export const config: RouteConfig = {
+  csp: true,
+};

@@ -23,9 +23,7 @@ export default function ScoreResult({
 }: ScoreResultProps) {
   const colorClass = getScoreColor(creditScore);
 
-  const borderColorStyle = isWaiting
-    ? { border: "2px solid #6b7280" }
-    : { border: `2px solid ${colorClass}` };
+  const borderClass = isWaiting ? "border-2 border-gray-500" : `border-2`;
 
   const isClickable = username && username !== "nouserfound";
 
@@ -80,7 +78,10 @@ export default function ScoreResult({
 
   if (isWaiting) {
     return (
-      <div class={containerClasses} style={borderColorStyle}>
+      <div
+        class={`${containerClasses} ${borderClass}`}
+        style={!isWaiting ? { borderColor: colorClass } : undefined}
+      >
         <p class="text-gray-400">Waiting...</p>
       </div>
     );
@@ -92,14 +93,17 @@ export default function ScoreResult({
         href={`${urlPrefix}/${username}`}
         target="_blank"
         rel="noopener noreferrer"
-        class={containerClasses}
-        style={borderColorStyle}
+        class={`${containerClasses} ${borderClass}`}
+        style={!isWaiting ? { borderColor: colorClass } : undefined}
       >
         {content}
       </a>
     )
     : (
-      <div class={containerClasses} style={borderColorStyle}>
+      <div
+        class={`${containerClasses} ${borderClass}`}
+        style={!isWaiting ? { borderColor: colorClass } : undefined}
+      >
         {content}
       </div>
     );
