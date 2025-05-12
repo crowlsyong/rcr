@@ -11,7 +11,6 @@ import * as $iframe_credit_score from "./routes/iframe/credit-score.tsx";
 import * as $iframe_insurance_fee_calculator from "./routes/iframe/insurance-fee-calculator.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $insurance from "./routes/insurance.tsx";
-import * as $test from "./routes/test.tsx";
 import * as $u_username_ from "./routes/u/[username].tsx";
 import * as $CreditScore from "./islands/CreditScore.tsx";
 import * as $CreditScoreChExt from "./islands/CreditScoreChExt.tsx";
@@ -21,8 +20,6 @@ import * as $PasswordGate from "./islands/PasswordGate.tsx";
 import * as $ScoreResult from "./islands/ScoreResult.tsx";
 import * as $buttons_Button from "./islands/buttons/Button.tsx";
 import * as $buttons_ShareButton from "./islands/buttons/ShareButton.tsx";
-import * as $trash_CoverageResult from "./islands/trash/CoverageResult.tsx";
-import * as $trash_test from "./islands/trash/test.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -37,7 +34,6 @@ const manifest = {
       $iframe_insurance_fee_calculator,
     "./routes/index.tsx": $index,
     "./routes/insurance.tsx": $insurance,
-    "./routes/test.tsx": $test,
     "./routes/u/[username].tsx": $u_username_,
   },
   islands: {
@@ -49,8 +45,6 @@ const manifest = {
     "./islands/ScoreResult.tsx": $ScoreResult,
     "./islands/buttons/Button.tsx": $buttons_Button,
     "./islands/buttons/ShareButton.tsx": $buttons_ShareButton,
-    "./islands/trash/CoverageResult.tsx": $trash_CoverageResult,
-    "./islands/trash/test.tsx": $trash_test,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;
