@@ -20,7 +20,7 @@ export default function CreditScore() {
   const inputRef = useRef<HTMLInputElement>(null); // create ref for input
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedUsername(username.value), 100);
+    const timer = setTimeout(() => setDebouncedUsername(username.value), 200);
     return () => clearTimeout(timer);
   }, [username.value]);
 
