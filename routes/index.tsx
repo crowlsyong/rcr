@@ -1,7 +1,6 @@
 // routes/index.tsx
 
 import CreditScore from "../islands/CreditScore.tsx";
-// import TechnicalDifficulties from "../components/TechnicalDifficulties.tsx";
 
 export default function Home() {
   return (
