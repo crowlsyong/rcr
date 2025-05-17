@@ -173,14 +173,24 @@ export async function handler(req: Request): Promise<Response> {
     const transactionMMR =
       Math.max(0, Math.min(1, 1 - (transactionCount - 1) / (1000 - 1))) * 10000;
 
-    const mmr = computeMMR(
+    // Change const to let here
+    let mmr = computeMMR(
       balance,
       totalManaEarned,
       ageDays,
       latestRank ?? 100,
       transactionCount,
-      transactionMMR,
     );
+
+    // *** START: Add this block to manually deduct from evan's score ***
+    if (username.toLowerCase() === "evan") {
+      const deductionAmount = 100000; // Adjust this value as needed
+      mmr -= deductionAmount;
+      console.log(
+        `Manual deduction of ${deductionAmount} applied to evan's MMR.`,
+      );
+    }
+    // *** END: Add this block ***
 
     const clampedMMR = Math.max(Math.min(mmr, 1000000), -1000000);
     const clampedMMRBalance = clampedMMR + balance;
