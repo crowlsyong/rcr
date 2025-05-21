@@ -28,7 +28,7 @@ async function fetchUserData(username: string) {
   console.log(`fetchSuccess for '${username}':`, fetchSuccess);
   return { userData, fetchSuccess };
 }
-
+// High league rank improves the score. 
 async function fetchManaAndRecentRank(
   userId: string,
 ): Promise<{ total: number; latestRank: number | null }> {
