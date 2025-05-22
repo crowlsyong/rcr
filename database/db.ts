@@ -2,28 +2,28 @@
 
 import { dirname, fromFileUrl, join } from "$std/path/mod.ts";
 
-// Get the absolute path to the directory containing this module (database/)
 const currentModuleDir = dirname(fromFileUrl(import.meta.url));
-
-// Define the directory where KV files should be stored
 const dataDirectory = join(currentModuleDir, "data");
-
-// Define the path to the main KV database *file* within the data directory
-// We'll name the main file '.deno_kv.sqlite' as a convention
 const kvPath = join(dataDirectory, ".deno_kv.sqlite");
 
 let db: Deno.Kv;
 
 try {
-  // Ensure the data directory exists before trying to open the file within it
-  await Deno.mkdir(dataDirectory, { recursive: true }).catch(() => {}); // Create directory if it doesn't exist, ignore if it does
-
-  // Attempt to open the KV database *file*
+  await Deno.mkdir(dataDirectory, { recursive: true }).catch(() => {});
   db = await Deno.openKv(kvPath);
-  console.log(`Deno KV opened at path: ${kvPath}`); // Log the absolute file path
+  console.log(`Deno KV opened successfully.`);
 } catch (error) {
-  console.error(`Error opening Deno KV at path ${kvPath}:`, error);
-  Deno.exit(1);
+  console.error(
+    `Critical Error: Failed to open Deno KV at path ${kvPath}:`,
+    error,
+  );
+  // Type guard to check if error is an instance of Error
+  if (error instanceof Error) {
+    throw new Error(`Failed to initialize Deno KV: ${error.message}`);
+  } else {
+    // Handle cases where the caught value is not an Error object
+    throw new Error(`Failed to initialize Deno KV: ${error}`); // Coerce non-Error to string
+  }
 }
 
 export default db;
