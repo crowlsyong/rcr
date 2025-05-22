@@ -11,6 +11,7 @@ export default function Home(_req: Request, _ctx: RouteContext) {
     csp.directives.imgSrc = [
       "'self'",
       "https://firebasestorage.googleapis.com",
+      "https://lh3.googleusercontent.com",
     ];
     csp.directives.fontSrc = ["'self'", "https://manifold.markets"];
   });
