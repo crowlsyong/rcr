@@ -29,10 +29,9 @@ export const handler: Handlers<UserChartPageData> = {
     const { username } = ctx.params;
 
     try {
-      // Fetch the user's current credit score data from your API
-      const apiRes = await fetch(
-        `${ctx.url.origin}/api/score?username=${username}`,
-      );
+      // Fetch the user's current credit score data from your API using a relative path
+      // This avoids the "Loop Detected" issue on Deno Deploy
+      const apiRes = await fetch(`/api/score?username=${username}`); // <-- Change here
 
       if (apiRes.status === 404) {
         // User not found
