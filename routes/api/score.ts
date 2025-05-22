@@ -209,8 +209,8 @@ function computeMMR(
 
   // Weights
   const balanceWeight = 0.1;
-  const outstandingLoanImpactWeight = .4;
-  const calculatedProfitWeight = 0.3;
+  const outstandingLoanImpactWeight = .25;
+  const calculatedProfitWeight = 0.4;
   const ageDaysWeight = 0.05;
   const transactionMMRWeight = 0.1;
   const rankMMRWeight = 0.1;
