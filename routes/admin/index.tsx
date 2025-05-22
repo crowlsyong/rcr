@@ -2,7 +2,7 @@
 // routes/admin/index.tsx
 
 import { Handlers, PageProps } from "$fresh/server.ts";
-import db from "../../db.ts"; // Import your database instance
+import db from "../../database/db.ts"; // Import your database instance
 
 // Define interface for a KV entry for display
 interface DisplayKvEntry {

@@ -3,7 +3,7 @@
 // delete_kv_entries.ts
 // Temporary script to delete specific historical data entries from Deno KV.
 
-import db from "../../db.ts"; // Import your database instance
+import db from "./db.ts"; // Import your database instance
 
 // The user ID for whom to delete data.
 const targetUserId: string = "p9Y7TzXx4NO1JQb9kjdbUYRUU3X2";
