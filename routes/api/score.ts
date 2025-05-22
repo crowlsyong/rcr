@@ -195,9 +195,10 @@ function calculateNetLoanBalance(
 }
 
 // Compute MMR score including transactions and loan modifier
+// Compute MMR score including balance, profit, transactions, and loan modifier
 function computeMMR(
-  balance: number,
-  totalMana: number,
+  balance: number, // User's current balance
+  calculatedProfit: number, // Calculated total profit
   ageDays: number,
   rank: number,
   transactionCount: number,
@@ -224,16 +225,19 @@ function computeMMR(
     transactionMMR = 1000;
   }
 
-  // Incorporate the loan impact (based on outstanding debt)
-  // You can apply a weight to how strongly the outstanding debt affects the MMR.
-  const outstandingLoanImpactWeight = .25; // Adjust this weight as needed
-  const loanMMR = netLoanBalance * outstandingLoanImpactWeight; // netLoanBalance is already negative or zero
-
+  // Weights
+  const outstandingLoanImpactWeight = 1;
+  const balanceWeight = 0.1; 
+  const calculatedProfitWeight = 0.3; 
+  const ageDaysWeight = 0.05;
+  const transactionMMRWeight = 0.1;
+  const rankMMRWeight = 0.1;
 
   // The Credit Score Equation
-  return ((balance * 0.15) + (ageDays * 0.1) + (totalMana * 0.5)) + rankMMR +
-    transactionMMR + loanMMR; // Added loanMMR (now based on outstanding debt)
+  return ((balance * balanceWeight) + (netLoanBalance * outstandingLoanImpactWeight) + (calculatedProfit * calculatedProfitWeight) + (ageDays * ageDaysWeight)) + (rankMMR * rankMMRWeight) +
+    (transactionMMR * transactionMMRWeight);
 }
+
 
 function mapToCreditScore(clampedMMRBalance: number): number {
   let score: number;
@@ -298,7 +302,7 @@ export async function handler(req: Request): Promise<Response> {
       loanTotal: number;
       investmentValue: number;
       cashInvestmentValue: number;
-      balance: number;
+      balance: number; // User's current balance
       cashBalance: number;
       spiceBalance: number;
       totalDeposits: number;
@@ -320,29 +324,28 @@ export async function handler(req: Request): Promise<Response> {
       loanTransactions,
     );
 
-    let mmr = computeMMR(
-      calculatedProfit, // Use the calculated profit here
-      0, // totalManaEarned is no longer used for this calculation
+    const mmr = computeMMR(
+      userPortfolio.balance, // Pass user's current balance
+      calculatedProfit, // Pass calculated profit
       ageDays,
       latestRank ?? 100,
       transactionCount,
       outstandingDebtImpact,
     );
 
-    // *** START: Add this block to manually deduct from evan's score ***
-    if (username.toLowerCase() === "evan") {
-      const deductionAmount = 255000; // Adjust this value as needed
-      mmr -= deductionAmount;
-      console.log(
-        `Manual deduction of ${deductionAmount} applied to evan's MMR.`,
-      );
-    }
+    // *** REMOVED: Manually deduct from evan's score ***
+    // If you want to bring this back, you need to make sure `const mmr` is `let mmr` above
+    // if (username.toLowerCase() === "evan") {
+    //   const deductionAmount = 255000; // Adjust this value as needed
+    //   mmr -= deductionAmount;
+    //   console.log(
+    //     `Manual deduction of ${deductionAmount} applied to evan's MMR.`,
+    //   );
+    // }
     // *** END: Add this block ***
 
     const clampedMMR = Math.max(Math.min(mmr, 1000000), -1000000);
-    // The clamping for the credit score calculation should still include the balance
-    // as the mapping function `mapToCreditScore` uses `clampedMMRBalance`.
-    const clampedMMRBalance = clampedMMR + userPortfolio.balance;
+    const clampedMMRBalance = clampedMMR + userPortfolio.balance; // Still use balance for the final clamping step if that's the desired logic for mapping to the 0-1000 score
     const creditScore = mapToCreditScore(clampedMMRBalance);
     const risk = calculateRiskMultiplier(creditScore);
 
@@ -354,17 +357,17 @@ export async function handler(req: Request): Promise<Response> {
       userExists: fetchSuccess,
       latestRank,
       outstandingDebtImpact: outstandingDebtImpact,
-      // Include the new profit calculation in the output
       calculatedProfit: calculatedProfit,
+      balance: userPortfolio.balance, // Include balance in the output
     };
     console.log(`Stats for user: ${username}`);
     console.log(`  MMR: ${mmr}`);
     console.log(`  Clamped MMR: ${clampedMMR}`);
     console.log(`  Clamped MMR + Balance: ${clampedMMRBalance}`);
-    console.log(`  Calculated Profit: ${calculatedProfit}`); // Log the new profit
-    console.log(`  Balance: ${userPortfolio.balance}`); // Log the balance from the portfolio
-    console.log(`  Investment Value: ${userPortfolio.investmentValue}`); // Log investment value
-    console.log(`  Total Deposits: ${userPortfolio.totalDeposits}`); // Log total deposits
+    console.log(`  Calculated Profit: ${calculatedProfit}`);
+    console.log(`  Balance: ${userPortfolio.balance}`);
+    console.log(`  Investment Value: ${userPortfolio.investmentValue}`);
+    console.log(`  Total Deposits: ${userPortfolio.totalDeposits}`);
     console.log(`  Age (days): ${ageDays}`);
     console.log(`  Credit Score: ${creditScore}`);
     console.log(`  Risk Multiplier: ${risk}`);
@@ -383,4 +386,5 @@ export async function handler(req: Request): Promise<Response> {
     });
   }
 }
+
 
