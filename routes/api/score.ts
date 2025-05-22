@@ -238,13 +238,12 @@ function mapToCreditScore(mmrValue: number): number {
   const transformedValue = transform(mmrValue);
 
   // Normalize
-  const normalized = (transformedValue - transformedMin) / (transformedMax - transformedMin);
+  const normalized = (transformedValue - transformedMin) /
+    (transformedMax - transformedMin);
   const score = normalized * 1000;
 
   return Math.round(Math.max(0, Math.min(1000, score)));
 }
-
-
 
 function calculateRiskMultiplier(score: number): number {
   const clampedScore = Math.max(0, Math.min(score, 1000));
