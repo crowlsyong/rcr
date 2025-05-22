@@ -7,7 +7,7 @@ interface ManaPaymentTransaction {
   fromId: string;
   toId: string;
   fromType: "USER" | string; // Use "USER" specifically, allow other strings if needed
-  toType: "USER" | string;   // Use "USER" specifically, allow other strings if needed
+  toType: "USER" | string; // Use "USER" specifically, allow other strings if needed
   category: "MANA_PAYMENT" | string; // Be specific about the category
   createdTime: number; // Unix timestamp in milliseconds
   token?: string; // Optional token (e.g., "M$")
@@ -100,7 +100,9 @@ async function fetchTransactionCount(username: string): Promise<number> {
 
 // Added function to fetch loan/repayment transactions
 // Use the specific interface for the return type
-async function fetchLoanTransactions(userId: string): Promise<ManaPaymentTransaction[]> {
+async function fetchLoanTransactions(
+  userId: string,
+): Promise<ManaPaymentTransaction[]> {
   try {
     // Fetch transactions where the user is the recipient
     const receivedTxnsRes = await fetch(
@@ -147,7 +149,10 @@ function calculateNetLoanBalance(
 
   for (const txn of transactions) {
     // The check for txn.category and fromType/toType is still good runtime validation
-    if (txn.category === "MANA_PAYMENT" && txn.fromType === "USER" && txn.toType === "USER") {
+    if (
+      txn.category === "MANA_PAYMENT" && txn.fromType === "USER" &&
+      txn.toType === "USER"
+    ) {
       console.log("--- Processing User-to-User MANA_PAYMENT Transaction ---");
       console.log("Transaction ID:", txn.id);
       console.log("Amount:", txn.amount);
@@ -160,19 +165,29 @@ function calculateNetLoanBalance(
         // User received mana - potential loan from txn.fromId
         const lenderId = txn.fromId;
         // Decrease the balance with the lender
-        loanBalancesPerUser[lenderId] = (loanBalancesPerUser[lenderId] || 0) - txn.amount;
-        console.log(`User received ${txn.amount} from ${lenderId}. Net balance with ${lenderId}: ${loanBalancesPerUser[lenderId]}`);
+        loanBalancesPerUser[lenderId] = (loanBalancesPerUser[lenderId] || 0) -
+          txn.amount;
+        console.log(
+          `User received ${txn.amount} from ${lenderId}. Net balance with ${lenderId}: ${
+            loanBalancesPerUser[lenderId]
+          }`,
+        );
       } else if (txn.fromId === userId) {
         // User sent mana - potential repayment to txn.toId
         const recipientId = txn.toId;
         // Increase the balance with the recipient (who was the original lender)
-        loanBalancesPerUser[recipientId] = (loanBalancesPerUser[recipientId] || 0) + txn.amount;
-        console.log(`User sent ${txn.amount} to ${recipientId}. Net balance with ${recipientId}: ${loanBalancesPerUser[recipientId]}`);
+        loanBalancesPerUser[recipientId] =
+          (loanBalancesPerUser[recipientId] || 0) + txn.amount;
+        console.log(
+          `User sent ${txn.amount} to ${recipientId}. Net balance with ${recipientId}: ${
+            loanBalancesPerUser[recipientId]
+          }`,
+        );
       }
       console.log("Current loanBalancesPerUser:", loanBalancesPerUser);
     } else {
-       // This case should theoretically not be hit if fetchLoanTransactions only
-       // returns ManaPaymentTransaction, but it's good for robustness.
+      // This case should theoretically not be hit if fetchLoanTransactions only
+      // returns ManaPaymentTransaction, but it's good for robustness.
       console.log(
         `Skipping transaction ${txn.id} with category ${txn.category} (not a user-to-user MANA_PAYMENT)`,
       );
@@ -184,12 +199,12 @@ function calculateNetLoanBalance(
   // Calculate the loan impact - sum up only the negative balances
   let loanImpact = 0;
   for (const otherUserId in loanBalancesPerUser) {
-       if (loanBalancesPerUser[otherUserId] < 0) {
-           loanImpact += loanBalancesPerUser[otherUserId]; // Adds the negative amount
-       }
-   }
+    if (loanBalancesPerUser[otherUserId] < 0) {
+      loanImpact += loanBalancesPerUser[otherUserId]; // Adds the negative amount
+    }
+  }
 
-   console.log("Calculated Loan Impact (sum of negative balances):", loanImpact);
+  console.log("Calculated Loan Impact (sum of negative balances):", loanImpact);
 
   return loanImpact;
 }
@@ -227,17 +242,19 @@ function computeMMR(
 
   // Weights
   const outstandingLoanImpactWeight = 1;
-  const balanceWeight = 0.1; 
-  const calculatedProfitWeight = 0.3; 
+  const balanceWeight = 0.1;
+  const calculatedProfitWeight = 0.3;
   const ageDaysWeight = 0.05;
   const transactionMMRWeight = 0.1;
   const rankMMRWeight = 0.1;
 
-  // The Credit Score Equation
-  return ((balance * balanceWeight) + (netLoanBalance * outstandingLoanImpactWeight) + (calculatedProfit * calculatedProfitWeight) + (ageDays * ageDaysWeight)) + (rankMMR * rankMMRWeight) +
+  // The Credit Score Calculation
+  return ((balance * balanceWeight) +
+    (netLoanBalance * outstandingLoanImpactWeight) +
+    (calculatedProfit * calculatedProfitWeight) + (ageDays * ageDaysWeight)) +
+    (rankMMR * rankMMRWeight) +
     (transactionMMR * transactionMMRWeight);
 }
-
 
 function mapToCreditScore(clampedMMRBalance: number): number {
   let score: number;
@@ -295,7 +312,9 @@ export async function handler(req: Request): Promise<Response> {
       `https://api.manifold.markets/v0/get-user-portfolio?userId=${userData.id}`,
     );
     if (!portfolioRes.ok) {
-      throw new Error(`Failed to fetch user portfolio: ${portfolioRes.statusText}`);
+      throw new Error(
+        `Failed to fetch user portfolio: ${portfolioRes.statusText}`,
+      );
     }
     // Define a specific interface for the portfolio data
     interface UserPortfolio {
@@ -313,7 +332,8 @@ export async function handler(req: Request): Promise<Response> {
     const userPortfolio: UserPortfolio = await portfolioRes.json();
 
     // Calculate profit using the new formula
-    const calculatedProfit = userPortfolio.investmentValue + userPortfolio.balance - userPortfolio.totalDeposits;
+    const calculatedProfit = userPortfolio.investmentValue +
+      userPortfolio.balance - userPortfolio.totalDeposits;
 
     const { latestRank } = await fetchManaAndRecentRank(userData.id);
     const transactionCount = await fetchTransactionCount(username);
@@ -386,5 +406,3 @@ export async function handler(req: Request): Promise<Response> {
     });
   }
 }
-
-
