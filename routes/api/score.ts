@@ -6,18 +6,31 @@ interface ManaPaymentTransaction {
   amount: number;
   fromId: string;
   toId: string;
-  fromType: "USER" | string; // Use "USER" specifically, allow other strings if needed
-  toType: "USER" | string; // Use "USER" specifically, allow other strings if needed
-  category: "MANA_PAYMENT" | string; // Be specific about the category
+  fromType: "USER" | string;
+  toType: "USER" | string;
+  category: "MANA_PAYMENT" | string;
   createdTime: number; // Unix timestamp in milliseconds
-  token?: string; // Optional token (e.g., "M$")
-  description?: string; // Optional description
-  data?: { // Optional data object, define more specifically if needed
+  token?: string;
+  description?: string;
+  data?: {
     groupId?: string;
     message?: string;
     visibility?: string;
-    // Add other data properties if relevant to your logic
   };
+}
+
+// Define a specific interface for the user portfolio data
+interface UserPortfolio {
+  loanTotal: number;
+  investmentValue: number;
+  cashInvestmentValue: number;
+  balance: number; // User's current balance
+  cashBalance: number;
+  spiceBalance: number;
+  totalDeposits: number;
+  totalCashDeposits: number;
+  dailyProfit: number;
+  timestamp: number;
 }
 
 // Fetch raw user data
@@ -29,7 +42,6 @@ async function fetchUserData(username: string) {
     const res = await fetch(`https://api.manifold.markets/v0/user/${username}`);
 
     if (res.status === 404) {
-      console.error(`User '${username}' not found (404).`);
       fetchSuccess = false;
       return { userData: null, fetchSuccess };
     }
@@ -38,7 +50,6 @@ async function fetchUserData(username: string) {
       throw new Error(`Failed to fetch ${username}: ${res.statusText}`);
     }
 
-    // You could define a more specific interface for userData as well
     userData = await res.json();
     fetchSuccess = true;
   } catch (error) {
@@ -49,6 +60,7 @@ async function fetchUserData(username: string) {
   console.log(`fetchSuccess for '${username}':`, fetchSuccess);
   return { userData, fetchSuccess };
 }
+
 // High league rank improves the score.
 async function fetchManaAndRecentRank(
   userId: string,
@@ -66,7 +78,6 @@ async function fetchManaAndRecentRank(
   let total = 0;
   let latestRank: number | null = null;
 
-  // You could define an interface for league season data as well
   for (const season of leaguesData) {
     total += season.manaEarned;
   }
@@ -98,8 +109,7 @@ async function fetchTransactionCount(username: string): Promise<number> {
   }
 }
 
-// Added function to fetch loan/repayment transactions
-// Use the specific interface for the return type
+// Fetch loan/repayment transactions
 async function fetchLoanTransactions(
   userId: string,
 ): Promise<ManaPaymentTransaction[]> {
@@ -113,7 +123,6 @@ async function fetchLoanTransactions(
         `Failed to fetch received loan transactions: ${receivedTxnsRes.statusText}`,
       );
     }
-    // Cast the JSON response to the defined interface
     const receivedTxns: ManaPaymentTransaction[] = await receivedTxnsRes.json();
 
     // Fetch transactions where the user is the sender
@@ -125,99 +134,57 @@ async function fetchLoanTransactions(
         `Failed to fetch sent loan transactions: ${sentTxnsRes.statusText}`,
       );
     }
-    // Cast the JSON response to the defined interface
     const sentTxns: ManaPaymentTransaction[] = await sentTxnsRes.json();
 
-    // Combine and return all relevant transactions
     return [...receivedTxns, ...sentTxns];
   } catch (err) {
     console.error(`Error fetching loan transactions for '${userId}':`, err);
-    return []; // Return an empty array of the specific type
+    return [];
   }
 }
 
-// Added function to calculate net loan balance (focusing only on outstanding debt)
-// Use the specific interface for the transactions parameter
+// Calculate net loan balance (focusing only on outstanding debt)
 function calculateNetLoanBalance(
   userId: string,
   transactions: ManaPaymentTransaction[],
 ): number {
   const loanBalancesPerUser: { [otherUserId: string]: number } = {};
 
-  console.log(`Calculating net loan balance for user ID: ${userId}`);
-  console.log(`Processing ${transactions.length} loan transactions.`);
-
   for (const txn of transactions) {
-    // The check for txn.category and fromType/toType is still good runtime validation
     if (
       txn.category === "MANA_PAYMENT" && txn.fromType === "USER" &&
       txn.toType === "USER"
     ) {
-      console.log("--- Processing User-to-User MANA_PAYMENT Transaction ---");
-      console.log("Transaction ID:", txn.id);
-      console.log("Amount:", txn.amount);
-      console.log("From ID:", txn.fromId);
-      console.log("To ID:", txn.toId);
-      console.log("Created Time:", new Date(txn.createdTime).toISOString());
-      console.log("Description:", txn.description);
-
       if (txn.toId === userId) {
-        // User received mana - potential loan from txn.fromId
         const lenderId = txn.fromId;
-        // Decrease the balance with the lender
         loanBalancesPerUser[lenderId] = (loanBalancesPerUser[lenderId] || 0) -
           txn.amount;
-        console.log(
-          `User received ${txn.amount} from ${lenderId}. Net balance with ${lenderId}: ${
-            loanBalancesPerUser[lenderId]
-          }`,
-        );
       } else if (txn.fromId === userId) {
-        // User sent mana - potential repayment to txn.toId
         const recipientId = txn.toId;
-        // Increase the balance with the recipient (who was the original lender)
         loanBalancesPerUser[recipientId] =
           (loanBalancesPerUser[recipientId] || 0) + txn.amount;
-        console.log(
-          `User sent ${txn.amount} to ${recipientId}. Net balance with ${recipientId}: ${
-            loanBalancesPerUser[recipientId]
-          }`,
-        );
       }
-      console.log("Current loanBalancesPerUser:", loanBalancesPerUser);
-    } else {
-      // This case should theoretically not be hit if fetchLoanTransactions only
-      // returns ManaPaymentTransaction, but it's good for robustness.
-      console.log(
-        `Skipping transaction ${txn.id} with category ${txn.category} (not a user-to-user MANA_PAYMENT)`,
-      );
     }
   }
 
-  console.log("Final individual loan balances per user:", loanBalancesPerUser);
-
-  // Calculate the loan impact - sum up only the negative balances
   let loanImpact = 0;
   for (const otherUserId in loanBalancesPerUser) {
     if (loanBalancesPerUser[otherUserId] < 0) {
-      loanImpact += loanBalancesPerUser[otherUserId]; // Adds the negative amount
+      loanImpact += loanBalancesPerUser[otherUserId];
     }
   }
-
-  console.log("Calculated Loan Impact (sum of negative balances):", loanImpact);
 
   return loanImpact;
 }
 
-// Compute MMR score including transactions and loan modifier
-// Compute MMR score including balance, profit, transactions, and loan modifier
+// Compute raw MMR score based on weighted factors
 function computeMMR(
-  balance: number, // User's current balance
-  calculatedProfit: number, // Calculated total profit
+  balance: number,
+  calculatedProfit: number,
   ageDays: number,
   rank: number,
   transactionCount: number,
-  netLoanBalance: number, // Now specifically for outstanding debt impact
+  netLoanBalance: number,
   maxRank: number = 100,
 ): number {
   const rankWeight = Math.max(0, Math.min(1, 1 - (rank - 1) / (maxRank - 1)));
@@ -241,14 +208,13 @@ function computeMMR(
   }
 
   // Weights
-  const outstandingLoanImpactWeight = 1;
   const balanceWeight = 0.1;
+  const outstandingLoanImpactWeight = 1;
   const calculatedProfitWeight = 0.3;
   const ageDaysWeight = 0.05;
   const transactionMMRWeight = 0.1;
   const rankMMRWeight = 0.1;
 
-  // The Credit Score Calculation
   return ((balance * balanceWeight) +
     (netLoanBalance * outstandingLoanImpactWeight) +
     (calculatedProfit * calculatedProfitWeight) + (ageDays * ageDaysWeight)) +
@@ -256,37 +222,41 @@ function computeMMR(
     (transactionMMR * transactionMMRWeight);
 }
 
-function mapToCreditScore(clampedMMRBalance: number): number {
-  let score: number;
+function mapToCreditScore(mmrValue: number): number {
+  // Define the min/max MMR for reference, can tune these
+  const minMMR = -500000;
+  const maxMMR = 2000000;
 
-  if (clampedMMRBalance <= -100000) {
-    score = 0;
-  } else if (clampedMMRBalance <= 0) {
-    score = (clampedMMRBalance + 100000) * (50 / 100000);
-  } else if (clampedMMRBalance <= 5000) {
-    score = 50 + (clampedMMRBalance / 5000) * (300 - 50);
-  } else if (clampedMMRBalance <= 10000) {
-    score = 300 + ((clampedMMRBalance - 5000) / 5000) * (600 - 300);
-  } else if (clampedMMRBalance <= 100000) {
-    score = 600 + ((clampedMMRBalance - 10000) / 90000) * (800 - 600);
-  } else if (clampedMMRBalance <= 1000000) {
-    score = 800 + ((clampedMMRBalance - 100000) / 900000) * (900 - 800);
-  } else if (clampedMMRBalance <= 5000000) {
-    score = 900 + ((clampedMMRBalance - 1000000) / 4000000) * (1000 - 900);
-  } else {
-    score = 1000;
-  }
+  // Logarithmic transform using symmetric scaling
+  const transform = (x: number) => {
+    const sign = x < 0 ? -1 : 1;
+    return sign * Math.log10(1 + Math.abs(x));
+  };
 
-  return Math.max(0, Math.min(1000, Math.round(score)));
+  const transformedMin = transform(minMMR);
+  const transformedMax = transform(maxMMR);
+  const transformedValue = transform(mmrValue);
+
+  // Normalize
+  const normalized = (transformedValue - transformedMin) / (transformedMax - transformedMin);
+  const score = normalized * 1000;
+
+  return Math.round(Math.max(0, Math.min(1000, score)));
 }
+
+
 
 function calculateRiskMultiplier(score: number): number {
   const clampedScore = Math.max(0, Math.min(score, 1000));
   const minMultiplier = 0.05;
   const maxMultiplier = 2;
-  const a = maxMultiplier - minMultiplier;
-  const b = Math.log(a / 0.01) / 1000;
-  const multiplier = a * Math.exp(-b * clampedScore) + minMultiplier;
+
+  // Using a power function for a non-linear decrease in multiplier
+  const normalizedScoreScaled = clampedScore / 1000;
+  const exponent = 0.5; // Adjust this for the curve shape
+  const multiplier = maxMultiplier +
+    (minMultiplier - maxMultiplier) * Math.pow(normalizedScoreScaled, exponent);
+
   return Math.round(multiplier * 100) / 100;
 }
 
@@ -307,7 +277,6 @@ export async function handler(req: Request): Promise<Response> {
     const createdTime = userData.createdTime ?? Date.now();
     const ageDays = (Date.now() - createdTime) / 86_400_000;
 
-    // Fetch user portfolio data
     const portfolioRes = await fetch(
       `https://api.manifold.markets/v0/get-user-portfolio?userId=${userData.id}`,
     );
@@ -316,22 +285,8 @@ export async function handler(req: Request): Promise<Response> {
         `Failed to fetch user portfolio: ${portfolioRes.statusText}`,
       );
     }
-    // Define a specific interface for the portfolio data
-    interface UserPortfolio {
-      loanTotal: number;
-      investmentValue: number;
-      cashInvestmentValue: number;
-      balance: number; // User's current balance
-      cashBalance: number;
-      spiceBalance: number;
-      totalDeposits: number;
-      totalCashDeposits: number;
-      dailyProfit: number;
-      timestamp: number;
-    }
     const userPortfolio: UserPortfolio = await portfolioRes.json();
 
-    // Calculate profit using the new formula
     const calculatedProfit = userPortfolio.investmentValue +
       userPortfolio.balance - userPortfolio.totalDeposits;
 
@@ -344,29 +299,20 @@ export async function handler(req: Request): Promise<Response> {
       loanTransactions,
     );
 
-    const mmr = computeMMR(
-      userPortfolio.balance, // Pass user's current balance
-      calculatedProfit, // Pass calculated profit
+    // Compute the raw MMR based on all weighted factors
+    const rawMMR = computeMMR(
+      userPortfolio.balance,
+      calculatedProfit,
       ageDays,
       latestRank ?? 100,
       transactionCount,
       outstandingDebtImpact,
     );
 
-    // *** REMOVED: Manually deduct from evan's score ***
-    // If you want to bring this back, you need to make sure `const mmr` is `let mmr` above
-    // if (username.toLowerCase() === "evan") {
-    //   const deductionAmount = 255000; // Adjust this value as needed
-    //   mmr -= deductionAmount;
-    //   console.log(
-    //     `Manual deduction of ${deductionAmount} applied to evan's MMR.`,
-    //   );
-    // }
-    // *** END: Add this block ***
+    // Map the raw MMR directly to the 0-1000 credit score
+    const creditScore = mapToCreditScore(rawMMR);
 
-    const clampedMMR = Math.max(Math.min(mmr, 1000000), -1000000);
-    const clampedMMRBalance = clampedMMR + userPortfolio.balance; // Still use balance for the final clamping step if that's the desired logic for mapping to the 0-1000 score
-    const creditScore = mapToCreditScore(clampedMMRBalance);
+    // Calculate the risk multiplier based on the credit score
     const risk = calculateRiskMultiplier(creditScore);
 
     const output = {
@@ -378,12 +324,11 @@ export async function handler(req: Request): Promise<Response> {
       latestRank,
       outstandingDebtImpact: outstandingDebtImpact,
       calculatedProfit: calculatedProfit,
-      balance: userPortfolio.balance, // Include balance in the output
+      balance: userPortfolio.balance,
+      rawMMR: rawMMR,
     };
     console.log(`Stats for user: ${username}`);
-    console.log(`  MMR: ${mmr}`);
-    console.log(`  Clamped MMR: ${clampedMMR}`);
-    console.log(`  Clamped MMR + Balance: ${clampedMMRBalance}`);
+    console.log(`  Raw MMR: ${rawMMR}`);
     console.log(`  Calculated Profit: ${calculatedProfit}`);
     console.log(`  Balance: ${userPortfolio.balance}`);
     console.log(`  Investment Value: ${userPortfolio.investmentValue}`);
@@ -395,7 +340,6 @@ export async function handler(req: Request): Promise<Response> {
     console.log(`  Outstanding Debt Impact: ${outstandingDebtImpact}`);
     console.log(`  fetchSuccess: ${fetchSuccess}`);
     console.log("---");
-
     return new Response(JSON.stringify(output), {
       headers: { "Content-Type": "application/json" },
     });
