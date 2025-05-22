@@ -1,78 +1,117 @@
 /// <reference lib="deno.unstable" />
-// islands/CreditScoreChart.tsx
+// islands/Chart.tsx
 
 import { useEffect, useState } from "preact/hooks";
 import { Chart, registerables } from "chart.js";
+import ScoreResult from "./ScoreResult.tsx";
+import ShareButton from "./buttons/ShareButton.tsx";
+import ChartButton from "./buttons/ChartButton.tsx";
 
-// Register Chart.js components (like linear scales, line controller, etc.)
 Chart.register(...registerables);
+
+interface UserScoreData {
+  username: string;
+  creditScore: number;
+  riskMultiplier: number;
+  avatarUrl: string | null;
+  userExists: boolean;
+  latestRank: number | null;
+  outstandingDebtImpact: number;
+  calculatedProfit: number;
+  balance: number;
+  rawMMR: number;
+  historicalDataSaved: boolean;
+  userId: string;
+}
 
 interface HistoricalDataPoint {
   userId: string;
   username: string;
   creditScore: number;
-  timestamp: number; // Unix timestamp
+  timestamp: number;
 }
 
-interface CreditScoreChartProps {
-  userId: string; // Pass the user ID as a prop to the island
+interface ChartProps { // Renamed interface to match component name
+  username: string;
 }
 
-export default function CreditScoreChart({ userId }: CreditScoreChartProps) {
+export default function CreditScoreChart({ username }: ChartProps) { // Renamed component
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [scoreData, setScoreData] = useState<UserScoreData | null>(null);
   const [historicalData, setHistoricalData] = useState<HistoricalDataPoint[]>(
     [],
   );
 
   useEffect(() => {
-    const fetchHistoricalData = async () => {
+    const fetchData = async () => {
       setIsLoading(true);
       setError(null);
+      setScoreData(null);
+      setHistoricalData([]);
+
+      if (!username) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        const res = await fetch(`/api/history?userId=${userId}`);
-        if (!res.ok) {
-          throw new Error(`Failed to fetch historical data: ${res.statusText}`);
+        const scoreRes = await fetch(`/api/score?username=${username}`);
+        if (!scoreRes.ok) {
+          if (scoreRes.status === 404) {
+            setError(`User '${username}' not found.`);
+          } else {
+            setError(`Failed to fetch score data: ${scoreRes.statusText}`);
+          }
+          setIsLoading(false);
+          return;
         }
-        const data: HistoricalDataPoint[] = await res.json();
-        setHistoricalData(data);
+        const currentScoreData: UserScoreData = await scoreRes.json();
+        setScoreData(currentScoreData);
+
+        const historyRes = await fetch(
+          `/api/history?userId=${currentScoreData.userId}`,
+        );
+        if (!historyRes.ok) {
+          console.error(
+            `Failed to fetch historical data: ${historyRes.statusText}`,
+          );
+        } else {
+          const historicalData: HistoricalDataPoint[] = await historyRes.json();
+          setHistoricalData(historicalData);
+        }
       } catch (err) {
-        console.error("Error fetching historical data:", err);
-        setError("Could not load historical data.");
+        console.error("Error fetching data for chart:", err);
+        setError("Could not load data.");
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (userId) {
-      fetchHistoricalData();
-    }
-  }, [userId]); // Refetch data if the userId prop changes
+    fetchData();
+  }, [username]);
 
   useEffect(() => {
     if (historicalData.length === 0 || isLoading || error) {
-      return; // Don't render chart if no data, loading, or error
+      return;
     }
 
-    const canvas = document.getElementById(`creditScoreChart-${userId}`) as
+    const canvas = document.getElementById(`creditScoreChart-${username}`) as
       | HTMLCanvasElement
       | null;
     const ctx = canvas?.getContext("2d");
     if (!ctx) return;
 
-    // Prepare data for Chart.js
     const labels = historicalData.map((dp) =>
       new Date(dp.timestamp).toLocaleDateString()
-    ); // Use date strings as labels
+    );
     const dataPoints = historicalData.map((dp) => dp.creditScore);
 
-    // Destroy previous chart instance if it exists to prevent duplicates
     const existingChart = Chart.getChart(ctx);
     if (existingChart) {
       existingChart.destroy();
     }
 
-    // @ts-ignore: Chart will be available globally after script loads
     new Chart(ctx, {
       type: "line",
       data: {
@@ -88,8 +127,8 @@ export default function CreditScoreChart({ userId }: CreditScoreChartProps) {
         }],
       },
       options: {
-        responsive: true, // Make chart responsive
-        maintainAspectRatio: false, // Allow aspect ratio to be controlled by container
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             labels: { color: "#f0f0f0" },
@@ -116,36 +155,110 @@ export default function CreditScoreChart({ userId }: CreditScoreChartProps) {
               text: "Credit Score",
               color: "#f0f0f0",
             },
-            beginAtZero: false, // Don't force start at zero for score
-            min: 0, // Ensure minimum is 0
-            max: 1000, // Ensure maximum is 1000
+            beginAtZero: false,
+            min: 0,
+            max: 1000,
             ticks: { color: "#ccc" },
             grid: { color: "#444" },
           },
         },
       },
     });
-  }, [historicalData, isLoading, error, userId]); // Redraw chart when data, loading state, or error changes
+  }, [historicalData, isLoading, error, username]);
 
-  // Add a unique ID to the canvas based on userId
-  const canvasId = `creditScoreChart-${userId}`;
+  const canvasId = `creditScoreChart-${username}`;
 
   if (isLoading) {
-    return <p>Loading chart data...</p>;
+    return <p class="text-center text-gray-400">Loading data...</p>;
   }
 
   if (error) {
-    return <p class="text-red-500">{error}</p>; // Style error message
-  }
-
-  if (historicalData.length === 0) {
-    return <p>No historical data available yet.</p>;
+    return <p class="text-center text-red-500">{error}</p>;
   }
 
   return (
-    // Wrap canvas in a div for better responsiveness control
-    <div style={{ position: "relative", width: "100%", height: "400px" }}>
-      <canvas id={canvasId}></canvas>
+    <div>
+      {scoreData
+        ? (
+          <ScoreResult
+            username={scoreData.username}
+            creditScore={scoreData.creditScore}
+            riskMultiplier={scoreData.riskMultiplier}
+            avatarUrl={scoreData.avatarUrl}
+            isWaiting={false}
+          />
+        )
+        : (
+          <p class="text-center text-gray-400">
+            Enter a username to see score details.
+          </p>
+        )}
+
+      <div class="mt-6 bg-gray-800 p-4 md:p-6 rounded-lg shadow">
+        <h2 class="text-xl font-semibold mb-3 text-gray-100">Score History</h2>
+        {historicalData.length === 0
+          ? (
+            <p class="text-gray-400 text-sm text-center">
+              No historical data available yet.
+            </p>
+          )
+          : (
+            <div
+              style={{ position: "relative", width: "100%", height: "400px" }}
+            >
+              <canvas id={canvasId}></canvas>
+            </div>
+          )}
+      </div>
+
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-200">
+        <div class="bg-gray-800 p-4 md:p-6 rounded-lg shadow">
+          <h2 class="text-xl font-semibold mb-3 text-gray-100">
+            Current Score Details
+          </h2>
+          {scoreData
+            ? (
+              <>
+                <p class="text-sm">
+                  <strong>Risk Multiplier:</strong> {scoreData.riskMultiplier}
+                </p>
+                <p class="text-sm">
+                  <strong>Latest League Rank:</strong>{" "}
+                  {scoreData.latestRank ?? "N/A"}
+                </p>
+                <p class="text-sm">
+                  <strong>Outstanding Debt Impact:</strong>{" "}
+                  {scoreData.outstandingDebtImpact}
+                </p>
+                <p class="text-sm">
+                  <strong>Calculated Profit:</strong>{" "}
+                  {scoreData.calculatedProfit}
+                </p>
+                <p class="text-sm">
+                  <strong>Current Balance:</strong> {scoreData.balance}
+                </p>
+              </>
+            )
+            : (
+              <p class="text-sm text-gray-400">
+                Details will load after fetching score.
+              </p>
+            )}
+        </div>
+        <div class="bg-gray-800 p-4 md:p-6 rounded-lg shadow">
+          <h2 class="text-xl font-semibold mb-3 text-gray-100">Notes</h2>
+          <p class="text-xs text-gray-400">
+            The historical data updates at most every 24 hours. The current
+            score displayed above reflects the latest data from Manifold
+            Markets.
+          </p>
+          {scoreData?.historicalDataSaved && (
+            <p class="text-xs text-green-500 mt-2">
+              Historical data point saved during this request.
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
