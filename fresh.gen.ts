@@ -5,13 +5,17 @@
 import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $_middleware from "./routes/_middleware.ts";
+import * as $admin_index from "./routes/admin/index.tsx";
+import * as $api_history from "./routes/api/history.ts";
 import * as $api_score from "./routes/api/score.ts";
+import * as $chart_username_ from "./routes/chart/[username].tsx";
 import * as $ext_username_ from "./routes/ext/[username].tsx";
 import * as $iframe_credit_score from "./routes/iframe/credit-score.tsx";
 import * as $iframe_insurance_fee_calculator from "./routes/iframe/insurance-fee-calculator.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $insurance from "./routes/insurance.tsx";
 import * as $u_username_ from "./routes/u/[username].tsx";
+import * as $Chart from "./islands/Chart.tsx";
 import * as $CreditScore from "./islands/CreditScore.tsx";
 import * as $CreditScoreChExt from "./islands/CreditScoreChExt.tsx";
 import * as $InsuranceCalc from "./islands/InsuranceCalc.tsx";
@@ -19,6 +23,7 @@ import * as $MenuBar from "./islands/MenuBar.tsx";
 import * as $PasswordGate from "./islands/PasswordGate.tsx";
 import * as $ScoreResult from "./islands/ScoreResult.tsx";
 import * as $buttons_Button from "./islands/buttons/Button.tsx";
+import * as $buttons_ChartButton from "./islands/buttons/ChartButton.tsx";
 import * as $buttons_ShareButton from "./islands/buttons/ShareButton.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
@@ -27,7 +32,10 @@ const manifest = {
     "./routes/_404.tsx": $_404,
     "./routes/_app.tsx": $_app,
     "./routes/_middleware.ts": $_middleware,
+    "./routes/admin/index.tsx": $admin_index,
+    "./routes/api/history.ts": $api_history,
     "./routes/api/score.ts": $api_score,
+    "./routes/chart/[username].tsx": $chart_username_,
     "./routes/ext/[username].tsx": $ext_username_,
     "./routes/iframe/credit-score.tsx": $iframe_credit_score,
     "./routes/iframe/insurance-fee-calculator.tsx":
@@ -37,6 +45,7 @@ const manifest = {
     "./routes/u/[username].tsx": $u_username_,
   },
   islands: {
+    "./islands/Chart.tsx": $Chart,
     "./islands/CreditScore.tsx": $CreditScore,
     "./islands/CreditScoreChExt.tsx": $CreditScoreChExt,
     "./islands/InsuranceCalc.tsx": $InsuranceCalc,
@@ -44,6 +53,7 @@ const manifest = {
     "./islands/PasswordGate.tsx": $PasswordGate,
     "./islands/ScoreResult.tsx": $ScoreResult,
     "./islands/buttons/Button.tsx": $buttons_Button,
+    "./islands/buttons/ChartButton.tsx": $buttons_ChartButton,
     "./islands/buttons/ShareButton.tsx": $buttons_ShareButton,
   },
   baseUrl: import.meta.url,

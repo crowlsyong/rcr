@@ -1,4 +1,7 @@
+/// <reference lib="deno.unstable" />
 // routes/api/score.ts
+
+import db from "../../database/db.ts"; // Import the KV database instance
 
 // Define an interface for the relevant parts of a transaction object
 interface ManaPaymentTransaction {
@@ -268,11 +271,32 @@ export async function handler(req: Request): Promise<Response> {
   }
 
   const { userData, fetchSuccess } = await fetchUserData(username);
-  if (!fetchSuccess) {
+  if (!fetchSuccess || !userData) {
     return new Response(`User ${username} not found`, { status: 404 });
   }
 
+  const userId = userData.id;
+  const currentTime = Date.now();
+  const rateLimitDays = 1;
+  const rateLimitMilliseconds = rateLimitDays * 24 * 60 * 60 * 1000; // 1 day in milliseconds
+
   try {
+    // Check for the last update timestamp in KV
+    const lastUpdateKey = ["last_score_update", userId];
+    const lastUpdateEntry = await db.get<number>(lastUpdateKey); // Use db instance
+    const lastUpdateTime = lastUpdateEntry.value;
+
+    let shouldSaveHistoricalData = true;
+    if (
+      lastUpdateTime !== null &&
+      (currentTime - lastUpdateTime) < rateLimitMilliseconds
+    ) {
+      shouldSaveHistoricalData = false;
+      console.log(
+        `Rate limit active for user ${username}. Skipping historical data save.`,
+      );
+    }
+
     const createdTime = userData.createdTime ?? Date.now();
     const ageDays = (Date.now() - createdTime) / 86_400_000;
 
@@ -314,6 +338,28 @@ export async function handler(req: Request): Promise<Response> {
     // Calculate the risk multiplier based on the credit score
     const risk = calculateRiskMultiplier(creditScore);
 
+    // Save historical data to KV if not rate-limited
+    if (shouldSaveHistoricalData) {
+      const historicalDataKey = ["credit_scores", userId, currentTime];
+      const historicalDataValue = {
+        userId,
+        username,
+        creditScore,
+        timestamp: currentTime,
+      };
+      await db.set(historicalDataKey, historicalDataValue); // Use db instance
+
+      // Update the last update timestamp in KV using a transaction
+      // This ensures that the last update timestamp is updated only if
+      // the historical data point was successfully saved.
+      const atomic = db.atomic();
+      atomic.set(lastUpdateKey, currentTime);
+      await atomic.commit();
+      console.log(
+        `Historical data saved and last update timestamp updated for user ${username}`,
+      );
+    }
+
     const output = {
       username,
       creditScore,
@@ -325,6 +371,9 @@ export async function handler(req: Request): Promise<Response> {
       calculatedProfit: calculatedProfit,
       balance: userPortfolio.balance,
       rawMMR: rawMMR,
+      // Optionally, include a flag indicating if historical data was saved this time
+      historicalDataSaved: shouldSaveHistoricalData,
+      userId: userId,
     };
     console.log(`Stats for user: ${username}`);
     console.log(`  Raw MMR: ${rawMMR}`);
@@ -338,6 +387,9 @@ export async function handler(req: Request): Promise<Response> {
     console.log(`  Transaction Count: ${transactionCount}`);
     console.log(`  Outstanding Debt Impact: ${outstandingDebtImpact}`);
     console.log(`  fetchSuccess: ${fetchSuccess}`);
+    console.log(
+      `  Historical Data Saved (this request): ${shouldSaveHistoricalData}`,
+    );
     console.log("---");
     return new Response(JSON.stringify(output), {
       headers: { "Content-Type": "application/json" },
