@@ -57,7 +57,7 @@ export default function CreditScore({ username }: CreditScoreProps) {
         riskMultiplier={scoreData.value?.riskMultiplier || 0}
         avatarUrl={scoreData.value?.avatarUrl || null}
         isWaiting={!scoreData.value && !error.value}
-        urlPrefix="https://risk.markets/u"
+        urlPrefix="https://manifold.markets"
       />
     </div>
   );
