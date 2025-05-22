@@ -32,3 +32,4 @@ jobs:
           project: "risk"
           entrypoint: "main.ts"
           root: "."
+          args: "--unstable"
