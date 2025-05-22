@@ -14,7 +14,7 @@ export default function Version() {
           </a>
         </span>
         <span class="text-gray-400">|</span>
-        <span class="text-gray-500 text-xs">Version 2.0.2</span>
+        <span class="text-gray-500 text-xs">Version 2.1.0</span>
       </div>
     </div>
   );
