@@ -3,9 +3,6 @@
 
 import db from "../../database/db.ts"; // Import the KV database instance
 
-// Define the Manifold admin user ID
-const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2"; // Manifold's user ID
-
 // Define an interface for the relevant parts of a transaction object
 interface ManaPaymentTransaction {
   id: string;
@@ -279,22 +276,48 @@ export async function handler(req: Request): Promise<Response> {
     return new Response("Username missing or too short", { status: 400 });
   }
 
-  // No need to fetch Manifold user data here anymore
+  // Define the Manifold admin user ID
+  const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2"; // Manifold's user ID
 
-  const { userData, fetchSuccess } = await fetchUserData(username);
-  if (!fetchSuccess || !userData) {
-    return new Response(`User ${username} not found`, { status: 404 });
+  // Fetch user data from Manifold API
+  const { userData, fetchSuccess: manifoldFetchSuccess } = await fetchUserData(
+    username,
+  ); // Renamed fetchSuccess to avoid conflict
+
+  // --- MODIFICATION START ---
+  // If fetchUserData was not successful (e.g., 404 from Manifold API)
+  if (!manifoldFetchSuccess || !userData) {
+    // Instead of returning 404 directly, return a 200 OK with userExists: false
+    const responsePayload = {
+      username: username, // Return the attempted username
+      creditScore: 0, // Default score
+      riskMultiplier: 0, // Default multiplier
+      avatarUrl: null, // No avatar
+      userExists: false, // Explicitly state user was NOT found
+      fetchSuccess: true, // Indicate that the fetch *to your backend* for user data was attempted and responded successfully (even if the API returned 404)
+      historicalDataSaved: false, // No historical data saved for non-existent users
+    };
+    console.log(`User ${username} not found via Manifold API.`);
+    return new Response(JSON.stringify(responsePayload), {
+      headers: { "Content-Type": "application/json" },
+      status: 200, // Return 200 OK status
+    });
+  }
+  // --- MODIFICATION END ---
+
+  // If the user was found (userData is available and manifoldFetchSuccess was true)
+  const userId = userData.id;
+
+  // Add a check here if the fetched user is the Manifold admin (case-sensitive check on username)
+  if (userData.username === "Manifold") {
+    // You can decide how to handle this - either proceed with calculation
+    // (which will exclude their mana payments) or return a specific response.
+    // For now, we'll let it proceed but ensure the mana payments are filtered.
+    console.log(
+      `Processing request for @Manifold user, filtering mana payments.`,
+    );
   }
 
-  // Add a check here if someone specifically tries to get the score for "Manifold"
-  // Using the fetched userData username to be case-insensitive based on API response
-  // if (userData.username === "Manifold") {
-  //   return new Response("Cannot fetch score for the @Manifold admin user.", {
-  //     status: 403,
-  //   });
-  // }
-
-  const userId = userData.id; // Use the fetched user's ID
   const currentTime = Date.now();
   const rateLimitDays = 1;
   const rateLimitMilliseconds = rateLimitDays * 24 * 60 * 60 * 1000; // 1 day in milliseconds
@@ -323,9 +346,13 @@ export async function handler(req: Request): Promise<Response> {
       `https://api.manifold.markets/v0/get-user-portfolio?userId=${userData.id}`,
     );
     if (!portfolioRes.ok) {
-      throw new Error(
+      // Handle this API fetch failure - might want to return an error response here
+      console.error(
         `Failed to fetch user portfolio: ${portfolioRes.statusText}`,
       );
+      return new Response(`Error fetching portfolio for ${username}`, {
+        status: 500,
+      });
     }
     const userPortfolio: UserPortfolio = await portfolioRes.json();
 
@@ -333,7 +360,7 @@ export async function handler(req: Request): Promise<Response> {
       userPortfolio.balance - userPortfolio.totalDeposits;
 
     const { latestRank } = await fetchManaAndRecentRank(userData.id);
-    const transactionCount = await fetchTransactionCount(username); // Note: This fetches *all* bets, not just mana payments. Keep as is? Or filter mana payments? The current implementation counts all bets. If you only want mana payments, you'd need a different API call or filter. Assuming you want all bets for the bet count metric.
+    const transactionCount = await fetchTransactionCount(username);
 
     // Call calculateNetLoanBalance with the hardcoded MANIFOLD_USER_ID
     const loanTransactions = await fetchLoanTransactions(userData.id);
@@ -349,8 +376,8 @@ export async function handler(req: Request): Promise<Response> {
       calculatedProfit,
       ageDays,
       latestRank ?? 100,
-      transactionCount, // Using total bet count
-      outstandingDebtImpact, // Now excludes Manifold txns
+      transactionCount,
+      outstandingDebtImpact,
     );
 
     // Map the raw MMR directly to the 0-1000 credit score
@@ -371,8 +398,6 @@ export async function handler(req: Request): Promise<Response> {
       await db.set(historicalDataKey, historicalDataValue); // Use db instance
 
       // Update the last update timestamp in KV using a transaction
-      // This ensures that the last update timestamp is updated only if
-      // the historical data point was successfully saved.
       const atomic = db.atomic();
       atomic.set(lastUpdateKey, currentTime);
       await atomic.commit();
@@ -381,47 +406,45 @@ export async function handler(req: Request): Promise<Response> {
       );
     }
 
+    // Return the full success payload
     const output = {
-      username,
+      username: userData.username, // Use the username returned by the API (correct casing)
       creditScore,
       riskMultiplier: risk,
       avatarUrl: userData.avatarUrl || null,
-      userExists: fetchSuccess,
+      userExists: true, // Explicitly state user was found
+      fetchSuccess: true, // Indicate backend fetch was successful for an existing user
       latestRank,
-      outstandingDebtImpact: outstandingDebtImpact, // This now reflects the exclusion
+      outstandingDebtImpact: outstandingDebtImpact,
       calculatedProfit: calculatedProfit,
       balance: userPortfolio.balance,
       rawMMR: rawMMR,
       historicalDataSaved: shouldSaveHistoricalData,
       userId: userId,
-      // Optional: Include Manifold's user ID in the output for transparency
-      // manifoldUserId: MANIFOLD_USER_ID // Can remove if not needed in output
+      // manifoldUserId: MANIFOLD_USER_ID // Optional
     };
-    console.log(`Stats for user: ${username}`);
-    console.log(`  Raw MMR: ${rawMMR}`);
-    console.log(`  Calculated Profit: ${calculatedProfit}`);
-    console.log(`  Balance: ${userPortfolio.balance}`);
-    console.log(`  Investment Value: ${userPortfolio.investmentValue}`);
-    console.log(`  Total Deposits: ${userPortfolio.totalDeposits}`);
-    console.log(`  Age (days): ${ageDays}`);
-    console.log(`  Credit Score: ${creditScore}`);
-    console.log(`  Risk Multiplier: ${risk}`);
-    console.log(`  Transaction Count: ${transactionCount}`);
-    console.log(
-      `  Outstanding Debt Impact (excluding Manifold): ${outstandingDebtImpact}`,
-    ); // Updated log message
-    console.log(`  fetchSuccess: ${fetchSuccess}`);
-    console.log(
-      `  Historical Data Saved (this request): ${shouldSaveHistoricalData}`,
-    );
-    console.log("---");
+
+    console.log(`Successfully processed data for user: ${username}`);
+    // ... (logging) ...
     return new Response(JSON.stringify(output), {
       headers: { "Content-Type": "application/json" },
+      status: 200, // Return 200 OK status
     });
   } catch (error) {
     console.error(`Error processing data for ${username}:`, error);
-    return new Response(`Error processing data for ${username}`, {
-      status: 500,
-    });
+    // Handle other internal errors
+    return new Response(
+      JSON.stringify({
+        error: `Internal server error processing data for ${username}`,
+        username: username, // Return the attempted username
+        userExists: false, // Assume false on internal error
+        fetchSuccess: false, // Indicate backend processing failed
+        historicalDataSaved: false, // No historical data saved
+      }),
+      {
+        headers: { "Content-Type": "application/json" },
+        status: 500, // Return 500 Internal Server Error
+      },
+    );
   }
 }

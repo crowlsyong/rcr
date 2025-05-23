@@ -11,29 +11,31 @@ interface CreditScoreData {
   creditScore: number;
   riskMultiplier: number;
   avatarUrl: string | null;
+  userExists: boolean;
+  fetchSuccess: boolean;
 }
-
-// Function to get the initial username from the URL (for use during component initialization)
+// Function to get the initial username from the URL
 function getInitialUsernameFromUrl(): string {
-  // Check if running in a browser environment (client-side)
   if (typeof globalThis.location === "undefined") {
-    return ""; // Return empty string during server-side rendering
+    return "";
   }
   const params = new URLSearchParams(globalThis.location.search);
   return params.get("q") || "";
 }
 
 export default function CreditScore() {
-  // Get the initial username directly when defining state
   const initialUsernameFromUrl = getInitialUsernameFromUrl();
 
-  const username = useSignal(initialUsernameFromUrl); // Initialize signal with URL username
+  const username = useSignal(initialUsernameFromUrl);
   const scoreData = useSignal<CreditScoreData | null>(null);
   const error = useSignal<string>("");
   const [debouncedUsername, setDebouncedUsername] = useState(
     initialUsernameFromUrl,
-  ); // Initialize state with URL username
+  );
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Derived state: Is the input currently empty (after debounce)?
+  const isEmptyInput = debouncedUsername === "";
 
   // Effect for debouncing user input
   useEffect(() => {
@@ -41,24 +43,20 @@ export default function CreditScore() {
     return () => clearTimeout(timer);
   }, [username.value]);
 
-  // Effect for fetching data and updating URL based on debounced username (Keep this as is for now)
+  // Effect for fetching data and updating URL based on debounced username
   useEffect(() => {
-    // This effect will be triggered initially because debouncedUsername is set with the URL username
     if (debouncedUsername) {
       fetchScoreData(debouncedUsername);
-      // Update the URL with the debounced username as a query parameter
       const url = new URL(globalThis.location.href);
       url.searchParams.set("q", debouncedUsername);
-      // Use replaceState to avoid cluttering the browser history
       globalThis.history.replaceState(null, "", url.toString());
     } else {
       resetState();
-      // Remove the query parameter from the URL when the input is empty
       const url = new URL(globalThis.location.href);
       url.searchParams.delete("q");
       globalThis.history.replaceState(null, "", url.toString());
     }
-  }, [debouncedUsername]); // This effect runs when debouncedUsername changes
+  }, [debouncedUsername]);
 
   function resetState() {
     scoreData.value = null;
@@ -66,44 +64,87 @@ export default function CreditScore() {
   }
 
   async function fetchScoreData(user: string) {
-    // Ensure we don't fetch for an empty username
-    if (!user) {
-      resetState();
-      return;
-    }
+    // No need for this check here anymore, handled by isEmptyInput in useEffect
+    // if (!user) {
+    //   resetState();
+    //   return;
+    // }
+    // Clear previous error before new fetch
+    error.value = "";
+
     try {
       const res = await fetch(`/api/score?username=${user}`);
-      const data: CreditScoreData | { error: string } = await res.json();
-      if ("error" in data) {
-        error.value = data.error;
-        scoreData.value = null;
+      const data = await res.json();
+
+      if (res.ok) {
+        if (data.userExists) {
+          scoreData.value = {
+            username: data.username,
+            creditScore: data.creditScore,
+            riskMultiplier: data.riskMultiplier,
+            avatarUrl: data.avatarUrl,
+            userExists: true,
+            fetchSuccess: true,
+          };
+          // Clear error on success
+          error.value = "";
+        } else {
+          // User not found (Backend returned 200 with userExists: false)
+          scoreData.value = {
+            username: user,
+            creditScore: 0,
+            riskMultiplier: 0,
+            avatarUrl: null,
+            userExists: false,
+            fetchSuccess: true,
+          };
+          error.value = `User @${user} not found.`; // User-friendly message
+        }
       } else {
-        scoreData.value = data;
-        error.value = "";
+        // HTTP error (e.g., 500 from your API, or 404 if you revert that backend change)
+        const errorMessage = data.error || res.statusText || "Unknown error";
+        error.value = `Error fetching data: ${errorMessage}`;
+        scoreData.value = {
+          username: user,
+          creditScore: 0,
+          riskMultiplier: 0,
+          avatarUrl: null,
+          userExists: false,
+          fetchSuccess: false, // Indicate fetch failed
+        };
       }
     } catch (e) {
       console.error("Fetch error:", e);
-      error.value = "An error occurred fetching data.";
-      scoreData.value = null;
+      error.value = "An unexpected network error occurred.";
+      scoreData.value = {
+        username: debouncedUsername, // Use debouncedUsername for the error state
+        creditScore: 0,
+        riskMultiplier: 0,
+        avatarUrl: null,
+        userExists: false,
+        fetchSuccess: false, // Indicate fetch failed
+      };
     }
   }
 
-  // Removed the redundant useEffect that ran on mount to read URL params
-
   useEffect(() => {
-    // Focus the input once the component mounts
     inputRef.current?.focus();
   }, []);
 
+  // isWaiting is true if there's debounced input but no score data and no error
+  const isWaiting = !!debouncedUsername && !scoreData.value && !error.value;
+
   return (
     <div class="w-full max-w-md mx-auto pt-6 pb-6 px-0 sm:px-6">
-      {/* ScoreResult remains the same for now */}
       <ScoreResult
-        username={scoreData.value?.username || "N/A"}
+        username={debouncedUsername} // Pass the debounced username
         creditScore={scoreData.value?.creditScore || 0}
         riskMultiplier={scoreData.value?.riskMultiplier || 0}
         avatarUrl={scoreData.value?.avatarUrl || null}
-        isWaiting={!scoreData.value && !error.value} // isWaiting logic might need refinement depending on desired initial state
+        isWaiting={isWaiting} // Pass the refined isWaiting
+        userExists={scoreData.value?.userExists} // Pass the flag
+        fetchSuccess={scoreData.value?.fetchSuccess} // Pass the flag
+        isEmptyInput={isEmptyInput} // Pass the new flag
       />
       <div class="mt-4 relative">
         <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
@@ -122,9 +163,13 @@ export default function CreditScore() {
       </div>
 
       <div class="text-center pt-4">
-        {error.value
+        {/* Keep the existing text area for messages/links */}
+        {/* You might want to refine the conditions here too based on isEmptyInput */}
+        {isEmptyInput
+          ? <p class="text-gray-500">Enter a username to see the score.</p>
+          : error.value
           ? <p class="text-red-400">{error.value}</p>
-          : scoreData.value
+          : scoreData.value?.userExists // Only show link if user exists and data is available
           ? (
             <div class="flex flex-wrap justify-center items-center gap-2 text-xs text-green-400">
               <span>✅</span>
@@ -135,6 +180,7 @@ export default function CreditScore() {
               >
                 Visit {scoreData.value.username}'s Manifold page
               </a>
+              {/* Only show buttons if user exists and data is available */}
               <div class="flex items-center gap-2 ml-auto">
                 <ChartButton username={scoreData.value.username} />
                 <ShareButton username={scoreData.value.username} />
