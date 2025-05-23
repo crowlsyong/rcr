@@ -1,6 +1,8 @@
 /// <reference lib="deno.unstable" />
 // routes/api/score.ts
 
+// TEST
+
 import db from "../../database/db.ts"; // Import the KV database instance
 
 // Define an interface for the relevant parts of a transaction object
