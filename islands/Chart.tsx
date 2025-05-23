@@ -249,8 +249,7 @@ export default function CreditScoreChart({ username }: ChartProps) { // Renamed 
           <h2 class="text-xl font-semibold mb-3 text-gray-100">Notes</h2>
           <p class="text-xs text-gray-400">
             The historical data updates at most every 24 hours. The current
-            score displayed above reflects the latest data from Manifold
-            Markets.
+            score displayed above reflects the latest data from RISK.
           </p>
           {scoreData?.historicalDataSaved && (
             <p class="text-xs text-green-500 mt-2">
