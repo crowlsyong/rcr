@@ -249,7 +249,10 @@ export default function CreditScoreChart({ username }: ChartProps) { // Renamed 
           <h2 class="text-xl font-semibold mb-3 text-gray-100">Notes</h2>
           <p class="text-xs text-gray-400">
             The historical data updates at most every 24 hours. The current
-            score displayed above reflects the latest data from RISK.
+            score displayed above reflects the latest data from RISK. It crates
+            a datapoint whenever a score is fetched, so long as 24 hours have
+            elapsed since the last datapoint was created. This is extremely
+            experimental and may completely fail to work. Hehe!
           </p>
           {scoreData?.historicalDataSaved && (
             <p class="text-xs text-green-500 mt-2">
