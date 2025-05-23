@@ -44,7 +44,7 @@ export default function ScoreResult({
     isFetchFailed = false;
     isDataAvailable = false;
 
-    displayRiskText = "Gonna be fun";
+    displayRiskText = "Incomprehensible";
     displayCreditScore = "---";
     displayUsername = "Enter username";
     displayColor = "rgb(55, 65, 81)"; // Tailwind gray-700 as RGB
