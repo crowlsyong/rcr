@@ -1,9 +1,10 @@
 /// <reference lib="deno.unstable" />
 // routes/api/score.ts
 
-// TEST
-
 import db from "../../database/db.ts"; // Import the KV database instance
+
+// Define the Manifold admin user ID
+const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2"; // Manifold's user ID
 
 // Define an interface for the relevant parts of a transaction object
 interface ManaPaymentTransaction {
@@ -152,10 +153,16 @@ async function fetchLoanTransactions(
 function calculateNetLoanBalance(
   userId: string,
   transactions: ManaPaymentTransaction[],
+  manifoldUserId: string, // Pass the Manifold User ID here
 ): number {
   const loanBalancesPerUser: { [otherUserId: string]: number } = {};
 
   for (const txn of transactions) {
+    // Skip transactions involving the Manifold user
+    if (txn.fromId === manifoldUserId || txn.toId === manifoldUserId) {
+      continue; // Skip this transaction
+    }
+
     if (
       txn.category === "MANA_PAYMENT" && txn.fromType === "USER" &&
       txn.toType === "USER"
@@ -272,12 +279,22 @@ export async function handler(req: Request): Promise<Response> {
     return new Response("Username missing or too short", { status: 400 });
   }
 
+  // No need to fetch Manifold user data here anymore
+
   const { userData, fetchSuccess } = await fetchUserData(username);
   if (!fetchSuccess || !userData) {
     return new Response(`User ${username} not found`, { status: 404 });
   }
 
-  const userId = userData.id;
+  // Add a check here if someone specifically tries to get the score for "Manifold"
+  // Using the fetched userData username to be case-insensitive based on API response
+  // if (userData.username === "Manifold") {
+  //   return new Response("Cannot fetch score for the @Manifold admin user.", {
+  //     status: 403,
+  //   });
+  // }
+
+  const userId = userData.id; // Use the fetched user's ID
   const currentTime = Date.now();
   const rateLimitDays = 1;
   const rateLimitMilliseconds = rateLimitDays * 24 * 60 * 60 * 1000; // 1 day in milliseconds
@@ -316,12 +333,14 @@ export async function handler(req: Request): Promise<Response> {
       userPortfolio.balance - userPortfolio.totalDeposits;
 
     const { latestRank } = await fetchManaAndRecentRank(userData.id);
-    const transactionCount = await fetchTransactionCount(username);
+    const transactionCount = await fetchTransactionCount(username); // Note: This fetches *all* bets, not just mana payments. Keep as is? Or filter mana payments? The current implementation counts all bets. If you only want mana payments, you'd need a different API call or filter. Assuming you want all bets for the bet count metric.
 
+    // Call calculateNetLoanBalance with the hardcoded MANIFOLD_USER_ID
     const loanTransactions = await fetchLoanTransactions(userData.id);
     const outstandingDebtImpact = calculateNetLoanBalance(
       userData.id,
       loanTransactions,
+      MANIFOLD_USER_ID, // Use the hardcoded ID
     );
 
     // Compute the raw MMR based on all weighted factors
@@ -330,8 +349,8 @@ export async function handler(req: Request): Promise<Response> {
       calculatedProfit,
       ageDays,
       latestRank ?? 100,
-      transactionCount,
-      outstandingDebtImpact,
+      transactionCount, // Using total bet count
+      outstandingDebtImpact, // Now excludes Manifold txns
     );
 
     // Map the raw MMR directly to the 0-1000 credit score
@@ -369,13 +388,14 @@ export async function handler(req: Request): Promise<Response> {
       avatarUrl: userData.avatarUrl || null,
       userExists: fetchSuccess,
       latestRank,
-      outstandingDebtImpact: outstandingDebtImpact,
+      outstandingDebtImpact: outstandingDebtImpact, // This now reflects the exclusion
       calculatedProfit: calculatedProfit,
       balance: userPortfolio.balance,
       rawMMR: rawMMR,
-      // Optionally, include a flag indicating if historical data was saved this time
       historicalDataSaved: shouldSaveHistoricalData,
       userId: userId,
+      // Optional: Include Manifold's user ID in the output for transparency
+      // manifoldUserId: MANIFOLD_USER_ID // Can remove if not needed in output
     };
     console.log(`Stats for user: ${username}`);
     console.log(`  Raw MMR: ${rawMMR}`);
@@ -387,7 +407,9 @@ export async function handler(req: Request): Promise<Response> {
     console.log(`  Credit Score: ${creditScore}`);
     console.log(`  Risk Multiplier: ${risk}`);
     console.log(`  Transaction Count: ${transactionCount}`);
-    console.log(`  Outstanding Debt Impact: ${outstandingDebtImpact}`);
+    console.log(
+      `  Outstanding Debt Impact (excluding Manifold): ${outstandingDebtImpact}`,
+    ); // Updated log message
     console.log(`  fetchSuccess: ${fetchSuccess}`);
     console.log(
       `  Historical Data Saved (this request): ${shouldSaveHistoricalData}`,
