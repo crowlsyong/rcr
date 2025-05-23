@@ -4,8 +4,6 @@
 import { useEffect, useState } from "preact/hooks";
 import { Chart, registerables } from "chart.js";
 import ScoreResult from "./ScoreResult.tsx";
-import ShareButton from "./buttons/ShareButton.tsx";
-import ChartButton from "./buttons/ChartButton.tsx";
 
 Chart.register(...registerables);
 
