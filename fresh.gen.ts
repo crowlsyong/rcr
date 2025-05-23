@@ -25,6 +25,7 @@ import * as $ScoreResult from "./islands/ScoreResult.tsx";
 import * as $buttons_Button from "./islands/buttons/Button.tsx";
 import * as $buttons_ChartButton from "./islands/buttons/ChartButton.tsx";
 import * as $buttons_ShareButton from "./islands/buttons/ShareButton.tsx";
+import * as $buttons_ShareURL from "./islands/buttons/ShareURL.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -55,6 +56,7 @@ const manifest = {
     "./islands/buttons/Button.tsx": $buttons_Button,
     "./islands/buttons/ChartButton.tsx": $buttons_ChartButton,
     "./islands/buttons/ShareButton.tsx": $buttons_ShareButton,
+    "./islands/buttons/ShareURL.tsx": $buttons_ShareURL,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

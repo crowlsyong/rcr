@@ -156,7 +156,7 @@ export default function CreditScoreChart({ username }: ChartProps) {
         scales: {
           x: {
             title: {
-              display: true,
+              display: false, // Hide x-axis title
               text: "Date",
               color: "#ccc", // Lighter color for axis title
               font: { size: 12 }, // Adjust font size
@@ -172,7 +172,7 @@ export default function CreditScoreChart({ username }: ChartProps) {
           },
           y: {
             title: {
-              display: true,
+              display: false,
               text: "Credit Score",
               color: "#ccc", // Lighter color for axis title
               font: { size: 12 }, // Adjust font size
@@ -268,23 +268,22 @@ export default function CreditScoreChart({ username }: ChartProps) {
             ? (
               <>
                 <p class="text-sm md:text-base">
-                  <strong>Risk Multiplier:</strong> {scoreData.riskMultiplier}
-                </p>{" "}
-                {/* Adjust font size */}
-                <p class="text-sm md:text-base">
-                  <strong>Latest League Rank:</strong>{" "}
-                  {scoreData.latestRank ?? "N/A"}
+                  Risk Multiplier: <strong>{scoreData.riskMultiplier}</strong>
                 </p>
                 <p class="text-sm md:text-base">
-                  <strong>Outstanding Debt Impact:</strong>{" "}
-                  {scoreData.outstandingDebtImpact}
+                  Latest League Rank:{" "}
+                  <strong>{scoreData.latestRank ?? "N/A"}</strong>
                 </p>
                 <p class="text-sm md:text-base">
-                  <strong>Calculated Profit:</strong>{" "}
-                  {scoreData.calculatedProfit}
+                  Debt: <strong>{scoreData.outstandingDebtImpact}</strong>
                 </p>
                 <p class="text-sm md:text-base">
-                  <strong>Current Balance:</strong> {scoreData.balance}
+                  Calculated Profit:{" "}
+                  <strong>{Math.round(scoreData.calculatedProfit)}</strong>
+                </p>
+                <p class="text-sm md:text-base">
+                  Approximate Balance:{" "}
+                  <strong>{Math.round(scoreData.balance)}</strong>
                 </p>
               </>
             )
