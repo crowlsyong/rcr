@@ -31,11 +31,11 @@ interface HistoricalDataPoint {
   timestamp: number;
 }
 
-interface ChartProps { // Renamed interface to match component name
+interface ChartProps {
   username: string;
 }
 
-export default function CreditScoreChart({ username }: ChartProps) { // Renamed component
+export default function CreditScoreChart({ username }: ChartProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [scoreData, setScoreData] = useState<UserScoreData | null>(null);
@@ -119,11 +119,15 @@ export default function CreditScoreChart({ username }: ChartProps) { // Renamed 
         datasets: [{
           label: "Credit Score",
           data: dataPoints,
-          fill: false,
+          fill: true, // Fill area under the line
+          backgroundColor: "rgba(75, 192, 192, 0.2)", // Light fill color
           borderColor: "rgb(75, 192, 192)",
           tension: 0.4,
           pointHitRadius: 20,
           pointRadius: 5,
+          pointHoverRadius: 7, // Increase hover radius
+          pointBackgroundColor: "rgb(75, 192, 192)",
+          pointBorderColor: "#fff",
         }],
       },
       options: {
@@ -131,12 +135,22 @@ export default function CreditScoreChart({ username }: ChartProps) { // Renamed 
         maintainAspectRatio: false,
         plugins: {
           legend: {
+            display: false, // Hide legend
             labels: { color: "#f0f0f0" },
           },
           title: {
-            display: true,
+            display: false, // Hide chart title
             text: "Credit Score History",
             color: "#f0f0f0",
+          },
+          tooltip: { // Customize tooltips
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            titleColor: "#fff",
+            bodyColor: "#ccc",
+            borderColor: "rgba(75, 192, 192, 0.8)",
+            borderWidth: 1,
+            caretPadding: 10,
+            displayColors: false, // Hide color box in tooltip
           },
         },
         scales: {
@@ -144,22 +158,45 @@ export default function CreditScoreChart({ username }: ChartProps) { // Renamed 
             title: {
               display: true,
               text: "Date",
-              color: "#f0f0f0",
+              color: "#ccc", // Lighter color for axis title
+              font: { size: 12 }, // Adjust font size
             },
-            ticks: { color: "#ccc" },
-            grid: { color: "#444" },
+            ticks: {
+              color: "#ccc",
+              font: { size: 10 }, // Adjust tick font size
+            },
+            grid: {
+              color: "#444", // Darker grid lines
+            },
+            border: { display: false }, // Hide axis border
           },
           y: {
             title: {
               display: true,
               text: "Credit Score",
-              color: "#f0f0f0",
+              color: "#ccc", // Lighter color for axis title
+              font: { size: 12 }, // Adjust font size
             },
             beginAtZero: false,
             min: 0,
             max: 1000,
-            ticks: { color: "#ccc" },
-            grid: { color: "#444" },
+            ticks: {
+              color: "#ccc",
+              font: { size: 10 }, // Adjust tick font size
+            },
+            grid: {
+              color: "#444", // Darker grid lines
+            },
+            border: { display: false }, // Hide axis border
+          },
+        },
+        // Add some padding inside the chart area
+        layout: {
+          padding: {
+            left: 0,
+            right: 10,
+            top: 10,
+            bottom: 0,
           },
         },
       },
@@ -169,15 +206,18 @@ export default function CreditScoreChart({ username }: ChartProps) { // Renamed 
   const canvasId = `creditScoreChart-${username}`;
 
   if (isLoading) {
-    return <p class="text-center text-gray-400">Loading data...</p>;
+    return <p class="text-center text-gray-400 py-8">Loading data...</p>;
+    {/* Added padding */}
   }
 
   if (error) {
-    return <p class="text-center text-red-500">{error}</p>;
+    return <p class="text-center text-red-500 py-8">{error}</p>;
+    {/* Added padding */}
   }
 
   return (
     <div>
+      {/* Display current score details using ScoreResult */}
       {scoreData
         ? (
           <ScoreResult
@@ -189,52 +229,61 @@ export default function CreditScoreChart({ username }: ChartProps) { // Renamed 
           />
         )
         : (
-          <p class="text-center text-gray-400">
+          <p class="text-center text-gray-400 py-8">
             Enter a username to see score details.
           </p>
         )}
 
-      <div class="mt-6 bg-gray-800 p-4 md:p-6 rounded-lg shadow">
-        <h2 class="text-xl font-semibold mb-3 text-gray-100">Score History</h2>
+      {/* Display historical data message and chart */}
+      {/* Wrap the chart container in a styled div */}
+      <div class="mt-6 bg-gray-900 p-4 md:p-6 rounded-lg shadow-inner">
+        {/* Adjusted background, padding, and shadow */}
+        <h2 class="text-xl font-semibold mb-4 text-gray-100">Score History</h2>
+        {" "}
+        {/* Slightly increased bottom margin */}
         {historicalData.length === 0
           ? (
-            <p class="text-gray-400 text-sm text-center">
+            <p class="text-gray-400 text-sm text-center py-4">
               No historical data available yet.
             </p>
           )
           : (
             <div
-              style={{ position: "relative", width: "100%", height: "400px" }}
+              style={{ position: "relative", width: "100%", height: "300px" }}
             >
+              {/* Reduced height for mobile */}
               <canvas id={canvasId}></canvas>
             </div>
           )}
       </div>
 
+      {/* Display Current Score Details and Notes in a flex or grid */}
       <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-200">
-        <div class="bg-gray-800 p-4 md:p-6 rounded-lg shadow">
+        <div class="bg-gray-900 p-4 md:p-6 rounded-lg shadow-inner">
+          {/* Consistent styling */}
           <h2 class="text-xl font-semibold mb-3 text-gray-100">
             Current Score Details
           </h2>
           {scoreData
             ? (
               <>
-                <p class="text-sm">
+                <p class="text-sm md:text-base">
                   <strong>Risk Multiplier:</strong> {scoreData.riskMultiplier}
-                </p>
-                <p class="text-sm">
+                </p>{" "}
+                {/* Adjust font size */}
+                <p class="text-sm md:text-base">
                   <strong>Latest League Rank:</strong>{" "}
                   {scoreData.latestRank ?? "N/A"}
                 </p>
-                <p class="text-sm">
-                  <strong>Outstanding Debt:</strong>{" "}
+                <p class="text-sm md:text-base">
+                  <strong>Outstanding Debt Impact:</strong>{" "}
                   {scoreData.outstandingDebtImpact}
                 </p>
-                <p class="text-sm">
+                <p class="text-sm md:text-base">
                   <strong>Calculated Profit:</strong>{" "}
                   {scoreData.calculatedProfit}
                 </p>
-                <p class="text-sm">
+                <p class="text-sm md:text-base">
                   <strong>Current Balance:</strong> {scoreData.balance}
                 </p>
               </>
@@ -245,9 +294,10 @@ export default function CreditScoreChart({ username }: ChartProps) { // Renamed 
               </p>
             )}
         </div>
-        <div class="bg-gray-800 p-4 md:p-6 rounded-lg shadow">
+        <div class="bg-gray-900 p-4 md:p-6 rounded-lg shadow-inner">
+          {/* Consistent styling */}
           <h2 class="text-xl font-semibold mb-3 text-gray-100">Notes</h2>
-          <p class="text-xs text-gray-400">
+          <p class="text-xs md:text-sm text-gray-400">
             The historical data updates at most every 24 hours. The current
             score displayed above reflects the latest data from RISK. It creates
             a datapoint whenever a score is fetched, so long as 24 hours have
@@ -255,7 +305,7 @@ export default function CreditScoreChart({ username }: ChartProps) { // Renamed 
             experimental and may completely fail to work. Hehe!
           </p>
           {scoreData?.historicalDataSaved && (
-            <p class="text-xs text-green-500 mt-2">
+            <p class="text-xs md:text-sm text-green-500 mt-2">
               Historical data point saved during this request.
             </p>
           )}
