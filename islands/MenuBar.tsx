@@ -4,6 +4,15 @@ import { useSignal } from "@preact/signals";
 import { useEffect, useRef } from "preact/hooks";
 import { TbExternalLink } from "@preact-icons/tb";
 
+// Imports for casting
+import type { ComponentType } from "preact";
+import type { JSX } from "preact/jsx-runtime";
+
+// Cast TbExternalLink to a valid component type for JSX usage.
+const ExternalLinkIcon = TbExternalLink as ComponentType<
+  JSX.IntrinsicElements["svg"]
+>;
+
 const links = [
   {
     label: "📰 Dashboard",
@@ -80,6 +89,7 @@ export default function MenuBar() {
           class="text-white p-3 -m-3" // increases tappable area without changing layout
           onClick={() => (isMenuOpen.value = !isMenuOpen.value)}
         >
+          {/* The hamburger icon is a standard SVG, not from @preact-icons */}
           <svg
             class="w-6 h-6"
             fill="none"
@@ -136,8 +146,9 @@ export default function MenuBar() {
               <span>{link.label}</span>
               {link.targetBlank &&
                 typeof window !== "undefined" && (
-                <TbExternalLink class="w-4 h-4 opacity-70 absolute right-10" />
-              )}
+                  // Use the casted icon
+                  <ExternalLinkIcon class="w-4 h-4 opacity-70 absolute right-10" />
+                )}
             </a>
           ))}
         </div>

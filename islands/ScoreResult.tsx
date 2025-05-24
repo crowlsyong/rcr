@@ -3,6 +3,10 @@ import { TbExternalLink } from "@preact-icons/tb";
 import { getRiskLevelText, getScoreColor } from "../utils/ScoreUtils.ts"; // adjust path
 import type { CSSProperties } from "preact/compat"; // Import CSSProperties for inline styles
 
+// Add these two import lines for casting
+import type { ComponentType } from "preact";
+import type { JSX } from "preact/jsx-runtime";
+
 interface ScoreResultProps {
   username: string;
   creditScore: number;
@@ -14,6 +18,11 @@ interface ScoreResultProps {
   isEmptyInput?: boolean; // Added this prop
   urlPrefix?: string; // optional override
 }
+
+// Add this constant for the casted icon component
+const ExternalLinkIcon = TbExternalLink as ComponentType<
+  JSX.IntrinsicElements["svg"]
+>;
 
 export default function ScoreResult({
   username,
@@ -154,7 +163,10 @@ export default function ScoreResult({
         </div>
         {/* Only show link icon if clickable */}
         {isClickable
-          ? <TbExternalLink class="absolute top-4 right-2 w-5 h-5 text-white" />
+          ? (
+            // FIX THIS LINE: Replace TbExternalLink with the casted component
+            <ExternalLinkIcon class="absolute top-4 right-2 w-5 h-5 text-white" />
+          )
           : null}
       </div>
     </div>

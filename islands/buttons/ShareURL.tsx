@@ -3,6 +3,13 @@
 import { TbShare2 } from "@preact-icons/tb";
 import { useState } from "preact/hooks";
 
+// Imports for casting
+import type { ComponentType } from "preact";
+import type { JSX } from "preact/jsx-runtime";
+
+// Cast TbShare2 to a valid component type for JSX usage.
+const ShareIcon = TbShare2 as ComponentType<JSX.IntrinsicElements["svg"]>;
+
 export default function ShareURL() {
   const [copied, setCopied] = useState(false);
   // Check if we are in a browser environment
@@ -15,11 +22,17 @@ export default function ShareURL() {
       navigator.clipboard.writeText(currentUrl).then(() => {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+      }).catch((err) => {
+        // Handle potential errors during copy
+        console.error("Failed to copy URL to clipboard:", err);
+        // Optional: provide user feedback about the failure
       });
     }
   };
 
   // This button is always intended to be clickable
+  // isClickable variable is not strictly necessary if the class handling is based on other state
+  // but keeping it here if you use it elsewhere or for clarity
   const isClickable = true;
 
   return (
@@ -39,7 +52,8 @@ export default function ShareURL() {
         title="Share this page's URL"
       >
         {/* Conditionally render the icon only on the client */}
-        {isBrowser && <TbShare2 class="w-5 h-5" />}
+        {/* Use the casted icon */}
+        {isBrowser && <ShareIcon class="w-5 h-5" />}
       </button>
     </div>
   );
