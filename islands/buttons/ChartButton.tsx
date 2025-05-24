@@ -8,7 +8,7 @@ interface ChartButtonProps {
 // Cast TbTimeline to a valid component type for JSX usage.
 import type { ComponentType } from "preact";
 import type { JSX } from "preact/jsx-runtime";
-const IconToUse = TbTimeline as ComponentType<JSX.IntrinsicElements['svg']>;
+const IconToUse = TbTimeline as ComponentType<JSX.IntrinsicElements["svg"]>;
 
 export default function ChartButton({ username }: ChartButtonProps) {
   const handleClick = () => {
