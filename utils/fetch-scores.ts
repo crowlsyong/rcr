@@ -4,7 +4,7 @@ import db from "../database/db.ts";
 import { handler as scoreHandler } from "../routes/api/score.ts";
 
 const cronName = "Update User Credit Scores";
-// Process up to 3 users per minute over a 24-hour period
+// Process up to 1 user per minute every 24 hours 
 const usersPerDay = 1 * 60 * 24; // 1440 users per day
 
 /**
