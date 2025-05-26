@@ -5,7 +5,7 @@ import { handler as scoreHandler } from "../routes/api/score.ts";
 
 const cronName = "Update User Credit Scores";
 // Process up to 3 users per minute over a 24-hour period
-const usersPerDay = 3 * 60 * 24; // 4320
+const usersPerDay = 1 * 60 * 24; // 1440 users per day
 
 /**
  * Fetches all user IDs from the KV database.
