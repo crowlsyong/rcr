@@ -152,7 +152,7 @@ export default function CreditScore() {
         riskMultiplier={scoreData.value?.riskMultiplier || 0}
         avatarUrl={scoreData.value?.avatarUrl || null}
         isWaiting={isWaiting}
-        userExists={scoreData.value?.userExists} 
+        userExists={scoreData.value?.userExists}
         fetchSuccess={scoreData.value?.fetchSuccess}
         isEmptyInput={isEmptyInput}
         userDeleted={scoreData.value?.userDeleted}
