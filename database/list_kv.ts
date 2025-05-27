@@ -1,14 +1,8 @@
 /// <reference lib="deno.unstable" />
 
-// delete_kv_entries.ts
-// Temporary script to delete specific historical data entries from Deno KV.
-
 import db from "./db.ts"; // Import your database instance
 
-// The user ID for whom to delete data.
 const targetUserId: string = "p9Y7TzXx4NO1JQb9kjdbUYRUU3X2";
-
-// The full key of the entry you want to KEEP.
 const keyToKeep: Deno.KvKey = ["credit_scores", targetUserId, 1747938055213];
 
 console.log(
@@ -24,11 +18,6 @@ try {
   console.log("Fetching entries to identify those for deletion...");
   // Use db.list to iterate over all entries for the user.
   for await (const entry of db.list({ prefix: historicalDataPrefix })) {
-    // Compare the current entry's key with the key you want to keep.
-    // If the keys are NOT strictly equal, add it to the list of keys to delete.
-    // Using JSON.stringify for comparison as Deno.KvKey arrays might not compare
-    // directly with === in all environments, although it often works.
-    // A more robust comparison could involve deep comparison of array elements.
     if (JSON.stringify(entry.key) !== JSON.stringify(keyToKeep)) {
       keysToDelete.push(entry.key);
       console.log(`  Identified for deletion: ${JSON.stringify(entry.key)}`);
@@ -43,7 +32,7 @@ try {
   Deno.exit(1);
 }
 
-// --- Step 3: Execute deletion for identified keys ---
+// Execute deletion for identified keys
 
 if (keysToDelete.length > 0) {
   console.log(`\nExecuting deletion for ${keysToDelete.length} entries...`);
@@ -66,6 +55,5 @@ if (keysToDelete.length > 0) {
 }
 
 // Close the database connection.
-// db.close(); // Explicit close is optional.
 
 console.log("\nScript finished.");
