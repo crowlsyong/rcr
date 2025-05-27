@@ -40,16 +40,23 @@ async function processUserScore(userId: string) {
     let foundUsername: string | undefined; // Use a variable that can be reassigned
 
     for await (const entry of creditScoreEntriesIter) {
-      if (Array.isArray(entry.key) && entry.key.length === 3 && entry.key[2] && typeof entry.key[2] === 'number') {
+      if (
+        Array.isArray(entry.key) && entry.key.length === 3 && entry.key[2] &&
+        typeof entry.key[2] === "number"
+      ) {
         const timestamp = entry.key[2];
-         if (entry.value && typeof entry.value === 'object' && 'username' in entry.value) {
-            const currentUsername = (entry.value as { username: string }).username;
+        if (
+          entry.value && typeof entry.value === "object" &&
+          "username" in entry.value
+        ) {
+          const currentUsername =
+            (entry.value as { username: string }).username;
 
-            if (timestamp > latestTimestamp) {
-                latestTimestamp = timestamp;
-                foundUsername = currentUsername; // Reassign the variable that finds the latest
-            }
-         }
+          if (timestamp > latestTimestamp) {
+            latestTimestamp = timestamp;
+            foundUsername = currentUsername; // Reassign the variable that finds the latest
+          }
+        }
       }
     }
 
@@ -57,9 +64,10 @@ async function processUserScore(userId: string) {
     const username = foundUsername;
     // --- End of fetching username ---
 
-
     if (!username) {
-      console.warn(`[${cronName}] Username not found in credit_scores for user ID: ${userId}. Skipping.`);
+      console.warn(
+        `[${cronName}] Username not found in credit_scores for user ID: ${userId}. Skipping.`,
+      );
       return;
     }
 
@@ -71,7 +79,9 @@ async function processUserScore(userId: string) {
     const response = await scoreHandler(mockRequest);
 
     if (response.ok) {
-      console.log(`[${cronName}] Successfully updated score for user: ${username}`);
+      console.log(
+        `[${cronName}] Successfully updated score for user: ${username}`,
+      );
     } else {
       const errorBody = await response.text();
       console.error(
@@ -87,13 +97,14 @@ async function processUserScore(userId: string) {
 
 // ... rest of the file (getAllUserIds, dailySchedule, Deno.cron definition) ...
 
-
 // Cron schedule: 8:00 AM UTC daily
 const dailySchedule = "0 8 * * *";
 
 // Define the Deno.cron task
 Deno.cron(cronName, dailySchedule, async () => {
-  console.log(`[${cronName}] Cron job triggered with schedule "${dailySchedule}".`);
+  console.log(
+    `[${cronName}] Cron job triggered with schedule "${dailySchedule}".`,
+  );
   try {
     const allUserIds = await getAllUserIds();
     const totalUserCount = allUserIds.length;
@@ -125,7 +136,9 @@ Deno.cron(cronName, dailySchedule, async () => {
       : 0;
 
     if (lastProcessedIndex >= totalUserCount) {
-      console.log(`[${cronName}] Index out of bounds or cycle completed. Resetting index to 0.`);
+      console.log(
+        `[${cronName}] Index out of bounds or cycle completed. Resetting index to 0.`,
+      );
       lastProcessedIndex = 0;
       const atomicReset = db.atomic();
       atomicReset.set(lastProcessedIndexKey, 0);
@@ -167,7 +180,6 @@ Deno.cron(cronName, dailySchedule, async () => {
     if (nextIndex === 0 && processedCount > 0) {
       console.log(`[${cronName}] Completed a full cycle through all users.`);
     }
-
   } catch (error) {
     console.error(`[${cronName}] Error during cron execution:`, error);
   }

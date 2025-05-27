@@ -109,7 +109,8 @@ export default function CreditScore() {
         // Try to extract error message from response body if available
         type ErrorResponse = { error: string; userDeleted?: boolean };
         const errorMessage =
-          (typeof data === "object" && data !== null && "error" in data && typeof (data as ErrorResponse).error === "string"
+          (typeof data === "object" && data !== null && "error" in data &&
+              typeof (data as ErrorResponse).error === "string"
             ? (data as ErrorResponse).error
             : res.statusText) || "Unknown error";
         error.value = `Error fetching data: ${errorMessage}`;

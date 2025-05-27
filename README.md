@@ -2,10 +2,10 @@
 
 **https://risk.markets**
 
-RISK is an app for [Manifold Markets](https://manifold.markets) that calculates
+This is an app for [Manifold Markets](https://manifold.markets) that calculates
 a user's credit score based on their account activity and can also estimate loan
-insurance fees for underwriting purposes. It provides transparent, fast analysis
-via a clean interface powered by Deno and Fresh.
+insurance fees for underwriting purposes. It provides fast analysis via a clean
+interface powered by Deno and Fresh. It also generates credit history charts.
 
 ## ✨ Features
 
@@ -16,10 +16,13 @@ via a clean interface powered by Deno and Fresh.
 - Built with [Fresh](https://fresh.deno.dev) and [Deno](https://deno.land),
   using the Manifold API.
 - Mobile-first responsive layout.
+- **Credit History** - Creates a nice graph with chart.js to view credit
+  history.
 
 ## 🧰 Tech Stack
 
 - **Deno** – Secure runtime for JavaScript and TypeScript.
+- **Deno KV** - Deno's key value database.
 - **Fresh** – A web framework for Deno using Preact and islands architecture.
   - **Preact** – Fast 3kB alternative to React with the same modern API.
   - **Tailwind CSS** – Utility-first CSS framework for rapid UI development.
@@ -62,9 +65,9 @@ minimal configuration.
 ## 🧠 How the Credit Score Works
 
 The score is derived from weighted factors including balance, total profit,
-account age, managram history, and activity level. While this is not a financial score in the
-traditional sense, it helps visualize the relative risk of lending mana to a
-user.
+account age, managram history, and activity level. While this is not a financial
+score in the traditional sense, it helps visualize the relative risk of lending
+mana to a user.
 
 You can review the scoring algorithm in
 [`/routes/api/score.ts`](./routes/api/score.ts).

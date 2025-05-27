@@ -10,7 +10,11 @@ export default function Home(_req: Request, _ctx: RouteContext) {
     // Setting the allowed sources for content
     csp.directives.defaultSrc = ["'self'"];
     csp.directives.scriptSrc = ["'self'", "https://manifold.markets"];
-    csp.directives.styleSrc = ["'self'", "https://manifold.markets", "'unsafe-inline'"];
+    csp.directives.styleSrc = [
+      "'self'",
+      "https://manifold.markets",
+      "'unsafe-inline'",
+    ];
     csp.directives.imgSrc = [
       "'self'",
       "https://firebasestorage.googleapis.com",
