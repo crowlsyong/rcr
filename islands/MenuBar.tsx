@@ -83,13 +83,13 @@ export default function MenuBar() {
           />
         </a>
 
-        {/* Hamburger */}
+        {/* Hamburger, yummy */}
         <button
           type="button"
           class="text-white p-3 -m-3" // increases tappable area without changing layout
           onClick={() => (isMenuOpen.value = !isMenuOpen.value)}
         >
-          {/* The hamburger icon is a standard SVG, not from @preact-icons */}
+          {/* The hamburger icon is an SVG, not from @preact-icons */}
           <svg
             class="w-6 h-6"
             fill="none"
