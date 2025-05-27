@@ -88,7 +88,7 @@ async function processUserScore(userId: string) {
 // ... rest of the file (getAllUserIds, dailySchedule, Deno.cron definition) ...
 
 
-// Cron schedule: 6:17 AM UTC daily
+// Cron schedule: 8:00 AM UTC daily
 const dailySchedule = "0 8 * * *";
 
 // Define the Deno.cron task
