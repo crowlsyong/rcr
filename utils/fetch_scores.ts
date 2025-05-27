@@ -5,6 +5,7 @@ import { handler as scoreHandler } from "../routes/api/score.ts";
 
 const cronName = "Update User Credit Scores";
 const usersPerDay = 1 * 60 * 24; // 1440 users per day
+const delayBetweenUsersMs = 60000; // Delay between processing users in the cron job
 
 /**
  * Fetches all UNIQUE user IDs from the KV database under the credit_scores prefix.
@@ -63,7 +64,7 @@ async function processUserScore(userId: string) {
 }
 
 // Cron schedule: 6:17 AM UTC daily (corresponds to 1:17 AM CDT/CST if UTC-5)
-const dailySchedule = "19 6 * * *";
+const dailySchedule = "29 6 * * *";
 
 // Define the Deno.cron task at the top level
 Deno.cron(cronName, dailySchedule, async () => {
@@ -125,6 +126,8 @@ Deno.cron(cronName, dailySchedule, async () => {
       const userId = allUserIds[lastProcessedIndex + i];
       await processUserScore(userId);
       processedCount++;
+      // Add a small delay between processing users
+      await new Promise((resolve) => setTimeout(resolve, delayBetweenUsersMs));
     }
 
     const nextIndex = (lastProcessedIndex + processedCount) % totalUserCount;
