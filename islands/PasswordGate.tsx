@@ -9,7 +9,7 @@ export default function PasswordGate(
   const [authorized, setAuthorized] = useState(false);
   const [input, setInput] = useState("");
 
-  const PASSWORD = "!*IMFracc00n*!"; // <-- your simple password
+  const PASSWORD = "!*IMFracc00n*!"; // <-- plaintext password lol come hack me bro!
 
   if (!authorized) {
     return (
