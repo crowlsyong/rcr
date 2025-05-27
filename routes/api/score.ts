@@ -258,16 +258,28 @@ function mapToCreditScore(mmrValue: number): number {
 
 function calculateRiskMultiplier(score: number): number {
   const clampedScore = Math.max(0, Math.min(score, 1000));
-  const minMultiplier = 0.05;
-  const maxMultiplier = 2;
 
-  // Using a power function for a non-linear decrease in multiplier
-  const normalizedScoreScaled = clampedScore / 1000;
-  const exponent = 0.5; // Adjust this for the curve shape
-  const multiplier = maxMultiplier +
-    (minMultiplier - maxMultiplier) * Math.pow(normalizedScoreScaled, exponent);
-
-  return Math.round(multiplier * 100) / 100;
+  if (clampedScore >= 900) {
+    return 0.05; // 5%
+  } else if (clampedScore >= 800) {
+    return 0.07; // 7%
+  } else if (clampedScore >= 700) {
+    return 0.11; // 11%
+  } else if (clampedScore >= 600) {
+    return 0.15; // 15%
+  } else if (clampedScore >= 500) {
+    return 0.25; // 25%
+  } else if (clampedScore >= 400) {
+    return 0.45; // 45%
+  } else if (clampedScore >= 300) {
+    return 0.75; // 75%
+  } else if (clampedScore >= 200) {
+    return 1.1; // 110%
+  } else if (clampedScore >= 100) {
+    return 1.5; // 150%
+  } else {
+    return 2; // 200% (for scores 0-99)
+  }
 }
 
 export async function handler(req: Request): Promise<Response> {
