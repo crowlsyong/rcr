@@ -1,13 +1,64 @@
 // routes/_middleware.ts
 import { FreshContext } from "$fresh/server.ts";
+import { deleteCookie, getCookies } from "$std/http/cookie.ts"; // Need deleteCookie
+import { deleteAdminSession, getAdminLoginBySession } from "../database/db.ts"; // Import auth functions
+import { ALLOWED_ADMIN_LOGINS } from "../utils/allowed_users.ts"; // Import allowed users
 
-export async function handler(req: Request, ctx: FreshContext) {
-  console.log("Middleware handler executed for:", req.url); // Add this line
-  const origin = req.headers.get("Origin") || "*";
+// Define the state interface for the middleware
+export interface AdminState {
+  isAdmin: boolean;
+  githubLogin: string | null;
+}
+
+export async function handler(
+  req: Request,
+  ctx: FreshContext<AdminState>,
+) {
+  console.log("Middleware handler executed for:", req.url);
+
+  const url = new URL(req.url);
+  ctx.state.isAdmin = false;
+  ctx.state.githubLogin = null;
+
+  const cookies = getCookies(req.headers);
+  const adminSessionId = cookies["session"];
+
+  // --- Authentication Check and State Setting ---
+  if (adminSessionId) {
+    const githubLogin = await getAdminLoginBySession(adminSessionId);
+    if (githubLogin && ALLOWED_ADMIN_LOGINS.includes(githubLogin)) {
+      ctx.state.isAdmin = true;
+      ctx.state.githubLogin = githubLogin;
+    } else if (githubLogin) {
+      // Valid session ID in KV, but login not in allowed list
+      // This user is authenticated but not authorized for admin
+      // Optionally invalidate their session.
+      await deleteAdminSession(adminSessionId);
+      const resp = new Response("Session invalidated", { status: 401 });
+      deleteCookie(resp.headers, "session", { path: "/" });
+      return resp; // Stop processing and return error
+    }
+    // If githubLogin is null, the session ID in the cookie is not in KV (invalid or expired).
+    // The state remains non-admin.
+  }
+  // --- End Authentication Check ---
+
+  // If trying to access the admin page and NOT an admin (and no valid session,
+  // which is handled above), redirect to the sign-in page.
+  // We do this here so the middleware can enforce the redirect before
+  // the admin handler runs.
+  if (url.pathname === "/admin" && !ctx.state.isAdmin) {
+    // Allow the request to proceed to the admin handler.
+    // The admin handler will check isAdmin and display the sign-in prompt.
+    // We removed the direct redirect from here to rely on the admin page's component logic.
+  }
+
   const resp = await ctx.next();
+
+  // --- Existing CORS and CSP Headers ---
+  const origin = req.headers.get("Origin") || "*";
   const headers = resp.headers;
 
-  // Existing CORS headers
   headers.set("Access-Control-Allow-Origin", origin);
   headers.set("Access-Control-Allow-Credentials", "true");
   headers.set(
@@ -19,38 +70,29 @@ export async function handler(req: Request, ctx: FreshContext) {
     "POST, OPTIONS, GET, PUT, DELETE",
   );
 
-  // --- Add Content-Security-Policy header ---
-  // Define your CSP directives
   const cspDirectives: Record<string, string[]> = {
     defaultSrc: ["'self'"],
-    // Allow scripts from self and manifold.markets (if needed for scripts)
     scriptSrc: [
       "'self'",
       "https://manifold.markets",
-      "'unsafe-eval'",
+      "'unsafe-eval'", // Consider removing unsafe-eval and unsafe-inline if possible
       "'unsafe-inline'",
-    ], // Added unsafe-eval and unsafe-inline for potential island/dynamic code needs
-    // Allow styles from self, manifold.markets, and inline styles
+    ],
     styleSrc: [
       "'self'",
       "https://manifold.markets",
       "'unsafe-inline'",
     ],
-    // Allow images from self, specified external sources, AND data URLs
     imgSrc: [
       "'self'",
       "https://firebasestorage.googleapis.com",
       "https://lh3.googleusercontent.com",
-      "data:", // **Added data: here to allow data URLs**
+      "data:",
     ],
-    // Allow fonts from self and manifold.markets
     fontSrc: ["'self'", "https://manifold.markets"],
-    // Connect sources if your API or other fetches go to specific origins
-    connectSrc: ["'self'", "https://manifold.markets"], // Example: if you fetch data from manifold directly on the client
-    // Add other directives as needed (e.g., frameSrc, objectSrc)
+    connectSrc: ["'self'", "https://manifold.markets"],
   };
 
-  // Format the directives into a CSP string
   const cspString = Object.entries(cspDirectives)
     .map(([directive, sources]) =>
       `${kebabCase(directive)} ${sources.join(" ")}`
@@ -58,7 +100,7 @@ export async function handler(req: Request, ctx: FreshContext) {
     .join("; ");
 
   headers.set("Content-Security-Policy", cspString);
-  // --- End Add Content-Security-Policy header ---
+  // --- End CORS and CSP Headers ---
 
   return resp;
 }

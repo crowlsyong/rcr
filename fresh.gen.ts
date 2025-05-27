@@ -8,8 +8,12 @@ import * as $_middleware from "./routes/_middleware.ts";
 import * as $admin_index from "./routes/admin/index.tsx";
 import * as $api_history from "./routes/api/history.ts";
 import * as $api_score from "./routes/api/score.ts";
+import * as $auth_oauth2callback from "./routes/auth/oauth2callback.ts";
+import * as $auth_signin from "./routes/auth/signin.ts";
+import * as $auth_signout from "./routes/auth/signout.ts";
 import * as $chart_username_ from "./routes/chart/[username].tsx";
 import * as $ext_username_ from "./routes/ext/[username].tsx";
+import * as $forbidden from "./routes/forbidden.tsx";
 import * as $iframe_credit_score from "./routes/iframe/credit-score.tsx";
 import * as $iframe_insurance_fee_calculator from "./routes/iframe/insurance-fee-calculator.tsx";
 import * as $index from "./routes/index.tsx";
@@ -36,8 +40,12 @@ const manifest = {
     "./routes/admin/index.tsx": $admin_index,
     "./routes/api/history.ts": $api_history,
     "./routes/api/score.ts": $api_score,
+    "./routes/auth/oauth2callback.ts": $auth_oauth2callback,
+    "./routes/auth/signin.ts": $auth_signin,
+    "./routes/auth/signout.ts": $auth_signout,
     "./routes/chart/[username].tsx": $chart_username_,
     "./routes/ext/[username].tsx": $ext_username_,
+    "./routes/forbidden.tsx": $forbidden,
     "./routes/iframe/credit-score.tsx": $iframe_credit_score,
     "./routes/iframe/insurance-fee-calculator.tsx":
       $iframe_insurance_fee_calculator,

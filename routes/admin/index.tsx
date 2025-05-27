@@ -1,29 +1,31 @@
-/// <reference lib="deno.unstable" />
 // routes/admin/index.tsx
+/// <reference lib="deno.unstable" />
 
 import { Handlers, PageProps } from "$fresh/server.ts";
-import db from "../../database/db.ts"; // Import your database instance
+import db from "../../database/db.ts";
+import { AdminState } from "../_middleware.ts"; // Import state from middleware
 
-// Define interface for a KV entry for display
 interface DisplayKvEntry {
-  key: Deno.KvKey; // The key of the entry
-  value: unknown; // The value (can be various types)
-  versionstamp: string; // Versionstamp
+  key: Deno.KvKey;
+  value: unknown;
+  versionstamp: string;
 }
 
-// Define interface for the data passed to the page
 interface AdminPageData {
-  entries: DisplayKvEntry[]; // Array of KV entries
-  error?: string; // Optional error message
+  entries: DisplayKvEntry[];
+  error?: string;
 }
 
-export const handler: Handlers<AdminPageData> = {
-  async GET(_req, ctx): Promise<Response> {
-    const entries: DisplayKvEntry[] = [];
+export const handler: Handlers<AdminPageData, AdminState> = {
+  async GET(_req, ctx) {
+    if (!ctx.state.isAdmin) {
+      // Render page without data if not admin, component will show sign-in prompt
+      return ctx.render({ entries: [] });
+    }
 
+    const entries: DisplayKvEntry[] = [];
+    let error: string | undefined;
     try {
-      // List all entries in the database
-      // An empty prefix {} means list all entries
       for await (const entry of db.list({ prefix: [] })) {
         entries.push({
           key: entry.key,
@@ -31,75 +33,105 @@ export const handler: Handlers<AdminPageData> = {
           versionstamp: entry.versionstamp,
         });
       }
-
-      // Render the page with the fetched entries
-      return ctx.render({ entries });
-    } catch (error) {
-      console.error("Error fetching KV data for admin panel:", error);
-      // Render the page with an error message
-      return ctx.render({
-        entries: [], // Return empty array on error
-        error: "An error occurred while fetching database entries.",
-      }, { status: 500 }); // Return a 500 status
+    } catch (err) {
+      console.error("Error fetching KV data for admin panel:", err);
+      error = "An error occurred while fetching database entries";
     }
+    return ctx.render({ entries, error });
   },
 };
 
-export default function AdminPage({ data }: PageProps<AdminPageData>) {
+export default function AdminPage(
+  { data, state }: PageProps<AdminPageData, AdminState>,
+) {
   const { entries, error } = data;
+  const { isAdmin, githubLogin } = state;
 
   return (
     <div class="pt-16 p-4 mx-auto max-w-screen-lg">
-      {/* Added padding and max-width */}
+      <div class="flex justify-end mb-6 items-center">
+        {isAdmin
+          ? (
+            <>
+              <span class="text-gray-300 mr-3">Welcome, {githubLogin}!</span>
+              <a
+                href="/auth/signout"
+                class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-150"
+              >
+                Sign Out
+              </a>
+            </>
+          )
+          : (
+            <a
+              href="/auth/signin"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150"
+            >
+              Sign In with GitHub
+            </a>
+          )}
+      </div>
+
       <h1 class="text-2xl font-bold mb-6 text-white">
         Admin Panel - Deno KV Data
       </h1>
 
-      {error && <p class="text-red-500 mb-4">{error}</p>}
-
-      {entries.length === 0 && !error
-        ? <p class="text-gray-400">No entries found in the database.</p>
-        : (
-          <div class="overflow-x-auto">
-            {/* Make table scrollable on small screens */}
-            <table class="min-w-full bg-gray-800 rounded-lg shadow-xl">
-              <thead>
-                <tr class="w-full border-b border-gray-700">
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
-                    Key
-                  </th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
-                    Value
-                  </th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
-                    Versionstamp
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-700">
-                {entries.map((entry) => (
-                  <tr key={JSON.stringify(entry.key)} class="hover:bg-gray-700">
-                    <td class="px-4 py-4 whitespace-pre-wrap text-sm font-medium text-gray-200">
-                      {JSON.stringify(entry.key)}
-                    </td>{" "}
-                    {/* Use pre-wrap for keys */}
-                    <td class="px-4 py-4 whitespace-pre-wrap text-sm text-gray-300">
-                      {JSON.stringify(entry.value, null, 2)}
-                    </td>{" "}
-                    {/* Use pre-wrap for values, format JSON */}
-                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-400">
-                      {entry.versionstamp}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {!isAdmin
+        ? (
+          <div class="text-center bg-gray-800 p-6 rounded-lg shadow-xl">
+            <p class="text-xl text-yellow-400 mb-2">Access Restricted</p>
+            <p class="text-gray-300">
+              Please sign in with an authorized GitHub account to view this
+              content.
+            </p>
           </div>
+        )
+        : (
+          <>
+            {error && (
+              <p class="text-red-500 mb-4 bg-red-900 p-3 rounded">{error}</p>
+            )}
+            {entries.length === 0 && !error
+              ? <p class="text-gray-400">No entries found in the database.</p>
+              : (
+                <div class="overflow-x-auto">
+                  <table class="min-w-full bg-gray-800 rounded-lg shadow-xl">
+                    <thead>
+                      <tr class="w-full border-b border-gray-700">
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                          Key
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                          Value
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                          Versionstamp
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700">
+                      {entries.map((entry) => (
+                        <tr
+                          key={JSON.stringify(entry.key)}
+                          class="hover:bg-gray-700 transition-colors duration-150"
+                        >
+                          <td class="px-4 py-4 whitespace-pre-wrap text-sm font-medium text-gray-200">
+                            {JSON.stringify(entry.key)}
+                          </td>
+                          <td class="px-4 py-4 whitespace-pre-wrap text-sm text-gray-300">
+                            {JSON.stringify(entry.value, null, 2)}
+                          </td>
+                          <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-400">
+                            {entry.versionstamp}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+          </>
         )}
     </div>
   );
 }
-
-// Note: For production, you would ABSOLUTELY want to implement
-// authentication/authorization here to protect this route.
-// This is a basic example for demonstration purposes.
