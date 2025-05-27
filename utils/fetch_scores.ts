@@ -5,7 +5,7 @@ import { handler as scoreHandler } from "../routes/api/score.ts";
 
 const cronName = "Update User Credit Scores";
 const usersPerDay = 1 * 60 * 24; // 1440 users per day
-const delayBetweenUsersMs = 60000; // Delay between processing users in the cron job
+const delayBetweenUsersMs = 500; // Delay between processing users in the cron job
 
 /**
  * Fetches all UNIQUE user IDs from the KV database under the credit_scores prefix.
@@ -25,21 +25,41 @@ async function getAllUserIds(): Promise<string[]> {
 }
 
 /**
- * Processes a single user's score by calling the API handler.
+ * Processes a single user's score by calling the API handler,
+ * fetching the username from the latest credit score entry.
  */
 async function processUserScore(userId: string) {
   console.log(`[${cronName}] Processing score for user ID: ${userId}`);
   try {
-    // Fetch username from KV or another source (adjust prefix/key if needed)
-    const userProfileEntry = await db.get<{ username: string }>([
-      "user_profile", // <-- ADJUST THIS PREFIX/KEY STRUCTURE if needed
-      userId,
-      "profile", // <-- ADJUST THIS KEY STRUCTURE if needed
-    ]);
-    const username = userProfileEntry.value?.username;
+    // --- Fetch username from the latest credit score entry ---
+    const creditScoreEntriesIter = db.list({
+      prefix: ["credit_scores", userId],
+    });
+
+    let latestTimestamp = 0;
+    let foundUsername: string | undefined; // Use a variable that can be reassigned
+
+    for await (const entry of creditScoreEntriesIter) {
+      if (Array.isArray(entry.key) && entry.key.length === 3 && entry.key[2] && typeof entry.key[2] === 'number') {
+        const timestamp = entry.key[2];
+         if (entry.value && typeof entry.value === 'object' && 'username' in entry.value) {
+            const currentUsername = (entry.value as { username: string }).username;
+
+            if (timestamp > latestTimestamp) {
+                latestTimestamp = timestamp;
+                foundUsername = currentUsername; // Reassign the variable that finds the latest
+            }
+         }
+      }
+    }
+
+    // Use the foundUsername which holds the username from the latest entry
+    const username = foundUsername;
+    // --- End of fetching username ---
+
 
     if (!username) {
-      console.warn(`[${cronName}] Username not found for user ID: ${userId}. Skipping.`);
+      console.warn(`[${cronName}] Username not found in credit_scores for user ID: ${userId}. Skipping.`);
       return;
     }
 
@@ -63,10 +83,15 @@ async function processUserScore(userId: string) {
   }
 }
 
-// Cron schedule: 6:17 AM UTC daily (corresponds to 1:17 AM CDT/CST if UTC-5)
-const dailySchedule = "29 6 * * *";
+// ... rest of the file ...
 
-// Define the Deno.cron task at the top level
+// ... rest of the file (getAllUserIds, dailySchedule, Deno.cron definition) ...
+
+
+// Cron schedule: 6:17 AM UTC daily
+const dailySchedule = "39 6 * * *";
+
+// Define the Deno.cron task
 Deno.cron(cronName, dailySchedule, async () => {
   console.log(`[${cronName}] Cron job triggered with schedule "${dailySchedule}".`);
   try {
