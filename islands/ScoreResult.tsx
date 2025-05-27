@@ -1,9 +1,9 @@
 // islands/ScoreResult.tsx
 import { TbExternalLink } from "@preact-icons/tb";
-import { getRiskLevelText, getScoreColor } from "../utils/score_utils.ts"; // adjust path
+import { getRiskLevelText, getScoreColor } from "../utils/score_utils.ts";
 import type { CSSProperties } from "preact/compat"; // Import CSSProperties for inline styles
 
-// Add these two import lines for casting
+// Casting
 import type { ComponentType } from "preact";
 import type { JSX } from "preact/jsx-runtime";
 
@@ -15,12 +15,12 @@ interface ScoreResultProps {
   isWaiting: boolean;
   userExists?: boolean;
   fetchSuccess?: boolean;
-  isEmptyInput?: boolean; // Added this prop
+  isEmptyInput?: boolean;
   urlPrefix?: string; // optional override
-  userDeleted?: boolean; // Add the userDeleted prop
+  userDeleted?: boolean;
 }
 
-// Add this constant for the casted icon component
+// Casted icon component
 const ExternalLinkIcon = TbExternalLink as ComponentType<
   JSX.IntrinsicElements["svg"]
 >;
@@ -33,29 +33,29 @@ export default function ScoreResult({
   isWaiting,
   userExists = true,
   fetchSuccess = true,
-  isEmptyInput = false, // Default to false
-  urlPrefix = "https://manifold.markets", // default
-  userDeleted = false, // Default userDeleted to false
+  isEmptyInput = false,
+  urlPrefix = "https://manifold.markets",
+  userDeleted = false,
 }: ScoreResultProps) {
   // --- Declare state determination variables here ---
   let isUserNotFound: boolean;
   let isFetchFailed: boolean;
   let isDataAvailable: boolean;
-  let isUserDeleted: boolean; // Declare isUserDeleted state
+  let isUserDeleted: boolean;
 
   // Determine display values and styling based on state
   let displayRiskText: string;
   let displayCreditScore: number | string;
   let displayUsername: string;
-  let displayColor: string; // This will hold the color value (rgb string)
+  let displayColor: string;
   let displayAvatarUrl: string | null = null;
 
   // --- Prioritize isEmptyInput state ---
   if (isEmptyInput) {
-    isUserNotFound = false; // Set other state flags to false when empty
+    isUserNotFound = false;
     isFetchFailed = false;
     isDataAvailable = false;
-    isUserDeleted = false; // Set isUserDeleted to false when empty
+    isUserDeleted = false;
 
     displayRiskText = "Incomprehensible";
     displayCreditScore = "---";
@@ -76,12 +76,12 @@ export default function ScoreResult({
       displayCreditScore = "...";
       displayUsername = username || "Loading...";
       displayColor = "rgb(107, 114, 128)"; // Tailwind gray-500 as RGB
-    } else if (isUserDeleted) { // Prioritize displaying deleted status
+    } else if (isUserDeleted) {
       displayRiskText = "N/A (User Deleted)";
-      displayCreditScore = creditScore; // Still show the score if available, but indicate deleted
-      displayUsername = `${username} (Deleted)`; // Indicate in username
+      displayCreditScore = creditScore;
+      displayUsername = `${username} (Deleted)`;
       displayColor = "rgb(100, 100, 100)"; // Tailwind gray-600 as RGB
-      displayAvatarUrl = avatarUrl; // Still show avatar if available
+      displayAvatarUrl = avatarUrl;
     } else if (isUserNotFound) {
       displayRiskText = "Impossible";
       displayCreditScore = "N/A";
@@ -96,15 +96,15 @@ export default function ScoreResult({
       displayRiskText = getRiskLevelText(creditScore);
       displayCreditScore = creditScore;
       displayUsername = username;
-      displayColor = getScoreColor(creditScore); // Get dynamic color from your utility
-      displayAvatarUrl = avatarUrl; // Only set avatar if data is available
+      displayColor = getScoreColor(creditScore); // Get dynamic color from utils/score_utils.ts
+      displayAvatarUrl = avatarUrl;
     } else {
-      // Fallback state - should ideally not be reached if logic is comprehensive
+      // Fallback state
       displayRiskText = "Unknown State";
       displayCreditScore = "?";
       displayUsername = username || "Unknown User";
-      displayColor = "rgb(0, 0, 0)"; // Black or another clear indicator of issue
-      isUserNotFound = false; // Set flags to false for fallback
+      displayColor = "rgb(0, 0, 0)";
+      isUserNotFound = false;
       isFetchFailed = false;
       isDataAvailable = false;
       isUserDeleted = false;
@@ -112,7 +112,7 @@ export default function ScoreResult({
   }
 
   // Determine border color based on state
-  const borderColor: string = displayColor; // Border color matches the display color
+  const borderColor: string = displayColor;
 
   const containerStyle: CSSProperties = {
     borderColor: borderColor,
@@ -178,7 +178,6 @@ export default function ScoreResult({
         {/* Only show link icon if clickable */}
         {isClickable
           ? (
-            // FIX THIS LINE: Replace TbExternalLink with the casted component
             <ExternalLinkIcon class="absolute top-4 right-2 w-5 h-5 text-white" />
           )
           : null}
@@ -190,19 +189,19 @@ export default function ScoreResult({
   return isClickable
     ? (
       <a
-        href={`${urlPrefix}/${username}`} // Use original username for the link
+        href={`${urlPrefix}/${username}`}
         target="_blank"
         rel="noopener noreferrer"
-        class={containerClasses} // Apply combined classes
-        style={containerStyle} // Apply dynamic border color style
+        class={containerClasses}
+        style={containerStyle}
       >
         {content}
       </a>
     )
     : (
       <div
-        class={containerClasses} // Apply combined classes
-        style={containerStyle} // Apply dynamic border color style
+        class={containerClasses}
+        style={containerStyle}
       >
         {content}
       </div>
