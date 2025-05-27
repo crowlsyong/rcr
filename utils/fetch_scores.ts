@@ -74,7 +74,7 @@ async function processUserScore(userId: string) {
   }
 }
 
-const dailySchedule = "0 7 * * *"; // 1:00 AM CST (which is 7:00 AM UTC)
+const dailySchedule = "6 6 * * *"; // 1:06 AM CST/CDT (which is 6:06 AM UTC right now if on CDT)
 
 // Define the Deno.cron task at the top level
 Deno.cron(cronName, dailySchedule, async () => {
