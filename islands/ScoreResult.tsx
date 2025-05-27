@@ -80,7 +80,7 @@ export default function ScoreResult({
       displayRiskText = "N/A (User Deleted)";
       displayCreditScore = creditScore; // Still show the score if available, but indicate deleted
       displayUsername = `${username} (Deleted)`; // Indicate in username
-      displayColor = getScoreColor(creditScore); // Use the score color
+      displayColor = "rgb(100, 100, 100)"; // Tailwind gray-600 as RGB
       displayAvatarUrl = avatarUrl; // Still show avatar if available
     } else if (isUserNotFound) {
       displayRiskText = "Impossible";
