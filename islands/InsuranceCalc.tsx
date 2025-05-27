@@ -64,13 +64,11 @@ export default function InsuranceCalc() {
     scoreData.value = null;
   }
 
-  // Calculate the insurance fee
   function calculateInsuranceFee() {
     if (
       loanAmount.value <= 0 || !selectedCoverage.value || riskMultiplier === 0
     ) return;
 
-    // Get the selected coverage fee
     const coverageFee = coverageFees[selectedCoverage.value];
 
     // Calculate the final fee I=(L×P)+(L×C)
@@ -155,7 +153,7 @@ export default function InsuranceCalc() {
         </label>
         <input
           id="loanAmount"
-          type="text" // Changed to text input
+          type="text"
           value={loanAmount.value.toString()} // Ensure value is a string
           placeholder="Loan amount"
           onInput={handleLoanInput}
