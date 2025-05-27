@@ -4,8 +4,8 @@ import db from "../database/db.ts";
 import { handler as scoreHandler } from "../routes/api/score.ts";
 
 const cronName = "Update User Credit Scores";
-// Process up to 1 user per minute every 24 hours 
-const usersPerDay = 1 * 60 * 24; // 1440 users per day
+// Process up to 1 user per minute per 24 hours
+const usersPerDay = 1 * 60 * 24; // 1440 minutes in a day
 
 /**
  * Fetches all user IDs from the KV database.
@@ -66,7 +66,8 @@ async function processUserScore(userId: string) {
 const dailySchedule = "0 1 * * *"; // 1:00 AM UTC daily
 
 Deno.cron(cronName, dailySchedule, async () => {
-  console.log(`[${cronName}] Triggered.`);
+  // Moved the log inside the handler
+  console.log(`[${cronName}] Cron job triggered with schedule "${dailySchedule}".`);
   try {
     const allUserIds = await getAllUserIds();
     const totalUserCount = allUserIds.length;
@@ -99,7 +100,6 @@ Deno.cron(cronName, dailySchedule, async () => {
       const userId = allUserIds[lastProcessedIndex + i];
       await processUserScore(userId);
       processedCount++;
-      // No delay needed here as the rate is controlled by usersPerDay processed daily
     }
 
     // Update the last processed index in KV
@@ -119,5 +119,3 @@ Deno.cron(cronName, dailySchedule, async () => {
     console.error(`[${cronName}] Error during cron execution:`, error);
   }
 });
-
-console.log(`Cron job "${cronName}" defined with schedule "${dailySchedule}".`);
