@@ -13,6 +13,7 @@ interface CreditScoreData {
   avatarUrl: string | null;
   userExists: boolean;
   fetchSuccess: boolean;
+  userDeleted?: boolean; // Add userDeleted to the interface
 }
 // Function to get the initial username from the URL
 function getInitialUsernameFromUrl(): string {
@@ -64,17 +65,12 @@ export default function CreditScore() {
   }
 
   async function fetchScoreData(user: string) {
-    // No need for this check here anymore, handled by isEmptyInput in useEffect
-    // if (!user) {
-    //   resetState();
-    //   return;
-    // }
     // Clear previous error before new fetch
     error.value = "";
 
     try {
       const res = await fetch(`/api/score?username=${user}`);
-      const data = await res.json();
+      const data: CreditScoreData = await res.json(); // Type the data here
 
       if (res.ok) {
         if (data.userExists) {
@@ -85,6 +81,7 @@ export default function CreditScore() {
             avatarUrl: data.avatarUrl,
             userExists: true,
             fetchSuccess: true,
+            userDeleted: data.userDeleted, // Pass userDeleted from API
           };
           // Clear error on success
           error.value = "";
@@ -97,12 +94,24 @@ export default function CreditScore() {
             avatarUrl: null,
             userExists: false,
             fetchSuccess: true,
+            userDeleted: data.userDeleted, // Pass userDeleted even if userExists is false
           };
-          error.value = `User @${user} not found.`; // User-friendly message
+          // Only show "User not found" if not userDeleted
+          if (!data.userDeleted) {
+            error.value = `User @${user} not found.`;
+          } else {
+            // Optionally set a different message for deleted users if needed
+            error.value = ""; // No explicit error message for deleted users here
+          }
         }
       } else {
-        // HTTP error (e.g., 500 from your API, or 404 if you revert that backend change)
-        const errorMessage = data.error || res.statusText || "Unknown error";
+        // HTTP error (e.g., 500 from your API)
+        // Try to extract error message from response body if available
+        type ErrorResponse = { error: string; userDeleted?: boolean };
+        const errorMessage =
+          (typeof data === "object" && data !== null && "error" in data && typeof (data as ErrorResponse).error === "string"
+            ? (data as ErrorResponse).error
+            : res.statusText) || "Unknown error";
         error.value = `Error fetching data: ${errorMessage}`;
         scoreData.value = {
           username: user,
@@ -111,6 +120,7 @@ export default function CreditScore() {
           avatarUrl: null,
           userExists: false,
           fetchSuccess: false, // Indicate fetch failed
+          userDeleted: (data as any).userDeleted, // Pass userDeleted in case of HTTP error
         };
       }
     } catch (e) {
@@ -123,6 +133,7 @@ export default function CreditScore() {
         avatarUrl: null,
         userExists: false,
         fetchSuccess: false, // Indicate fetch failed
+        userDeleted: false, // Default to false on network error if not available
       };
     }
   }
@@ -145,6 +156,7 @@ export default function CreditScore() {
         userExists={scoreData.value?.userExists} // Pass the flag
         fetchSuccess={scoreData.value?.fetchSuccess} // Pass the flag
         isEmptyInput={isEmptyInput} // Pass the new flag
+        userDeleted={scoreData.value?.userDeleted} // Pass the userDeleted flag
       />
       <div class="mt-4 relative">
         <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
@@ -169,7 +181,8 @@ export default function CreditScore() {
           ? <p class="text-gray-500">Enter a username to see the score.</p>
           : error.value
           ? <p class="text-red-400">{error.value}</p>
-          : scoreData.value?.userExists // Only show link if user exists and data is available
+          // Only show link if user exists and data is available (and not deleted)
+          : scoreData.value?.userExists && !scoreData.value?.userDeleted
           ? (
             <div class="flex flex-wrap justify-center items-center gap-2 text-xs text-green-400">
               <span>✅</span>
@@ -180,12 +193,18 @@ export default function CreditScore() {
               >
                 Visit {scoreData.value.username}'s Manifold page
               </a>
-              {/* Only show buttons if user exists and data is available */}
+              {/* Only show buttons if user exists, data is available, and not deleted */}
               <div class="flex items-center gap-2 ml-auto">
                 <ChartButton username={scoreData.value.username} />
                 <ShareButton username={scoreData.value.username} />
               </div>
             </div>
+          )
+          : scoreData.value?.userDeleted // Explicitly handle deleted users here
+          ? (
+            <p class="text-yellow-400">
+              User @{debouncedUsername} is deleted.
+            </p>
           )
           : null}
       </div>

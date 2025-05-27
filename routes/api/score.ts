@@ -40,13 +40,14 @@ interface UserPortfolio {
 async function fetchUserData(username: string) {
   let fetchSuccess = false;
   let userData = null;
+  let userDeleted = false; // Initialize userDeleted
 
   try {
     const res = await fetch(`https://api.manifold.markets/v0/user/${username}`);
 
     if (res.status === 404) {
       fetchSuccess = false;
-      return { userData: null, fetchSuccess };
+      return { userData: null, fetchSuccess, userDeleted };
     }
 
     if (!res.ok) {
@@ -55,13 +56,14 @@ async function fetchUserData(username: string) {
 
     userData = await res.json();
     fetchSuccess = true;
+    userDeleted = userData.userDeleted === true; // Set userDeleted based on API response
   } catch (error) {
     fetchSuccess = false;
     console.error(`Error fetching user '${username}':`, error);
   }
 
   console.log(`fetchSuccess for '${username}':`, fetchSuccess);
-  return { userData, fetchSuccess };
+  return { userData, fetchSuccess, userDeleted };
 }
 
 // High league rank improves the score.
@@ -280,11 +282,11 @@ export async function handler(req: Request): Promise<Response> {
   const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2"; // Manifold's user ID
 
   // Fetch user data from Manifold API
-  const { userData, fetchSuccess: manifoldFetchSuccess } = await fetchUserData(
-    username,
-  ); // Renamed fetchSuccess to avoid conflict
+  const { userData, fetchSuccess: manifoldFetchSuccess, userDeleted } =
+    await fetchUserData(
+      username,
+    ); // Include userDeleted in the destructured object
 
-  // --- MODIFICATION START ---
   // If fetchUserData was not successful (e.g., 404 from Manifold API)
   if (!manifoldFetchSuccess || !userData) {
     // Instead of returning 404 directly, return a 200 OK with userExists: false
@@ -296,6 +298,7 @@ export async function handler(req: Request): Promise<Response> {
       userExists: false, // Explicitly state user was NOT found
       fetchSuccess: true, // Indicate that the fetch *to your backend* for user data was attempted and responded successfully (even if the API returned 404)
       historicalDataSaved: false, // No historical data saved for non-existent users
+      userDeleted: userDeleted, // Include the userDeleted status even for non-existent/404
     };
     console.log(`User ${username} not found via Manifold API.`);
     return new Response(JSON.stringify(responsePayload), {
@@ -303,7 +306,6 @@ export async function handler(req: Request): Promise<Response> {
       status: 200, // Return 200 OK status
     });
   }
-  // --- MODIFICATION END ---
 
   // If the user was found (userData is available and manifoldFetchSuccess was true)
   const userId = userData.id;
@@ -386,8 +388,8 @@ export async function handler(req: Request): Promise<Response> {
     // Calculate the risk multiplier based on the credit score
     const risk = calculateRiskMultiplier(creditScore);
 
-    // Save historical data to KV if not rate-limited
-    if (shouldSaveHistoricalData) {
+    // Save historical data to KV if not rate-limited and user is not deleted
+    if (shouldSaveHistoricalData && !userDeleted) {
       const historicalDataKey = ["credit_scores", userId, currentTime];
       const historicalDataValue = {
         userId,
@@ -404,6 +406,10 @@ export async function handler(req: Request): Promise<Response> {
       console.log(
         `Historical data saved and last update timestamp updated for user ${username}`,
       );
+    } else if (userDeleted) {
+      console.log(
+        `User ${username} is deleted. Skipping historical data save.`,
+      );
     }
 
     // Return the full success payload
@@ -419,8 +425,9 @@ export async function handler(req: Request): Promise<Response> {
       calculatedProfit: calculatedProfit,
       balance: userPortfolio.balance,
       rawMMR: rawMMR,
-      historicalDataSaved: shouldSaveHistoricalData,
+      historicalDataSaved: shouldSaveHistoricalData && !userDeleted, // Reflect whether data was actually saved
       userId: userId,
+      userDeleted: userDeleted, // Include the userDeleted status
       // manifoldUserId: MANIFOLD_USER_ID // Optional
     };
 
@@ -440,6 +447,7 @@ export async function handler(req: Request): Promise<Response> {
         userExists: false, // Assume false on internal error
         fetchSuccess: false, // Indicate backend processing failed
         historicalDataSaved: false, // No historical data saved
+        userDeleted: userDeleted, // Include the userDeleted status even on internal error
       }),
       {
         headers: { "Content-Type": "application/json" },

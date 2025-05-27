@@ -17,6 +17,7 @@ interface ScoreResultProps {
   fetchSuccess?: boolean;
   isEmptyInput?: boolean; // Added this prop
   urlPrefix?: string; // optional override
+  userDeleted?: boolean; // Add the userDeleted prop
 }
 
 // Add this constant for the casted icon component
@@ -34,11 +35,13 @@ export default function ScoreResult({
   fetchSuccess = true,
   isEmptyInput = false, // Default to false
   urlPrefix = "https://manifold.markets", // default
+  userDeleted = false, // Default userDeleted to false
 }: ScoreResultProps) {
   // --- Declare state determination variables here ---
   let isUserNotFound: boolean;
   let isFetchFailed: boolean;
   let isDataAvailable: boolean;
+  let isUserDeleted: boolean; // Declare isUserDeleted state
 
   // Determine display values and styling based on state
   let displayRiskText: string;
@@ -52,6 +55,7 @@ export default function ScoreResult({
     isUserNotFound = false; // Set other state flags to false when empty
     isFetchFailed = false;
     isDataAvailable = false;
+    isUserDeleted = false; // Set isUserDeleted to false when empty
 
     displayRiskText = "Incomprehensible";
     displayCreditScore = "---";
@@ -59,15 +63,25 @@ export default function ScoreResult({
     displayColor = "rgb(55, 65, 81)"; // Tailwind gray-700 as RGB
   } // --- Then check other states ONLY if input is NOT empty ---
   else {
-    isUserNotFound = !isWaiting && !userExists && fetchSuccess; // isUserNotFound state
-    isFetchFailed = !isWaiting && !fetchSuccess; // isFetchFailed state
-    isDataAvailable = !isWaiting && userExists && fetchSuccess; // isDataAvailable state
+    // Determine the isUserDeleted state first if userExists and fetchSuccess are true
+    isUserDeleted = !isWaiting && userExists && fetchSuccess && userDeleted;
+
+    // Now determine other states, considering if the user is deleted
+    isUserNotFound = !isWaiting && !userExists && fetchSuccess;
+    isFetchFailed = !isWaiting && !fetchSuccess;
+    isDataAvailable = !isWaiting && userExists && fetchSuccess && !userDeleted; // Data is available only if not deleted
 
     if (isWaiting) {
       displayRiskText = "Checking...";
       displayCreditScore = "...";
       displayUsername = username || "Loading...";
       displayColor = "rgb(107, 114, 128)"; // Tailwind gray-500 as RGB
+    } else if (isUserDeleted) { // Prioritize displaying deleted status
+      displayRiskText = "N/A (User Deleted)";
+      displayCreditScore = creditScore; // Still show the score if available, but indicate deleted
+      displayUsername = `${username} (Deleted)`; // Indicate in username
+      displayColor = getScoreColor(creditScore); // Use the score color
+      displayAvatarUrl = avatarUrl; // Still show avatar if available
     } else if (isUserNotFound) {
       displayRiskText = "Impossible";
       displayCreditScore = "N/A";
@@ -93,6 +107,7 @@ export default function ScoreResult({
       isUserNotFound = false; // Set flags to false for fallback
       isFetchFailed = false;
       isDataAvailable = false;
+      isUserDeleted = false;
     }
   }
 
@@ -105,8 +120,7 @@ export default function ScoreResult({
     borderStyle: "solid",
   };
 
-  // Make clickable only if data is available and user exists
-  // Simplified check using the determined state variable
+  // Make clickable only if data is available (not deleted, not not found, etc.)
   const isClickable = isDataAvailable && username && username !== "nouserfound";
 
   // Combine base and interactive classes
@@ -129,7 +143,7 @@ export default function ScoreResult({
           : <div class="w-12 h-12 rounded-full bg-gray-500 mr-4" />}
         <div>
           <h2 class="text-xl font-semibold">{displayUsername}</h2>
-          {/* Only show risk multiplier if data is available */}
+          {/* Only show risk multiplier if data is available (not deleted) */}
           {isDataAvailable
             ? (
               <p class="text-xs">
