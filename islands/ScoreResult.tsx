@@ -1,6 +1,6 @@
 // islands/ScoreResult.tsx
 import { TbExternalLink } from "@preact-icons/tb";
-import { getRiskLevelText, getScoreColor } from "../utils/ScoreUtils.ts"; // adjust path
+import { getRiskLevelText, getScoreColor } from "../utils/score_utils.ts"; // adjust path
 import type { CSSProperties } from "preact/compat"; // Import CSSProperties for inline styles
 
 // Add these two import lines for casting
