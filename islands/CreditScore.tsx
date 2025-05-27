@@ -120,7 +120,7 @@ export default function CreditScore() {
           avatarUrl: null,
           userExists: false,
           fetchSuccess: false, // Indicate fetch failed
-          userDeleted: (data as any).userDeleted, // Pass userDeleted in case of HTTP error
+          userDeleted: (data as { userDeleted?: boolean }).userDeleted, // Pass userDeleted in case of HTTP error
         };
       }
     } catch (e) {
