@@ -13,7 +13,7 @@ interface CreditScoreData {
   avatarUrl: string | null;
   userExists: boolean;
   fetchSuccess: boolean;
-  userDeleted?: boolean; // Add userDeleted to the interface
+  userDeleted?: boolean;
 }
 // Function to get the initial username from the URL
 function getInitialUsernameFromUrl(): string {
@@ -70,7 +70,7 @@ export default function CreditScore() {
 
     try {
       const res = await fetch(`/api/score?username=${user}`);
-      const data: CreditScoreData = await res.json(); // Type the data here
+      const data: CreditScoreData = await res.json();
 
       if (res.ok) {
         if (data.userExists) {
@@ -81,7 +81,7 @@ export default function CreditScore() {
             avatarUrl: data.avatarUrl,
             userExists: true,
             fetchSuccess: true,
-            userDeleted: data.userDeleted, // Pass userDeleted from API
+            userDeleted: data.userDeleted,
           };
           // Clear error on success
           error.value = "";
@@ -94,18 +94,17 @@ export default function CreditScore() {
             avatarUrl: null,
             userExists: false,
             fetchSuccess: true,
-            userDeleted: data.userDeleted, // Pass userDeleted even if userExists is false
+            userDeleted: data.userDeleted, // Pass userDeleted if userExists is false
           };
           // Only show "User not found" if not userDeleted
           if (!data.userDeleted) {
             error.value = `User @${user} not found.`;
           } else {
-            // Optionally set a different message for deleted users if needed
             error.value = ""; // No explicit error message for deleted users here
           }
         }
       } else {
-        // HTTP error (e.g., 500 from your API)
+        // HTTP error (e.g., 500 from API)
         // Try to extract error message from response body if available
         type ErrorResponse = { error: string; userDeleted?: boolean };
         const errorMessage =
@@ -120,7 +119,7 @@ export default function CreditScore() {
           riskMultiplier: 0,
           avatarUrl: null,
           userExists: false,
-          fetchSuccess: false, // Indicate fetch failed
+          fetchSuccess: false,
           userDeleted: (data as { userDeleted?: boolean }).userDeleted, // Pass userDeleted in case of HTTP error
         };
       }
@@ -128,12 +127,12 @@ export default function CreditScore() {
       console.error("Fetch error:", e);
       error.value = "An unexpected network error occurred.";
       scoreData.value = {
-        username: debouncedUsername, // Use debouncedUsername for the error state
+        username: debouncedUsername,
         creditScore: 0,
         riskMultiplier: 0,
         avatarUrl: null,
         userExists: false,
-        fetchSuccess: false, // Indicate fetch failed
+        fetchSuccess: false,
         userDeleted: false, // Default to false on network error if not available
       };
     }
@@ -149,15 +148,15 @@ export default function CreditScore() {
   return (
     <div class="w-full max-w-md mx-auto pt-6 pb-6 px-0 sm:px-6">
       <ScoreResult
-        username={debouncedUsername} // Pass the debounced username
+        username={debouncedUsername}
         creditScore={scoreData.value?.creditScore || 0}
         riskMultiplier={scoreData.value?.riskMultiplier || 0}
         avatarUrl={scoreData.value?.avatarUrl || null}
-        isWaiting={isWaiting} // Pass the refined isWaiting
-        userExists={scoreData.value?.userExists} // Pass the flag
-        fetchSuccess={scoreData.value?.fetchSuccess} // Pass the flag
-        isEmptyInput={isEmptyInput} // Pass the new flag
-        userDeleted={scoreData.value?.userDeleted} // Pass the userDeleted flag
+        isWaiting={isWaiting}
+        userExists={scoreData.value?.userExists} 
+        fetchSuccess={scoreData.value?.fetchSuccess}
+        isEmptyInput={isEmptyInput}
+        userDeleted={scoreData.value?.userDeleted}
       />
       <div class="mt-4 relative">
         <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
@@ -176,8 +175,6 @@ export default function CreditScore() {
       </div>
 
       <div class="text-center pt-4">
-        {/* Keep the existing text area for messages/links */}
-        {/* You might want to refine the conditions here too based on isEmptyInput */}
         {isEmptyInput
           ? <p class="text-gray-500">Enter a username to see the score.</p>
           : error.value
@@ -201,7 +198,7 @@ export default function CreditScore() {
               </div>
             </div>
           )
-          : scoreData.value?.userDeleted // Explicitly handle deleted users here
+          : scoreData.value?.userDeleted
           ? (
             <p class="text-yellow-400">
               User @{debouncedUsername} is deleted.
