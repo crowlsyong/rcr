@@ -26,7 +26,6 @@ function getInitialUsernameFromUrl(): string {
 
 export default function CreditScore() {
   const initialUsernameFromUrl = getInitialUsernameFromUrl();
-
   const username = useSignal(initialUsernameFromUrl);
   const scoreData = useSignal<CreditScoreData | null>(null);
   const error = useSignal<string>("");
