@@ -117,13 +117,13 @@ export default function CreditScoreChart({ username }: ChartProps) {
         datasets: [{
           label: "Credit Score",
           data: dataPoints,
-          fill: true, // Fill area under the line
-          backgroundColor: "rgba(75, 192, 192, 0.2)", // Light fill color
+          fill: true,
+          backgroundColor: "rgba(75, 192, 192, 0.2)",
           borderColor: "rgb(75, 192, 192)",
           tension: 0.4,
           pointHitRadius: 20,
           pointRadius: 5,
-          pointHoverRadius: 7, // Increase hover radius
+          pointHoverRadius: 7,
           pointBackgroundColor: "rgb(75, 192, 192)",
           pointBorderColor: "#fff",
         }],
@@ -133,62 +133,61 @@ export default function CreditScoreChart({ username }: ChartProps) {
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            display: false, // Hide legend
+            display: false,
             labels: { color: "#f0f0f0" },
           },
           title: {
-            display: false, // Hide chart title
+            display: false,
             text: "Credit Score History",
             color: "#f0f0f0",
           },
-          tooltip: { // Customize tooltips
+          tooltip: {
             backgroundColor: "rgba(0, 0, 0, 0.8)",
             titleColor: "#fff",
             bodyColor: "#ccc",
             borderColor: "rgba(75, 192, 192, 0.8)",
             borderWidth: 1,
             caretPadding: 10,
-            displayColors: false, // Hide color box in tooltip
+            displayColors: false,
           },
         },
         scales: {
           x: {
             title: {
-              display: false, // Hide x-axis title
+              display: false,
               text: "Date",
-              color: "#ccc", // Lighter color for axis title
-              font: { size: 12 }, // Adjust font size
+              color: "#ccc",
+              font: { size: 12 },
             },
             ticks: {
               color: "#ccc",
-              font: { size: 10 }, // Adjust tick font size
+              font: { size: 10 },
             },
             grid: {
-              color: "#444", // Darker grid lines
+              color: "#444",
             },
-            border: { display: false }, // Hide axis border
+            border: { display: false },
           },
           y: {
             title: {
               display: false,
               text: "Credit Score",
-              color: "#ccc", // Lighter color for axis title
-              font: { size: 12 }, // Adjust font size
+              color: "#ccc",
+              font: { size: 12 },
             },
             beginAtZero: false,
             min: 0,
             max: 1000,
             ticks: {
               color: "#ccc",
-              font: { size: 10 }, // Adjust tick font size
+              font: { size: 10 },
             },
             grid: {
-              color: "#444", // Darker grid lines
+              color: "#444",
             },
-            border: { display: false }, // Hide axis border
+            border: { display: false },
           },
         },
-        // Add some padding inside the chart area
         layout: {
           padding: {
             left: 0,
@@ -205,17 +204,14 @@ export default function CreditScoreChart({ username }: ChartProps) {
 
   if (isLoading) {
     return <p class="text-center text-gray-400 py-8">Loading data...</p>;
-    {/* Added padding */}
   }
 
   if (error) {
     return <p class="text-center text-red-500 py-8">{error}</p>;
-    {/* Added padding */}
   }
 
   return (
     <div>
-      {/* Display current score details using ScoreResult */}
       {scoreData
         ? (
           <ScoreResult
@@ -231,14 +227,9 @@ export default function CreditScoreChart({ username }: ChartProps) {
             Enter a username to see score details.
           </p>
         )}
-
-      {/* Display historical data message and chart */}
-      {/* Wrap the chart container in a styled div */}
       <div class="mt-6 bg-gray-900 p-4 md:p-6 rounded-lg shadow-inner">
-        {/* Adjusted background, padding, and shadow */}
         <h2 class="text-xl font-semibold mb-4 text-gray-100">Score History</h2>
         {" "}
-        {/* Slightly increased bottom margin */}
         {historicalData.length === 0
           ? (
             <p class="text-gray-400 text-sm text-center py-4">
@@ -255,10 +246,8 @@ export default function CreditScoreChart({ username }: ChartProps) {
           )}
       </div>
 
-      {/* Display Current Score Details and Notes in a flex or grid */}
       <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-200">
         <div class="bg-gray-900 p-4 md:p-6 rounded-lg shadow-inner">
-          {/* Consistent styling */}
           <h2 class="text-xl font-semibold mb-3 text-gray-100">
             Current Score Details
           </h2>
@@ -292,7 +281,6 @@ export default function CreditScoreChart({ username }: ChartProps) {
             )}
         </div>
         <div class="bg-gray-900 p-4 md:p-6 rounded-lg shadow-inner">
-          {/* Consistent styling */}
           <h2 class="text-xl font-semibold mb-3 text-gray-100">Notes</h2>
           <p class="text-xs md:text-sm text-gray-400">
             The historical data updates at most every 24 hours. The current
