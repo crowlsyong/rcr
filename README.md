@@ -44,7 +44,7 @@ via a clean interface powered by Deno and Fresh.
 
 2. **Clone the repo and start the server**
 
-   `git clone https://github.com/YOUR_USERNAME/risk-app.git`
+   `git clone https://github.com/crowlsyong/rcr`
 
    `cd rcr`
 
@@ -55,14 +55,14 @@ via a clean interface powered by Deno and Fresh.
 This project can be deployed to [Deno Deploy](https://deno.com/deploy) with
 minimal configuration.
 
-1. Push your code to a GitHub repo.
+1. Push code to a GitHub repo.
 2. Create a new Deno Deploy project and link it to your repo.
 3. Set the entry point to `main.ts`.
 
 ## 🧠 How the Credit Score Works
 
 The score is derived from weighted factors including balance, total profit,
-account age, and activity level. While this is not a financial score in the
+account age, managram history, and activity level. While this is not a financial score in the
 traditional sense, it helps visualize the relative risk of lending mana to a
 user.
 
