@@ -73,7 +73,7 @@ export default function MenuBar() {
         <a href="/">
           <img
             class="hidden md:block h-10"
-            src="/risk.png"
+            src="/risk-horizontal-transparent.png"
             alt="the RISK mascot: a raccoon"
           />
           <img
