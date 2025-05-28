@@ -41,7 +41,7 @@ export async function handler(
     // If githubLogin is null, the session ID in the cookie is not in KV (invalid or expired).
     // The state remains non-admin.
   }
-  // --- End Authentication Check ---
+  // --- End Auth Check ---
 
   // If trying to access the admin page and NOT an admin (and no valid session,
   // which is handled above), redirect to the sign-in page.
