@@ -260,23 +260,23 @@ function calculateRiskMultiplier(score: number): number {
   const clampedScore = Math.max(0, Math.min(score, 1000));
 
   if (clampedScore >= 900) {
-    return 0.05; // 5%
+    return 0.02; // 5%
   } else if (clampedScore >= 800) {
-    return 0.07; // 7%
+    return 0.03; // 7%
   } else if (clampedScore >= 700) {
-    return 0.11; // 11%
+    return 0.05; // 11%
   } else if (clampedScore >= 600) {
-    return 0.15; // 15%
+    return 0.07; // 15%
   } else if (clampedScore >= 500) {
-    return 0.25; // 25%
+    return 0.10; // 25%
   } else if (clampedScore >= 400) {
-    return 0.45; // 45%
+    return 0.14; // 45%
   } else if (clampedScore >= 300) {
-    return 0.75; // 75%
+    return 0.25; // 75%
   } else if (clampedScore >= 200) {
-    return 1.1; // 110%
+    return 0.60; // 110%
   } else if (clampedScore >= 100) {
-    return 1.5; // 150%
+    return 1.60; // 150%
   } else {
     return 2; // 200% (for scores 0-99)
   }
