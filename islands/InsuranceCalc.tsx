@@ -26,8 +26,8 @@ export default function InsuranceCalc() {
   const coverageFees: { [key: number]: number } = {
     25: 0.02,
     50: 0.05,
-    75: 0.11,
-    100: 0.21,
+    75: 0.08,
+    100: 0.12,
   };
 
   // Debounced username effect
