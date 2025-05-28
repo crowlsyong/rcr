@@ -64,11 +64,6 @@ interface powered by Deno and Fresh. It also generates credit history charts.
     http://localhost:somenumber/auth/oauth2callback)
   - Do not enable Device Flow
   - Register application
-- Create a .env file (see .env.example). You don't need to do this if you deploy
-  on Deno Deploy (more on that in **Deployment**)
-- Add credentials from the OAuth registration to the .env file
-- Add your Github username to the .env file
-- Make sure to add the .env to your gitignore!
 
 ## 📦 Deployment
 
