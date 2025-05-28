@@ -14,7 +14,7 @@ export async function handler(
   req: Request,
   ctx: FreshContext<AdminState>,
 ) {
-//  console.log("Middleware handler executed for:", req.url);
+  //  console.log("Middleware handler executed for:", req.url);
 
   const url = new URL(req.url);
   ctx.state.isAdmin = false;
