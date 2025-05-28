@@ -55,12 +55,17 @@ interface powered by Deno and Fresh. It also generates credit history charts.
 
 3. **Optional: Add Github OAuth**
 
-- Register OAuth app in github here: https://github.com/settings/applications/new
-  - **Homepage URL** In our case, we use https://risk.markets for the Homepage URL
-  - **Authorization callback URL** and we use https://risk.markets/auth/oauth2callback (you can use http://localhost:somenumber/auth/oauth2callback)
+- Register OAuth app in github here:
+  https://github.com/settings/applications/new
+  - **Homepage URL** In our case, we use https://risk.markets for the Homepage
+    URL
+  - **Authorization callback URL** and we use
+    https://risk.markets/auth/oauth2callback (you can use
+    http://localhost:somenumber/auth/oauth2callback)
   - Do not enable Device Flow
   - Register application
-- Create a .env file (see .env.example). You don't need to do this if you deploy on Deno Deploy (more on that in **Deployment**)
+- Create a .env file (see .env.example). You don't need to do this if you deploy
+  on Deno Deploy (more on that in **Deployment**)
 - Add credentials from the OAuth registration to the .env file
 - Add your Github username to the .env file
 - Make sure to add the .env to your gitignore!
@@ -71,7 +76,8 @@ This project can be deployed to [Deno Deploy](https://deno.com/deploy) with
 minimal configuration.
 
 1. Push code to a GitHub repo.
-2. Create a new Deno Deploy project and link it to your repo at https://dash.deno.com
+2. Create a new Deno Deploy project and link it to your repo at
+   https://dash.deno.com
 3. Click settings tab and add environment variables
 4. Set the entry point to `main.ts`.
 
