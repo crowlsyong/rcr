@@ -53,6 +53,18 @@ interface powered by Deno and Fresh. It also generates credit history charts.
 
    `deno task start`
 
+3. **Optional: Add Github OAuth**
+
+- Register OAuth app in github here: https://github.com/settings/applications/new
+  - **Homepage URL** In our case, we use https://risk.markets for the Homepage URL
+  - **Authorization callback URL** and we use https://risk.markets/auth/oauth2callback (you can use http://localhost:somenumber/auth/oauth2callback)
+  - Do not enable Device Flow
+  - Register application
+- Create a .env file (see .env.example)
+- Add credentials from the OAuth registration to the .env file
+- Add your Github username to the .env file
+- Make sure to add the .env to your gitignore!
+
 ## 📦 Deployment
 
 This project can be deployed to [Deno Deploy](https://deno.com/deploy) with
