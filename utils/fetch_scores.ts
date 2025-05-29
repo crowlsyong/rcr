@@ -3,9 +3,9 @@
 import db from "../database/db.ts";
 import { handler as scoreHandler } from "../routes/api/score.ts";
 
-const cronName = "Update User Credit Scores";
-const usersPerDay = 1 * 60 * 24; // 1440 users per day
-const delayBetweenUsersMs = 1000; // Delay between processing users in the cron job
+const CRON_NAME = "Update User Credit Scores";
+const USERS_PER_DAY = 1 * 60 * 24; // 1440 users per day
+const DELAY_BETWEEN_USERS_MS = 1000; // Delay between processing users
 
 /**
  * Fetches all UNIQUE user IDs from the KV database under the credit_scores prefix.
@@ -15,7 +15,6 @@ async function getAllUserIds(): Promise<string[]> {
   const iter = db.list({ prefix: ["credit_scores"] });
 
   for await (const entry of iter) {
-    // Key structure is ["credit_scores", userId, timestamp]
     if (Array.isArray(entry.key) && entry.key.length > 1) {
       const userId = entry.key[1] as string;
       uniqueUserIds.add(userId);
@@ -25,19 +24,19 @@ async function getAllUserIds(): Promise<string[]> {
 }
 
 /**
- * Processes a single user's score by calling the API handler,
- * fetching the username from the latest credit score entry.
+ * Processes a single user's score by calling the API handler.
+ * It fetches the username from the latest credit score entry for logging purposes.
  */
-async function processUserScore(userId: string) {
-  console.log(`[${cronName}] Processing score for user ID: ${userId}`);
+async function processUserScore(userId: string): Promise<void> {
+  console.debug(`[${CRON_NAME}] Attempting to process user ID: ${userId}`);
+  let usernameForLog: string | undefined = userId; // Default to userId if username not found
+  let latestTimestamp = 0;
+
   try {
-    // --- Fetch username from the latest credit score entry ---
+    // Iterate through credit_scores for this user to find the latest username
     const creditScoreEntriesIter = db.list({
       prefix: ["credit_scores", userId],
     });
-
-    let latestTimestamp = 0;
-    let foundUsername: string | undefined; // Use a variable that can be reassigned
 
     for await (const entry of creditScoreEntriesIter) {
       if (
@@ -49,86 +48,91 @@ async function processUserScore(userId: string) {
           entry.value && typeof entry.value === "object" &&
           "username" in entry.value
         ) {
-          const currentUsername =
-            (entry.value as { username: string }).username;
-
+          // We'll keep track of the username from the entry with the latest timestamp
           if (timestamp > latestTimestamp) {
             latestTimestamp = timestamp;
-            foundUsername = currentUsername; // Reassign the variable that finds the latest
+            usernameForLog = (entry.value as { username: string }).username;
           }
         }
       }
     }
 
-    // Use the foundUsername which holds the username from the latest entry
-    const username = foundUsername;
-    // --- End of fetching username ---
-
-    if (!username) {
-      console.warn(
-        `[${cronName}] Username not found in credit_scores for user ID: ${userId}. Skipping.`,
+    if (!usernameForLog || usernameForLog === userId) {
+      console.info(
+        `[${CRON_NAME}] Username not found in KV for user ID: ${userId}. Proceeding with ID.`,
       );
-      return;
     }
 
     const mockRequest = new Request(
-      `http://localhost/api/score?username=${encodeURIComponent(username)}`,
+      `http://localhost/api/score?username=${
+        encodeURIComponent(usernameForLog)
+      }`,
       { method: "GET" },
     );
 
     const response = await scoreHandler(mockRequest);
+    const responseBody = await response.json().catch(() => ({}));
 
     if (response.ok) {
-      console.log(
-        `[${cronName}] Successfully updated score for user: ${username}`,
-      );
+      const apiUsername = responseBody.username || usernameForLog;
+      const historicalDataSaved = responseBody.historicalDataSaved;
+      let statusMessage =
+        `User '${apiUsername}' (ID: ${userId}): Score processed.`;
+      if (responseBody.userExists === false) {
+        statusMessage =
+          `User '${apiUsername}' (ID: ${userId}): Not found by API.`;
+        console.warn(`[${CRON_NAME}] ${statusMessage}`);
+      } else {
+        statusMessage += ` Historical data saved: ${historicalDataSaved}.`;
+        console.info(`[${CRON_NAME}] ${statusMessage}`);
+      }
     } else {
-      const errorBody = await response.text();
-      console.error(
-        `[${cronName}] Failed to update score for user ${username}: ${response.status} - ${errorBody}`,
+      const errorDetail = responseBody.error || response.statusText ||
+        "Unknown error";
+      console.warn(
+        `[${CRON_NAME}] User '${usernameForLog}' (ID: ${userId}): Failed to update score. Status: ${response.status}. Details: ${errorDetail}`,
       );
     }
   } catch (error) {
-    console.error(`[${cronName}] Error processing user ${userId}:`, error);
+    const errorMessage =
+      typeof error === "object" && error !== null && "message" in error
+        ? (error as { message: string }).message
+        : String(error);
+    console.warn(
+      `[${CRON_NAME}] User '${usernameForLog}' (ID: ${userId}): Error during processing. Details: ${errorMessage}`,
+    );
   }
 }
 
-// ... rest of the file ...
+const DAILY_SCHEDULE = "0 8 * * *";
 
-// ... rest of the file (getAllUserIds, dailySchedule, Deno.cron definition) ...
-
-// Cron schedule: 8:00 AM UTC daily
-const dailySchedule = "0 8 * * *";
-
-// Define the Deno.cron task
-Deno.cron(cronName, dailySchedule, async () => {
-  console.log(
-    `[${cronName}] Cron job triggered with schedule "${dailySchedule}".`,
+Deno.cron(CRON_NAME, DAILY_SCHEDULE, async () => {
+  console.info(
+    `[${CRON_NAME}] Cron job triggered with schedule "${DAILY_SCHEDULE}".`,
   );
   try {
     const allUserIds = await getAllUserIds();
     const totalUserCount = allUserIds.length;
-    console.log(
-      `[${cronName}] Total unique users in DB: ${totalUserCount}.`,
+    console.info(
+      `[${CRON_NAME}] Total unique users in DB: ${totalUserCount}.`,
     );
 
     if (totalUserCount === 0) {
-      console.log(`[${cronName}] No users found. Skipping processing.`);
-      const lastProcessedIndexKey = ["cron_progress", cronName, "last_index"];
-      const atomic = db.atomic();
-      atomic.set(lastProcessedIndexKey, 0);
-      await atomic.commit();
+      console.info(`[${CRON_NAME}] No users found. Skipping processing.`);
+      // Ensure last_index is reset if no users are found
+      const lastProcessedIndexKey = ["cron_progress", CRON_NAME, "last_index"];
+      await db.atomic().set(lastProcessedIndexKey, 0).commit();
       return;
     }
 
-    const lastProcessedIndexKey = ["cron_progress", cronName, "last_index"];
+    const lastProcessedIndexKey = ["cron_progress", CRON_NAME, "last_index"];
     const lastProcessedIndexEntry = await db.get<number>(
       lastProcessedIndexKey,
     );
 
     let lastProcessedIndex = (
         lastProcessedIndexEntry.value !== null &&
-        lastProcessedIndexEntry.value !== undefined &&
+        typeof lastProcessedIndexEntry.value === "number" &&
         !isNaN(lastProcessedIndexEntry.value) &&
         lastProcessedIndexEntry.value >= 0
       )
@@ -136,22 +140,20 @@ Deno.cron(cronName, dailySchedule, async () => {
       : 0;
 
     if (lastProcessedIndex >= totalUserCount) {
-      console.log(
-        `[${cronName}] Index out of bounds or cycle completed. Resetting index to 0.`,
+      console.info(
+        `[${CRON_NAME}] Cycle completed or index out of bounds. Resetting index to 0.`,
       );
       lastProcessedIndex = 0;
-      const atomicReset = db.atomic();
-      atomicReset.set(lastProcessedIndexKey, 0);
-      await atomicReset.commit();
+      await db.atomic().set(lastProcessedIndexKey, 0).commit();
     }
 
     const usersToProcessInThisRun = Math.min(
-      usersPerDay,
+      USERS_PER_DAY,
       totalUserCount - lastProcessedIndex,
     );
 
-    console.log(
-      `[${cronName}] Starting processing from index ${lastProcessedIndex}. Processing ${usersToProcessInThisRun} users.`,
+    console.info(
+      `[${CRON_NAME}] Starting processing from index ${lastProcessedIndex}. Will process ${usersToProcessInThisRun} users this run.`,
     );
 
     let processedCount = 0;
@@ -164,23 +166,39 @@ Deno.cron(cronName, dailySchedule, async () => {
       const userId = allUserIds[lastProcessedIndex + i];
       await processUserScore(userId);
       processedCount++;
-      // Add a small delay between processing users
-      await new Promise((resolve) => setTimeout(resolve, delayBetweenUsersMs));
+      if (i < usersToProcessInThisRun - 1) { // Avoid delay after the last user
+        await new Promise((resolve) =>
+          setTimeout(resolve, DELAY_BETWEEN_USERS_MS)
+        );
+      }
     }
 
-    const nextIndex = (lastProcessedIndex + processedCount) % totalUserCount;
-    const atomic = db.atomic();
-    atomic.set(lastProcessedIndexKey, nextIndex);
-    await atomic.commit();
+    const nextIndex = lastProcessedIndex + processedCount;
 
-    console.log(
-      `[${cronName}] Finished processing ${processedCount} users. Next run will start from index ${nextIndex}.`,
+    // If we processed any users and nextIndex reaches or exceeds totalUserCount,
+    // it means we've completed a full cycle (or the remainder of one). Reset to 0 for next day.
+    const finalNextIndex = nextIndex >= totalUserCount ? 0 : nextIndex;
+
+    await db.atomic().set(lastProcessedIndexKey, finalNextIndex).commit();
+
+    console.info(
+      `[${CRON_NAME}] Finished processing ${processedCount} users. Next run will start from index ${finalNextIndex}.`,
     );
 
-    if (nextIndex === 0 && processedCount > 0) {
-      console.log(`[${cronName}] Completed a full cycle through all users.`);
+    if (finalNextIndex === 0 && processedCount > 0) {
+      console.info(
+        `[${CRON_NAME}] Completed a full cycle through all users.`,
+      );
     }
   } catch (error) {
-    console.error(`[${cronName}] Error during cron execution:`, error);
+    // This catches critical errors in the main cron logic (e.g., KV operations for progress)
+    console.error(
+      `[${CRON_NAME}] CRITICAL ERROR during cron execution: ${
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : String(error)
+      }`,
+      error, // Log the full error object for more details if needed
+    );
   }
 });

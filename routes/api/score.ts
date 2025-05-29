@@ -1,9 +1,9 @@
 /// <reference lib="deno.unstable" />
 // routes/api/score.ts
 
-import db from "../../database/db.ts"; // Import the KV database instance
+import db from "../../database/db.ts";
 
-// Define an interface for the relevant parts of a transaction object
+// Your existing interfaces
 interface ManaPaymentTransaction {
   id: string;
   amount: number;
@@ -12,7 +12,7 @@ interface ManaPaymentTransaction {
   fromType: "USER" | string;
   toType: "USER" | string;
   category: "MANA_PAYMENT" | string;
-  createdTime: number; // Unix timestamp in milliseconds
+  createdTime: number;
   token?: string;
   description?: string;
   data?: {
@@ -22,12 +22,11 @@ interface ManaPaymentTransaction {
   };
 }
 
-// Define a specific interface for the user portfolio data
 interface UserPortfolio {
   loanTotal: number;
   investmentValue: number;
   cashInvestmentValue: number;
-  balance: number; // User's current balance
+  balance: number;
   cashBalance: number;
   spiceBalance: number;
   totalDeposits: number;
@@ -36,115 +35,250 @@ interface UserPortfolio {
   timestamp: number;
 }
 
+// New interface for the Manifold User object
+interface ManifoldUser {
+  id: string;
+  username: string;
+  avatarUrl?: string | null;
+  createdTime?: number; // Assuming Unix timestamp
+  userDeleted?: boolean;
+  // Add other properties you use from the /v0/user/:username endpoint
+  // name?: string;
+  // bio?: string;
+}
+
+// Helper for fetch with retries
+async function fetchWithRetries(
+  url: string,
+  options?: RequestInit,
+  retries = 2,
+  delayMs = 1000,
+  // deno-lint-ignore no-explicit-any
+): Promise<{ response: Response | null; error?: any; success: boolean }> {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const response = await fetch(url, options);
+      if (response.ok) {
+        return { response, success: true };
+      }
+
+      if (
+        (response.status === 503 || response.status === 500 ||
+          response.status === 502 || response.status === 504 ||
+          response.status === 429) && i < retries
+      ) {
+        console.warn(
+          `Fetch failed for ${url} with status ${response.status}. Retrying in ${
+            delayMs * (i + 1)
+          }ms... (Attempt ${i + 1} of ${retries + 1})`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, delayMs * (i + 1)));
+        continue;
+      }
+      return { response, success: false };
+    } catch (error) {
+      if (i < retries) {
+        const errorMessage =
+          typeof error === "object" && error !== null && "message" in error
+            ? (error as { message: string }).message
+            : String(error);
+        console.warn(
+          `Fetch error for ${url}: ${errorMessage}. Retrying in ${
+            delayMs * (i + 1)
+          }ms... (Attempt ${i + 1} of ${retries + 1})`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, delayMs * (i + 1)));
+      } else {
+        const finalErrorMessage =
+          typeof error === "object" && error !== null && "message" in error
+            ? (error as { message: string }).message
+            : String(error);
+        console.error(
+          `Fetch error for ${url} after ${
+            retries + 1
+          } attempts: ${finalErrorMessage}`,
+        );
+        return { response: null, error, success: false };
+      }
+    }
+  }
+  return {
+    response: null,
+    error: new Error("Exhausted retries unexpectedly"),
+    success: false,
+  };
+}
+
 // Fetch raw user data
-async function fetchUserData(username: string) {
-  let fetchSuccess = false;
-  let userData = null;
-  let userDeleted = false; // Initialize userDeleted
+async function fetchUserData(
+  username: string,
+): Promise<{
+  userData: ManifoldUser | null;
+  fetchSuccess: boolean;
+  userDeleted: boolean;
+}> {
+  let userDeleted = false;
 
-  try {
-    const res = await fetch(`https://api.manifold.markets/v0/user/${username}`);
+  const { response, success, error } = await fetchWithRetries(
+    `https://api.manifold.markets/v0/user/${username}`,
+  );
 
-    if (res.status === 404) {
-      fetchSuccess = false;
-      return { userData: null, fetchSuccess, userDeleted };
-    }
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch ${username}: ${res.statusText}`);
-    }
-
-    userData = await res.json();
-    fetchSuccess = true;
-    userDeleted = userData.userDeleted === true; // Set userDeleted based on API response
-  } catch (error) {
-    fetchSuccess = false;
-    console.error(`Error fetching user '${username}':`, error);
+  if (!success || !response) {
+    console.warn(
+      `fetchUserData: Failed to fetch data for '${username}' after retries. Error: ${
+        error ? error.message : (response ? response.statusText : "Unknown")
+      }`,
+    );
+    return { userData: null, fetchSuccess: false, userDeleted };
   }
 
-  console.log(`fetchSuccess for '${username}':`, fetchSuccess);
-  return { userData, fetchSuccess, userDeleted };
+  if (response.status === 404) {
+    console.info(`fetchUserData: User '${username}' not found (404).`);
+    return { userData: null, fetchSuccess: false, userDeleted };
+  }
+
+  if (!response.ok) {
+    console.warn(
+      `fetchUserData: Received non-OK status ${response.status} for '${username}' after retries.`,
+    );
+    return { userData: null, fetchSuccess: false, userDeleted };
+  }
+
+  try {
+    const userData: ManifoldUser = await response.json();
+    userDeleted = userData.userDeleted === true;
+    console.debug(
+      `fetchUserData: Successfully fetched data for '${username}'.`,
+    );
+    return { userData, fetchSuccess: true, userDeleted };
+  } catch (jsonError) {
+    console.error(
+      `fetchUserData: Error parsing JSON for '${username}': ${
+        typeof jsonError === "object" && jsonError !== null &&
+          "message" in jsonError
+          ? (jsonError as { message: string }).message
+          : String(jsonError)
+      }`,
+    );
+    return { userData: null, fetchSuccess: false, userDeleted };
+  }
 }
 
 // High league rank improves the score.
 async function fetchManaAndRecentRank(
   userId: string,
-): Promise<{ total: number; latestRank: number | null }> {
-  const res = await fetch(
+): Promise<{ total: number; latestRank: number | null; success: boolean }> {
+  const { response, success, error } = await fetchWithRetries(
     `https://api.manifold.markets/v0/leagues?userId=${userId}`,
   );
 
-  if (!res.ok) {
-    console.error(`Failed to fetch leagues: ${res.statusText}`);
-    return { total: 0, latestRank: null };
+  if (!success || !response) {
+    console.warn(
+      `fetchManaAndRecentRank: Failed for userId '${userId}' after retries. Error: ${
+        error ? error.message : (response ? response.statusText : "Unknown")
+      }`,
+    );
+    return { total: 0, latestRank: null, success: false };
   }
 
-  const leaguesData = await res.json();
-  let total = 0;
-  let latestRank: number | null = null;
+  try {
+    const leaguesData = await response.json();
+    let total = 0;
+    let latestRank: number | null = null;
 
-  for (const season of leaguesData) {
-    total += season.manaEarned;
+    for (const season of leaguesData) {
+      total += season.manaEarned;
+    }
+
+    if (leaguesData.length > 0) {
+      const mostRecent = leaguesData.reduce((
+        a: { season?: number; rankSnapshot?: number },
+        b: { season?: number; rankSnapshot?: number },
+      ) => (a.season ?? 0) > (b.season ?? 0) ? a : b);
+      latestRank = mostRecent.rankSnapshot ?? null;
+    }
+    return { total, latestRank, success: true };
+  } catch (jsonError) {
+    console.error(
+      `fetchManaAndRecentRank: Error parsing JSON for userId '${userId}': ${
+        typeof jsonError === "object" && jsonError !== null &&
+          "message" in jsonError
+          ? (jsonError as { message: string }).message
+          : String(jsonError)
+      }`,
+    );
+    return { total: 0, latestRank: null, success: false };
   }
-
-  if (leaguesData.length > 0) {
-    const mostRecent = leaguesData.reduce((
-      a: { season?: number; rankSnapshot?: number },
-      b: { season?: number; rankSnapshot?: number },
-    ) => (a.season ?? 0) > (b.season ?? 0) ? a : b);
-    latestRank = mostRecent.rankSnapshot ?? null;
-  }
-
-  return { total, latestRank };
 }
 
-async function fetchTransactionCount(username: string): Promise<number> {
-  try {
-    const res = await fetch(
-      `https://api.manifold.markets/v0/bets?username=${username}`,
+async function fetchTransactionCount(
+  username: string,
+): Promise<{ count: number; success: boolean }> {
+  const { response, success, error } = await fetchWithRetries(
+    `https://api.manifold.markets/v0/bets?username=${username}`,
+  );
+
+  if (!success || !response) {
+    console.warn(
+      `fetchTransactionCount: Failed for '${username}' after retries. Error: ${
+        error ? error.message : (response ? response.statusText : "Unknown")
+      }`,
     );
-    if (!res.ok) {
-      throw new Error(`Failed to fetch transactions: ${res.statusText}`);
-    }
-    const data = await res.json();
-    return Array.isArray(data) ? data.length : 0;
-  } catch (err) {
-    console.error(`Error fetching transaction count for '${username}':`, err);
-    return 0;
+    return { count: 0, success: false };
+  }
+
+  try {
+    const data = await response.json();
+    return { count: Array.isArray(data) ? data.length : 0, success: true };
+  } catch (jsonError) {
+    console.error(
+      `fetchTransactionCount: Error parsing JSON for '${username}': ${
+        typeof jsonError === "object" && jsonError !== null &&
+          "message" in jsonError
+          ? (jsonError as { message: string }).message
+          : String(jsonError)
+      }`,
+    );
+    return { count: 0, success: false };
   }
 }
 
 // Fetch loan/repayment transactions
 async function fetchLoanTransactions(
   userId: string,
-): Promise<ManaPaymentTransaction[]> {
+): Promise<{ transactions: ManaPaymentTransaction[]; success: boolean }> {
+  const receivedResult = await fetchWithRetries(
+    `https://api.manifold.markets/v0/txns?limit=100&category=MANA_PAYMENT&toId=${userId}`,
+  );
+  const sentResult = await fetchWithRetries(
+    `https://api.manifold.markets/v0/txns?limit=100&category=MANA_PAYMENT&fromId=${userId}`,
+  );
+
+  if (
+    !receivedResult.success || !receivedResult.response ||
+    !sentResult.success || !sentResult.response
+  ) {
+    console.warn(
+      `fetchLoanTransactions: Failed to fetch one or both transaction sets for userId '${userId}' after retries.`,
+    );
+    return { transactions: [], success: false };
+  }
+
   try {
-    // Fetch transactions where the user is the recipient
-    const receivedTxnsRes = await fetch(
-      `https://api.manifold.markets/v0/txns?limit=100&category=MANA_PAYMENT&toId=${userId}`,
+    const receivedTxns: ManaPaymentTransaction[] = await receivedResult.response
+      .json();
+    const sentTxns: ManaPaymentTransaction[] = await sentResult.response.json();
+    return { transactions: [...receivedTxns, ...sentTxns], success: true };
+  } catch (jsonError) {
+    console.error(
+      `fetchLoanTransactions: Error parsing JSON for userId '${userId}': ${
+        typeof jsonError === "object" && jsonError !== null &&
+          "message" in jsonError
+          ? (jsonError as { message: string }).message
+          : String(jsonError)
+      }`,
     );
-    if (!receivedTxnsRes.ok) {
-      throw new Error(
-        `Failed to fetch received loan transactions: ${receivedTxnsRes.statusText}`,
-      );
-    }
-    const receivedTxns: ManaPaymentTransaction[] = await receivedTxnsRes.json();
-
-    // Fetch transactions where the user is the sender
-    const sentTxnsRes = await fetch(
-      `https://api.manifold.markets/v0/txns?limit=100&category=MANA_PAYMENT&fromId=${userId}`,
-    );
-    if (!sentTxnsRes.ok) {
-      throw new Error(
-        `Failed to fetch sent loan transactions: ${sentTxnsRes.statusText}`,
-      );
-    }
-    const sentTxns: ManaPaymentTransaction[] = await sentTxnsRes.json();
-
-    return [...receivedTxns, ...sentTxns];
-  } catch (err) {
-    console.error(`Error fetching loan transactions for '${userId}':`, err);
-    return [];
+    return { transactions: [], success: false };
   }
 }
 
@@ -152,16 +286,13 @@ async function fetchLoanTransactions(
 function calculateNetLoanBalance(
   userId: string,
   transactions: ManaPaymentTransaction[],
-  manifoldUserId: string, // Pass the Manifold User ID here
+  manifoldUserId: string,
 ): number {
   const loanBalancesPerUser: { [otherUserId: string]: number } = {};
-
   for (const txn of transactions) {
-    // Skip transactions involving the Manifold user
     if (txn.fromId === manifoldUserId || txn.toId === manifoldUserId) {
-      continue; // Skip this transaction
+      continue;
     }
-
     if (
       txn.category === "MANA_PAYMENT" && txn.fromType === "USER" &&
       txn.toType === "USER"
@@ -177,14 +308,12 @@ function calculateNetLoanBalance(
       }
     }
   }
-
   let loanImpact = 0;
   for (const otherUserId in loanBalancesPerUser) {
     if (loanBalancesPerUser[otherUserId] < 0) {
       loanImpact += loanBalancesPerUser[otherUserId];
     }
   }
-
   return loanImpact;
 }
 
@@ -196,13 +325,11 @@ function computeMMR(
   rank: number,
   transactionCount: number,
   netLoanBalance: number,
-  maxRank: number = 100,
+  maxRank = 100,
 ): number {
   const rankWeight = Math.max(0, Math.min(1, 1 - (rank - 1) / (maxRank - 1)));
   const rankMMR = rankWeight * 1000;
-
   let transactionMMR = 0;
-
   if (transactionCount < 5) {
     transactionMMR = -1000000;
   } else if (transactionCount <= 20) {
@@ -226,6 +353,7 @@ function computeMMR(
   const transactionMMRWeight = 0.1;
   const rankMMRWeight = 0.1;
 
+  // Credit Score Calculation
   return ((balance * balanceWeight) +
     (netLoanBalance * outstandingLoanImpactWeight) +
     (calculatedProfit * calculatedProfitWeight) + (ageDays * ageDaysWeight)) +
@@ -234,52 +362,33 @@ function computeMMR(
 }
 
 function mapToCreditScore(mmrValue: number): number {
-  // Define the min/max MMR for reference, can tune these
   const minMMR = -500000;
   const maxMMR = 2000000;
-
-  // Logarithmic transform using symmetric scaling
   const transform = (x: number) => {
     const sign = x < 0 ? -1 : 1;
     return sign * Math.log10(1 + Math.abs(x));
   };
-
   const transformedMin = transform(minMMR);
   const transformedMax = transform(maxMMR);
   const transformedValue = transform(mmrValue);
-
-  // Normalize
   const normalized = (transformedValue - transformedMin) /
     (transformedMax - transformedMin);
   const score = normalized * 1000;
-
   return Math.round(Math.max(0, Math.min(1000, score)));
 }
 
 function calculateRiskMultiplier(score: number): number {
   const clampedScore = Math.max(0, Math.min(score, 1000));
-
-  if (clampedScore >= 900) {
-    return 0.02; // 2% old
-  } else if (clampedScore >= 800) {
-    return 0.03; // 7% old
-  } else if (clampedScore >= 700) {
-    return 0.05; // 11% old
-  } else if (clampedScore >= 600) {
-    return 0.07; // 15% old
-  } else if (clampedScore >= 500) {
-    return 0.10; // 25% old
-  } else if (clampedScore >= 400) {
-    return 0.14; // 45% old
-  } else if (clampedScore >= 300) {
-    return 0.25; // 75% old
-  } else if (clampedScore >= 200) {
-    return 0.60; // 110% old
-  } else if (clampedScore >= 100) {
-    return 1.00; // 150% old
-  } else {
-    return 1.60; // 200% old
-  }
+  if (clampedScore >= 900) return 0.02;
+  if (clampedScore >= 800) return 0.03;
+  if (clampedScore >= 700) return 0.05;
+  if (clampedScore >= 600) return 0.07;
+  if (clampedScore >= 500) return 0.10;
+  if (clampedScore >= 400) return 0.14;
+  if (clampedScore >= 300) return 0.25;
+  if (clampedScore >= 200) return 0.60;
+  if (clampedScore >= 100) return 1.00;
+  return 1.60;
 }
 
 export async function handler(req: Request): Promise<Response> {
@@ -287,59 +396,58 @@ export async function handler(req: Request): Promise<Response> {
   const username = url.searchParams.get("username");
 
   if (!username || username.length < 1) {
-    return new Response("Username missing or too short", { status: 400 });
+    return new Response(
+      JSON.stringify({ error: "Username missing or too short" }),
+      {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
 
-  // Define the Manifold admin user ID
-  const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2"; // Manifold's user ID
+  const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2";
 
-  // Fetch user data from Manifold API
-  const { userData, fetchSuccess: manifoldFetchSuccess, userDeleted } =
-    await fetchUserData(
-      username,
-    ); // Include userDeleted in the destructured object
+  const {
+    userData,
+    fetchSuccess: manifoldUserFetchSuccess,
+    userDeleted,
+  } = await fetchUserData(username);
 
-  // If fetchUserData was not successful (e.g., 404 from Manifold API)
-  if (!manifoldFetchSuccess || !userData) {
-    // Instead of returning 404 directly, return a 200 OK with userExists: false
+  if (!manifoldUserFetchSuccess || !userData) {
     const responsePayload = {
-      username: username, // Return the attempted username
-      creditScore: 0, // Default score
-      riskMultiplier: 0, // Default multiplier
-      avatarUrl: null, // No avatar
-      userExists: false, // Explicitly state user was NOT found
-      fetchSuccess: true, // Indicate that the fetch *to your backend* for user data was attempted and responded successfully (even if the API returned 404)
-      historicalDataSaved: false, // No historical data saved for non-existent users
-      userDeleted: userDeleted, // Include the userDeleted status even for non-existent/404
+      username: username,
+      creditScore: 0,
+      riskMultiplier: 0,
+      avatarUrl: null,
+      userExists: false,
+      fetchSuccess: true,
+      historicalDataSaved: false,
+      userDeleted: userDeleted,
     };
-    console.log(`User ${username} not found via Manifold API.`);
+    console.info(
+      `Handler: User '${username}' not found or fetch failed from Manifold API.`,
+    );
     return new Response(JSON.stringify(responsePayload), {
       headers: { "Content-Type": "application/json" },
-      status: 200, // Return 200 OK status
+      status: 200,
     });
   }
 
-  // If the user was found (userData is available and manifoldFetchSuccess was true)
   const userId = userData.id;
 
-  // Add a check here if the fetched user is the Manifold admin (case-sensitive check on username)
   if (userData.username === "Manifold") {
-    // You can decide how to handle this - either proceed with calculation
-    // (which will exclude their mana payments) or return a specific response.
-    // For now, we'll let it proceed but ensure the mana payments are filtered.
-    console.log(
-      `Processing request for @Manifold user, filtering mana payments.`,
+    console.info(
+      `Handler: Processing @Manifold user, mana payments will be filtered.`,
     );
   }
 
   const currentTime = Date.now();
   const rateLimitDays = 1;
-  const rateLimitMilliseconds = rateLimitDays * 24 * 60 * 60 * 1000; // 1 day in milliseconds
+  const rateLimitMilliseconds = rateLimitDays * 24 * 60 * 60 * 1000;
 
   try {
-    // Check for the last update timestamp in KV
     const lastUpdateKey = ["last_score_update", userId];
-    const lastUpdateEntry = await db.get<number>(lastUpdateKey); // Use db instance
+    const lastUpdateEntry = await db.get<number>(lastUpdateKey);
     const lastUpdateTime = lastUpdateEntry.value;
 
     let shouldSaveHistoricalData = true;
@@ -348,122 +456,133 @@ export async function handler(req: Request): Promise<Response> {
       (currentTime - lastUpdateTime) < rateLimitMilliseconds
     ) {
       shouldSaveHistoricalData = false;
-      console.log(
-        `Rate limit active for user ${username}. Skipping historical data save.`,
+      console.debug(
+        `Handler: Rate limit active for user '${userData.username}'. Skipping historical data save.`,
       );
     }
 
     const createdTime = userData.createdTime ?? Date.now();
     const ageDays = (Date.now() - createdTime) / 86_400_000;
 
-    const portfolioRes = await fetch(
+    const portfolioFetch = await fetchWithRetries(
       `https://api.manifold.markets/v0/get-user-portfolio?userId=${userData.id}`,
     );
-    if (!portfolioRes.ok) {
-      // Handle this API fetch failure - might want to return an error response here
+    if (!portfolioFetch.success || !portfolioFetch.response) {
       console.error(
-        `Failed to fetch user portfolio: ${portfolioRes.statusText}`,
+        `Handler: Failed to fetch portfolio for '${userData.username}' (ID: ${userId}) after retries.`,
       );
-      return new Response(`Error fetching portfolio for ${username}`, {
-        status: 500,
-      });
+      return new Response(
+        JSON.stringify({
+          error: `Failed to fetch user portfolio data`,
+          username: userData.username,
+          userExists: true,
+          fetchSuccess: false,
+          historicalDataSaved: false,
+          userDeleted: userDeleted,
+        }),
+        { status: 503, headers: { "Content-Type": "application/json" } },
+      );
     }
-    const userPortfolio: UserPortfolio = await portfolioRes.json();
+    const userPortfolio: UserPortfolio = await portfolioFetch.response.json();
 
     const calculatedProfit = userPortfolio.investmentValue +
       userPortfolio.balance - userPortfolio.totalDeposits;
 
-    const { latestRank } = await fetchManaAndRecentRank(userData.id);
-    const transactionCount = await fetchTransactionCount(username);
+    const rankData = await fetchManaAndRecentRank(userData.id);
+    const transactionData = await fetchTransactionCount(userData.username);
+    const loanData = await fetchLoanTransactions(userData.id);
 
-    // Call calculateNetLoanBalance with the hardcoded MANIFOLD_USER_ID
-    const loanTransactions = await fetchLoanTransactions(userData.id);
+    if (!rankData.success || !transactionData.success || !loanData.success) {
+      console.warn(
+        `Handler: One or more auxiliary data fetches failed for '${userData.username}' (ID: ${userId}). Proceeding with available data or defaults.`,
+      );
+    }
+
     const outstandingDebtImpact = calculateNetLoanBalance(
       userData.id,
-      loanTransactions,
-      MANIFOLD_USER_ID, // Use the hardcoded ID
+      loanData.transactions,
+      MANIFOLD_USER_ID,
     );
 
-    // Compute the raw MMR based on all weighted factors
     const rawMMR = computeMMR(
       userPortfolio.balance,
       calculatedProfit,
       ageDays,
-      latestRank ?? 100,
-      transactionCount,
+      rankData.latestRank ?? 100,
+      transactionData.count,
       outstandingDebtImpact,
     );
 
-    // Map the raw MMR directly to the 0-1000 credit score
     const creditScore = mapToCreditScore(rawMMR);
-
-    // Calculate the risk multiplier based on the credit score
     const risk = calculateRiskMultiplier(creditScore);
 
-    // Save historical data to KV if not rate-limited and user is not deleted
     if (shouldSaveHistoricalData && !userDeleted) {
       const historicalDataKey = ["credit_scores", userId, currentTime];
       const historicalDataValue = {
         userId,
-        username,
+        username: userData.username,
         creditScore,
         timestamp: currentTime,
       };
-      await db.set(historicalDataKey, historicalDataValue); // Use db instance
+      await db.set(historicalDataKey, historicalDataValue);
 
-      // Update the last update timestamp in KV using a transaction
       const atomic = db.atomic();
       atomic.set(lastUpdateKey, currentTime);
       await atomic.commit();
-      console.log(
-        `Historical data saved and last update timestamp updated for user ${username}`,
+      console.info(
+        `Handler: Historical data saved for user '${userData.username}'.`,
       );
     } else if (userDeleted) {
-      console.log(
-        `User ${username} is deleted. Skipping historical data save.`,
+      console.info(
+        `Handler: User '${userData.username}' is deleted. Skipping historical data save.`,
       );
     }
 
-    // Return the full success payload
     const output = {
-      username: userData.username, // Use the username returned by the API (correct casing)
+      username: userData.username,
       creditScore,
       riskMultiplier: risk,
       avatarUrl: userData.avatarUrl || null,
-      userExists: true, // Explicitly state user was found
-      fetchSuccess: true, // Indicate backend fetch was successful for an existing user
-      latestRank,
+      userExists: true,
+      fetchSuccess: true,
+      latestRank: rankData.latestRank,
       outstandingDebtImpact: outstandingDebtImpact,
       calculatedProfit: calculatedProfit,
       balance: userPortfolio.balance,
       rawMMR: rawMMR,
-      historicalDataSaved: shouldSaveHistoricalData && !userDeleted, // Reflect whether data was actually saved
+      historicalDataSaved: shouldSaveHistoricalData && !userDeleted,
       userId: userId,
-      userDeleted: userDeleted, // Include the userDeleted status
-      // manifoldUserId: MANIFOLD_USER_ID // Optional
+      userDeleted: userDeleted,
     };
 
-    console.log(`Successfully processed data for user: ${username}`);
-    // ... (logging) ...
+    console.info(
+      `Handler: Successfully processed data for user '${userData.username}'.`,
+    );
     return new Response(JSON.stringify(output), {
       headers: { "Content-Type": "application/json" },
-      status: 200, // Return 200 OK status
+      status: 200,
     });
   } catch (error) {
-    console.error(`Error processing data for ${username}:`, error);
-    // Handle other internal errors
+    const errorMessage =
+      typeof error === "object" && error !== null && "message" in error
+        ? (error as { message: string }).message
+        : String(error);
+    console.error(
+      `Handler: Critical error processing data for '${username}': ${errorMessage}`,
+      error,
+    );
     return new Response(
       JSON.stringify({
         error: `Internal server error processing data for ${username}`,
-        username: username, // Return the attempted username
-        userExists: false, // Assume false on internal error
-        fetchSuccess: false, // Indicate backend processing failed
-        historicalDataSaved: false, // No historical data saved
-        userDeleted: userDeleted, // Include the userDeleted status even on internal error
+        username: username,
+        userExists: manifoldUserFetchSuccess && !!userData,
+        fetchSuccess: false,
+        historicalDataSaved: false,
+        userDeleted: userDeleted,
       }),
       {
+        status: 500,
         headers: { "Content-Type": "application/json" },
-        status: 500, // Return 500 Internal Server Error
       },
     );
   }
