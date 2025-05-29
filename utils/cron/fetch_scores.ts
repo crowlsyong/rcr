@@ -1,7 +1,7 @@
 /// <reference lib="deno.unstable" />
 
-import db from "../database/db.ts";
-import { handler as scoreHandler } from "../routes/api/score.ts";
+import db from "../../database/db.ts";
+import { handler as scoreHandler } from "../../routes/api/score.ts";
 
 const CRON_NAME = "Update User Credit Scores";
 const USERS_PER_DAY = 1 * 60 * 24; // 1440 users per day
