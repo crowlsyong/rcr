@@ -4,8 +4,10 @@ import db from "../../database/db.ts";
 import { handler as scoreHandler } from "../../routes/api/score.ts";
 
 const CRON_NAME = "Update User Credit Scores";
-const USERS_PER_DAY = 1 * 60 * 24; // 1440 users per day
-const DELAY_BETWEEN_USERS_MS = 1000; // Delay between processing users
+// Process a fixed number of users per cron run to stay within execution limits
+const USERS_PER_CRON_RUN = 30;
+// Delay between processing users to avoid overwhelming services
+const DELAY_BETWEEN_USERS_MS = 1000;
 
 /**
  * Fetches all UNIQUE user IDs from the KV database under the credit_scores prefix.
@@ -29,14 +31,14 @@ async function getAllUserIds(): Promise<string[]> {
  */
 async function processUserScore(userId: string): Promise<void> {
   console.debug(`[${CRON_NAME}] Attempting to process user ID: ${userId}`);
-  let usernameForLog: string | undefined = userId; // Default to userId if username not found
-  let latestTimestamp = 0;
+  let usernameForLog: string | undefined = userId;
 
   try {
-    // Iterate through credit_scores for this user to find the latest username
     const creditScoreEntriesIter = db.list({
       prefix: ["credit_scores", userId],
     });
+
+    let latestTimestamp = 0;
 
     for await (const entry of creditScoreEntriesIter) {
       if (
@@ -48,7 +50,6 @@ async function processUserScore(userId: string): Promise<void> {
           entry.value && typeof entry.value === "object" &&
           "username" in entry.value
         ) {
-          // We'll keep track of the username from the entry with the latest timestamp
           if (timestamp > latestTimestamp) {
             latestTimestamp = timestamp;
             usernameForLog = (entry.value as { username: string }).username;
@@ -104,7 +105,8 @@ async function processUserScore(userId: string): Promise<void> {
   }
 }
 
-const DAILY_SCHEDULE = "0 8 * * *";
+// Cron schedule: 8:00 AM UTC daily
+const DAILY_SCHEDULE = "0 */4 * * *";
 
 Deno.cron(CRON_NAME, DAILY_SCHEDULE, async () => {
   console.info(
@@ -119,7 +121,6 @@ Deno.cron(CRON_NAME, DAILY_SCHEDULE, async () => {
 
     if (totalUserCount === 0) {
       console.info(`[${CRON_NAME}] No users found. Skipping processing.`);
-      // Ensure last_index is reset if no users are found
       const lastProcessedIndexKey = ["cron_progress", CRON_NAME, "last_index"];
       await db.atomic().set(lastProcessedIndexKey, 0).commit();
       return;
@@ -139,18 +140,33 @@ Deno.cron(CRON_NAME, DAILY_SCHEDULE, async () => {
       ? lastProcessedIndexEntry.value
       : 0;
 
+    // If last processed index is beyond the current total count (due to deletions perhaps), reset
     if (lastProcessedIndex >= totalUserCount) {
-      console.info(
-        `[${CRON_NAME}] Cycle completed or index out of bounds. Resetting index to 0.`,
+      console.warn(
+        `[${CRON_NAME}] Last processed index (${lastProcessedIndex}) is out of bounds for current user count (${totalUserCount}). Resetting index to 0.`,
       );
       lastProcessedIndex = 0;
       await db.atomic().set(lastProcessedIndexKey, 0).commit();
     }
 
     const usersToProcessInThisRun = Math.min(
-      USERS_PER_DAY,
+      USERS_PER_CRON_RUN, // Use the new batch size
       totalUserCount - lastProcessedIndex,
     );
+
+    // If no users are left in the current cycle segment, reset and log completion
+    if (usersToProcessInThisRun <= 0 && totalUserCount > 0) {
+      console.info(
+        `[${CRON_NAME}] No users left in the current segment of the cycle starting from index ${lastProcessedIndex}. Resetting index to 0 for the next run.`,
+      );
+      await db.atomic().set(lastProcessedIndexKey, 0).commit();
+      if (lastProcessedIndex > 0) { // Only log full cycle completion if we actually processed some users before
+        console.info(
+          `[${CRON_NAME}] Completed a full cycle through all users.`,
+        );
+      }
+      return; // Exit this cron run
+    }
 
     console.info(
       `[${CRON_NAME}] Starting processing from index ${lastProcessedIndex}. Will process ${usersToProcessInThisRun} users this run.`,
@@ -159,14 +175,21 @@ Deno.cron(CRON_NAME, DAILY_SCHEDULE, async () => {
     let processedCount = 0;
     for (
       let i = 0;
-      i < usersToProcessInThisRun &&
-      (lastProcessedIndex + i) < totalUserCount;
+      i < usersToProcessInThisRun;
       i++
     ) {
-      const userId = allUserIds[lastProcessedIndex + i];
+      const userIndex = lastProcessedIndex + i;
+      // Double check index is still valid if user list changed during execution
+      if (userIndex >= totalUserCount) {
+        console.warn(
+          `[${CRON_NAME}] User index ${userIndex} is now out of bounds (${totalUserCount}) during processing. Stopping this run.`,
+        );
+        break; // Stop processing if the list size changed unexpectedly
+      }
+      const userId = allUserIds[userIndex];
       await processUserScore(userId);
       processedCount++;
-      if (i < usersToProcessInThisRun - 1) { // Avoid delay after the last user
+      if (i < usersToProcessInThisRun - 1) {
         await new Promise((resolve) =>
           setTimeout(resolve, DELAY_BETWEEN_USERS_MS)
         );
@@ -174,15 +197,15 @@ Deno.cron(CRON_NAME, DAILY_SCHEDULE, async () => {
     }
 
     const nextIndex = lastProcessedIndex + processedCount;
-
-    // If we processed any users and nextIndex reaches or exceeds totalUserCount,
-    // it means we've completed a full cycle (or the remainder of one). Reset to 0 for next day.
-    const finalNextIndex = nextIndex >= totalUserCount ? 0 : nextIndex;
+    // Do NOT reset to 0 here unless we've processed the very last user
+    const finalNextIndex = (nextIndex >= totalUserCount && processedCount > 0)
+      ? 0
+      : nextIndex;
 
     await db.atomic().set(lastProcessedIndexKey, finalNextIndex).commit();
 
     console.info(
-      `[${CRON_NAME}] Finished processing ${processedCount} users. Next run will start from index ${finalNextIndex}.`,
+      `[${CRON_NAME}] Finished processing ${processedCount} users this run. Next run will start from index ${finalNextIndex}.`,
     );
 
     if (finalNextIndex === 0 && processedCount > 0) {
@@ -191,14 +214,13 @@ Deno.cron(CRON_NAME, DAILY_SCHEDULE, async () => {
       );
     }
   } catch (error) {
-    // This catches critical errors in the main cron logic (e.g., KV operations for progress)
     console.error(
       `[${CRON_NAME}] CRITICAL ERROR during cron execution: ${
         typeof error === "object" && error !== null && "message" in error
           ? (error as { message: string }).message
           : String(error)
       }`,
-      error, // Log the full error object for more details if needed
+      error,
     );
   }
 });
