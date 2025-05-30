@@ -40,6 +40,11 @@ const links = [
     targetBlank: true,
   },
   {
+    label: "💵 BANK",
+    url: "https://manifold.markets/news/placeholder",
+    targetBlank: true,
+  },
+  {
     label: "✉️ Contact",
     url: "https://manifold.markets/crowlsyong",
     targetBlank: true,
