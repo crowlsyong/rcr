@@ -1,29 +1,25 @@
 // routes/api/score.ts
 
 import {
-  fetchLoanTransactions,
-  fetchManaAndRecentRank,
-  fetchTransactionCount,
   fetchUserData,
   fetchUserPortfolio,
+  fetchManaAndRecentRank,
+  fetchTransactionCount,
+  fetchLoanTransactions,
 } from "../../utils/api/manifold_api_service.ts";
 import {
   calculateNetLoanBalance,
-  calculateRiskMultiplier,
   computeMMR,
   mapToCreditScore,
+  calculateRiskMultiplier,
 } from "../../utils/api/score_calculation_logic.ts";
 import {
   getLastScoreUpdateTime,
   saveHistoricalScore,
   updateLastScoreUpdateTime,
 } from "../../utils/api/kv_store_service.ts";
-import {
-  ManifoldUser, // Keep the original import
-  UserPortfolio,
-} from "../../utils/api/manifold_types.ts";
+import { UserPortfolio, ManifoldUser } from "../../utils/api/manifold_types.ts";
 
-// Define the Manifold admin user ID
 const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2";
 
 export async function handler(req: Request): Promise<Response> {
@@ -41,15 +37,13 @@ export async function handler(req: Request): Promise<Response> {
   }
 
   const {
-    userData: rawUserData, // Use a temporary name for the raw data
+    userData: rawUserData,
     fetchSuccess: manifoldUserFetchSuccess,
     userDeleted,
   } = await fetchUserData(username);
 
-  // Explicitly type userData here. This helps the linter see the type used.
   const userData: ManifoldUser | null = rawUserData;
 
-  // If fetchUserData was not successful (e.g., 404 or fetch failed after retries)
   if (!manifoldUserFetchSuccess || !userData) {
     const responsePayload = {
       username: username,
@@ -99,7 +93,21 @@ export async function handler(req: Request): Promise<Response> {
     const createdTime = userData.createdTime ?? Date.now();
     const ageDays = (Date.now() - createdTime) / 86_400_000;
 
-    const portfolioFetch = await fetchUserPortfolio(userData.id);
+    // --- Parallel Fetching using Promise.all ---
+    const [
+      portfolioFetch,
+      rankData,
+      transactionData,
+      loanData,
+    ] = await Promise.all([
+      fetchUserPortfolio(userData.id),
+      fetchManaAndRecentRank(userData.id),
+      fetchTransactionCount(userData.username),
+      fetchLoanTransactions(userData.id),
+    ]);
+    // --- End Parallel Fetching ---
+
+    // Handle critical portfolio fetch failure
     if (!portfolioFetch.success || !portfolioFetch.portfolio) {
       console.error(
         `Handler: Failed to fetch portfolio for '${userData.username}' (ID: ${userId}) after retries.`,
@@ -121,10 +129,7 @@ export async function handler(req: Request): Promise<Response> {
     const calculatedProfit = userPortfolio.investmentValue +
       userPortfolio.balance - userPortfolio.totalDeposits;
 
-    const rankData = await fetchManaAndRecentRank(userData.id);
-    const transactionData = await fetchTransactionCount(userData.username);
-    const loanData = await fetchLoanTransactions(userData.id);
-
+    // Check if auxiliary data fetches failed (optional, handled by defaults in calculation)
     if (!rankData.success || !transactionData.success || !loanData.success) {
       console.warn(
         `Handler: One or more auxiliary data fetches failed for '${userData.username}' (ID: ${userId}). Proceeding with available data or defaults.`,
