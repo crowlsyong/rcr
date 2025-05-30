@@ -1,24 +1,24 @@
 // routes/api/score.ts
 
 import {
-  fetchUserData,
-  fetchUserPortfolio,
+  fetchLoanTransactions,
   fetchManaAndRecentRank,
   fetchTransactionCount,
-  fetchLoanTransactions,
+  fetchUserData,
+  fetchUserPortfolio,
 } from "../../utils/api/manifold_api_service.ts";
 import {
   calculateNetLoanBalance,
+  calculateRiskMultiplier,
   computeMMR,
   mapToCreditScore,
-  calculateRiskMultiplier,
 } from "../../utils/api/score_calculation_logic.ts";
 import {
   getLastScoreUpdateTime,
   saveHistoricalScore,
   updateLastScoreUpdateTime,
 } from "../../utils/api/kv_store_service.ts";
-import { UserPortfolio, ManifoldUser } from "../../utils/api/manifold_types.ts";
+import { ManifoldUser, UserPortfolio } from "../../utils/api/manifold_types.ts";
 
 const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2";
 
