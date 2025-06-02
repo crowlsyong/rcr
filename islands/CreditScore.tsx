@@ -15,6 +15,7 @@ interface CreditScoreData {
   fetchSuccess: boolean;
   userDeleted?: boolean;
 }
+
 // Function to get the initial username from the URL
 function getInitialUsernameFromUrl(): string {
   if (typeof globalThis.location === "undefined") {
@@ -34,8 +35,38 @@ export default function CreditScore() {
   );
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Store the chosen random placeholder for the current session
+  const [randomPlaceholder, setRandomPlaceholder] = useState<string | null>(
+    null,
+  );
+
   // Derived state: Is the input currently empty (after debounce)?
   const isEmptyInput = debouncedUsername === "";
+
+  // Effect to load example users from JSON and pick a random one
+  useEffect(() => {
+    async function fetchAndSetRandomExampleUser() {
+      try {
+        const response = await fetch("/example-users.json");
+        if (!response.ok) {
+          throw new Error("Failed to fetch example users");
+        }
+        const users: string[] = await response.json();
+
+        // Pick a random user from the fetched list
+        if (users.length > 0) {
+          const randomIndex = Math.floor(Math.random() * users.length);
+          setRandomPlaceholder(users[randomIndex]);
+        } else {
+          setRandomPlaceholder("Tumbles"); // Fallback if list is empty
+        }
+      } catch (e) {
+        console.error("Error loading example users:", e);
+        setRandomPlaceholder("Tumbles"); // Fallback if fetch fails
+      }
+    }
+    fetchAndSetRandomExampleUser();
+  }, []); // Empty dependency array means this runs once on mount
 
   // Effect for debouncing user input
   useEffect(() => {
@@ -64,7 +95,6 @@ export default function CreditScore() {
   }
 
   async function fetchScoreData(user: string) {
-    // Clear previous error before new fetch
     error.value = "";
 
     try {
@@ -82,10 +112,8 @@ export default function CreditScore() {
             fetchSuccess: true,
             userDeleted: data.userDeleted,
           };
-          // Clear error on success
           error.value = "";
         } else {
-          // User not found (Backend returned 200 with userExists: false)
           scoreData.value = {
             username: user,
             creditScore: 0,
@@ -93,18 +121,15 @@ export default function CreditScore() {
             avatarUrl: null,
             userExists: false,
             fetchSuccess: true,
-            userDeleted: data.userDeleted, // Pass userDeleted if userExists is false
+            userDeleted: data.userDeleted,
           };
-          // Only show "User not found" if not userDeleted
           if (!data.userDeleted) {
             error.value = `User @${user} not found.`;
           } else {
-            error.value = ""; // No explicit error message for deleted users here
+            error.value = "";
           }
         }
       } else {
-        // HTTP error (e.g., 500 from API)
-        // Try to extract error message from response body if available
         type ErrorResponse = { error: string; userDeleted?: boolean };
         const errorMessage =
           (typeof data === "object" && data !== null && "error" in data &&
@@ -119,12 +144,16 @@ export default function CreditScore() {
           avatarUrl: null,
           userExists: false,
           fetchSuccess: false,
-          userDeleted: (data as { userDeleted?: boolean }).userDeleted, // Pass userDeleted in case of HTTP error
+          userDeleted: (data as { userDeleted?: boolean }).userDeleted,
         };
       }
     } catch (e) {
       console.error("Fetch error:", e);
-      error.value = "An unexpected network error occurred.";
+      error.value = `An unexpected network error occurred: ${
+        typeof e === "object" && e !== null && "message" in e
+          ? (e as { message: string }).message
+          : String(e)
+      }`;
       scoreData.value = {
         username: debouncedUsername,
         creditScore: 0,
@@ -132,7 +161,7 @@ export default function CreditScore() {
         avatarUrl: null,
         userExists: false,
         fetchSuccess: false,
-        userDeleted: false, // Default to false on network error if not available
+        userDeleted: false,
       };
     }
   }
@@ -141,8 +170,11 @@ export default function CreditScore() {
     inputRef.current?.focus();
   }, []);
 
-  // isWaiting is true if there's debounced input but no score data and no error
   const isWaiting = !!debouncedUsername && !scoreData.value && !error.value;
+
+  const currentPlaceholder = randomPlaceholder
+    ? `Ex. ${randomPlaceholder}`
+    : ""; // Fallback if randomPlaceholder is null initially
 
   return (
     <div class="w-full max-w-md mx-auto pt-6 pb-6 px-0 sm:px-6">
@@ -164,7 +196,7 @@ export default function CreditScore() {
         <input
           ref={inputRef}
           type="text"
-          placeholder="Ex. Tumbles"
+          placeholder={currentPlaceholder}
           value={username.value}
           onInput={(
             e,
@@ -178,7 +210,6 @@ export default function CreditScore() {
           ? <p class="text-gray-500">Enter a username to see the score.</p>
           : error.value
           ? <p class="text-red-400">{error.value}</p>
-          // Only show link if user exists and data is available (and not deleted)
           : scoreData.value?.userExists && !scoreData.value?.userDeleted
           ? (
             <div class="flex flex-wrap justify-center items-center gap-2 text-xs text-green-400">
@@ -190,7 +221,6 @@ export default function CreditScore() {
               >
                 Visit {scoreData.value.username}'s Manifold page
               </a>
-              {/* Only show buttons if user exists, data is available, and not deleted */}
               <div class="flex items-center gap-2 ml-auto">
                 <ChartButton username={scoreData.value.username} />
                 <ShareButton username={scoreData.value.username} />
