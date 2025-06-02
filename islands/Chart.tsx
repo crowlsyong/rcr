@@ -56,16 +56,33 @@ export default function CreditScoreChart({ username }: ChartProps) {
       try {
         const scoreRes = await fetch(`/api/score?username=${username}`);
         if (!scoreRes.ok) {
-          if (scoreRes.status === 404) {
-            setError(`User '${username}' not found.`);
-          } else {
-            setError(`Failed to fetch score data: ${scoreRes.statusText}`);
-          }
+          // This block handles non-200 responses from your /api/score endpoint
+          setError(
+            `Failed to fetch current score data: ${scoreRes.statusText}`,
+          );
           setIsLoading(false);
           return;
         }
         const currentScoreData: UserScoreData = await scoreRes.json();
         setScoreData(currentScoreData);
+
+        // --- NEW/MODIFIED LOGIC HERE ---
+        // Check if the user actually exists from the API's perspective
+        if (!currentScoreData.userExists) {
+          setError(`User '${username}' not found on Manifold Markets.`);
+          setIsLoading(false);
+          return;
+        }
+
+        // Only proceed to fetch history if the user was found and a userId is available
+        if (!currentScoreData.userId) {
+          setError(
+            `User '${username}' found, but user ID is missing. Cannot fetch history.`,
+          );
+          setIsLoading(false);
+          return;
+        }
+        // --- END NEW/MODIFIED LOGIC ---
 
         const historyRes = await fetch(
           `/api/history?userId=${currentScoreData.userId}`,
@@ -74,6 +91,7 @@ export default function CreditScoreChart({ username }: ChartProps) {
           console.error(
             `Failed to fetch historical data: ${historyRes.statusText}`,
           );
+          setError(`Failed to fetch historical data.`); // Provide a user-facing error
         } else {
           const historicalData: HistoricalDataPoint[] = await historyRes.json();
           setHistoricalData(historicalData);
