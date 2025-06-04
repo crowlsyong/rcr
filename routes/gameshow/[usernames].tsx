@@ -9,7 +9,7 @@ export default function GameShowPage({ params }: PageProps) {
 
   return (
     <div class="bg-[#0F1729] min-h-screen flex flex-col items-center py-4">
-<div>
+      <div>
         <img
           src="/nash-pit-transaprent-risk.png"
           alt="Company Logo"
@@ -22,6 +22,14 @@ export default function GameShowPage({ params }: PageProps) {
       <div class="w-full max-w-screen-xl md:px-4 md:mt-[-90px] mt-[-40px]">
         {/* Adjust mt-[-value] as needed */}
         <GameShowCreditScore usernames={usernameList} />
+      </div>
+      <div class="md:absolute relative bottom-2 left-0 right-0 text-center text-white opacity-50 flex items-center justify-center px-4">
+        <span>brought to you by:</span>
+        <img
+          src="/risk-logo-mini-t.png"
+          alt="RISK Logo"
+          class="h-6 ml-2"
+        />
       </div>
     </div>
   );

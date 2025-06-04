@@ -131,10 +131,10 @@ export default function GameShowCreditScore(
   }
 
   return (
-    <div class="flex flex-col w-full max-w-screen-xl mx-auto items-center justify-start relative pb-20">
+    <div class="flex flex-col w-full max-w-screen-xl mx-auto items-center justify-start relative md:pb-20 pb-4">
       <div class="flex flex-col md:flex-row gap-4 w-full justify-center items-start md:mb-8">
         <div class="w-full md:w-5/12 flex flex-col items-center">
-          <h2 class="text-xl md:text-2xl font-bold text-white mb-4">
+          <h2 class="text-md md:text-2xl font-bold text-white mb-4">
             Contestant A
           </h2>
           <div class="w-4/5 mx-auto">
@@ -158,7 +158,7 @@ export default function GameShowCreditScore(
         </div>
 
         <div class="w-full md:w-5/12 flex flex-col items-center">
-          <h2 class="text-xl md:text-2xl font-bold text-white mb-4">
+          <h2 class="text-md md:text-2xl font-bold text-white mb-4">
             Contestant B
           </h2>
           <div class="w-4/5 mx-auto">
@@ -185,15 +185,6 @@ export default function GameShowCreditScore(
           Credit Scores refresh in{" "}
           <span class="font-bold text-white">{formatTime(timeLeft.value)}</span>
         </p>
-      </div>
-
-      <div class="absolute bottom-4 left-0 right-0 text-center text-white opacity-50 flex items-center justify-center px-4">
-        <span>brought to you by:</span>
-        <img
-          src="/risk-logo-mini-t.png"
-          alt="RISK Logo"
-          class="h-6 ml-2"
-        />
       </div>
     </div>
   );
