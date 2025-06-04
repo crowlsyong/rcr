@@ -14,6 +14,7 @@ import * as $auth_signout from "./routes/auth/signout.ts";
 import * as $chart_username_ from "./routes/chart/[username].tsx";
 import * as $ext_username_ from "./routes/ext/[username].tsx";
 import * as $forbidden from "./routes/forbidden.tsx";
+import * as $gameshow_usernames_ from "./routes/gameshow/[usernames].tsx";
 import * as $iframe_credit_score from "./routes/iframe/credit-score.tsx";
 import * as $iframe_insurance_fee_calculator from "./routes/iframe/insurance-fee-calculator.tsx";
 import * as $index from "./routes/index.tsx";
@@ -23,6 +24,7 @@ import * as $u_username_ from "./routes/u/[username].tsx";
 import * as $Chart from "./islands/Chart.tsx";
 import * as $CreditScore from "./islands/CreditScore.tsx";
 import * as $CreditScoreChExt from "./islands/CreditScoreChExt.tsx";
+import * as $GameShowCreditScore from "./islands/GameShowCreditScore.tsx";
 import * as $InsuranceCalc from "./islands/InsuranceCalc.tsx";
 import * as $MenuBar from "./islands/MenuBar.tsx";
 import * as $PasswordGate from "./islands/PasswordGate.tsx";
@@ -47,6 +49,7 @@ const manifest = {
     "./routes/chart/[username].tsx": $chart_username_,
     "./routes/ext/[username].tsx": $ext_username_,
     "./routes/forbidden.tsx": $forbidden,
+    "./routes/gameshow/[usernames].tsx": $gameshow_usernames_,
     "./routes/iframe/credit-score.tsx": $iframe_credit_score,
     "./routes/iframe/insurance-fee-calculator.tsx":
       $iframe_insurance_fee_calculator,
@@ -59,6 +62,7 @@ const manifest = {
     "./islands/Chart.tsx": $Chart,
     "./islands/CreditScore.tsx": $CreditScore,
     "./islands/CreditScoreChExt.tsx": $CreditScoreChExt,
+    "./islands/GameShowCreditScore.tsx": $GameShowCreditScore,
     "./islands/InsuranceCalc.tsx": $InsuranceCalc,
     "./islands/MenuBar.tsx": $MenuBar,
     "./islands/PasswordGate.tsx": $PasswordGate,
