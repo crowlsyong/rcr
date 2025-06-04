@@ -17,7 +17,6 @@ interface GameShowCreditScoreProps {
 }
 
 const FIVE_MINUTES_MS = 5 * 60 * 1000;
-// const ONE_MINUTE_MS = 60 * 1000; // REMOVED THIS LINE
 const ONE_SECOND_MS = 1000;
 
 export default function GameShowCreditScore(
@@ -54,7 +53,7 @@ export default function GameShowCreditScore(
     } catch (e) {
       const msg = typeof e === "object" && e !== null && "message" in e
         ? (e as { message: string }).message
-        : "Unknown error";
+        : String(e);
       errorSignal.value = `Error fetching data for ${user}: ${msg}`;
       dataSignal.value = null;
       console.error(`Error fetching data for ${user}:`, e);
@@ -67,25 +66,23 @@ export default function GameShowCreditScore(
     user2Data.value = null;
     user1Error.value = "";
     user2Error.value = "";
-    timeLeft.value = FIVE_MINUTES_MS; // Reset timer on initial load/username change
+    timeLeft.value = FIVE_MINUTES_MS;
 
     const initiateFetches = async () => {
       isLoading.value = true;
-      timeLeft.value = FIVE_MINUTES_MS; // Reset timer here each time fetches are initiated by interval
+      timeLeft.value = FIVE_MINUTES_MS;
 
-      // Fetch user 1
       if (usernames[0]) {
         await fetchScoreData(usernames[0], user1Data, user1Error);
       } else {
         user1Data.value = null;
         user1Error.value = "No username provided for Contestant A.";
       }
-      // Fetch user 2
       if (usernames[1]) {
         await fetchScoreData(usernames[1], user2Data, user2Error);
       } else {
-        user2Data.value = null;
-        user2Error.value = "No username provided for Contestant A.";
+        user2Data.value = null; // Corrected: This line was V.value = null;
+        user2Error.value = "No username provided for Contestant B."; // Changed from A to B for accuracy
       }
       isLoading.value = false;
     };
@@ -134,71 +131,69 @@ export default function GameShowCreditScore(
   }
 
   return (
-    <div class="flex flex-col gap-4 md:flex-row w-full max-w-screen-xl mx-auto items-start justify-center">
-      {/* Contestant A */}
-      <div class="w-full md:w-5/12 flex flex-col items-center px-4">
-        <h2 class="text-xl md:text-2xl font-bold text-white mb-4">
-          Contestant A
-        </h2>
-        <div class="w-4/5 mx-auto">
-          {isLoading.value && (!hasData)
-            ? <p class="text-gray-400">Loading...</p>
-            : user1Error.value
-            ? <p class="text-red-500 text-center">{user1Error.value}</p>
-            : (
-              <ScoreResult
-                username={user1Data.value?.username || "N/A"}
-                creditScore={user1Data.value?.creditScore || 0}
-                riskMultiplier={user1Data.value?.riskMultiplier || 0}
-                avatarUrl={user1Data.value?.avatarUrl || null}
-                isWaiting={false}
-                urlPrefix="https://manifold.markets"
-              />
-            )}
+    <div class="flex flex-col w-full max-w-screen-xl mx-auto items-center justify-start relative pb-20">
+      <div class="flex flex-col md:flex-row gap-4 w-full justify-center items-start md:mb-8">
+        <div class="w-full md:w-5/12 flex flex-col items-center">
+          <h2 class="text-xl md:text-2xl font-bold text-white mb-4">
+            Contestant A
+          </h2>
+          <div class="w-4/5 mx-auto">
+            {isLoading.value && (!hasData)
+              ? <p class="text-gray-400">Loading...</p>
+              : user1Error.value
+              ? <p class="text-red-500 text-center">{user1Error.value}</p>
+              : (
+                <ScoreResult
+                  username={user1Data.value?.username || "N/A"}
+                  creditScore={user1Data.value?.creditScore || 0}
+                  riskMultiplier={user1Data.value?.riskMultiplier || 0}
+                  avatarUrl={user1Data.value?.avatarUrl || null}
+                  isWaiting={false}
+                  urlPrefix="https://manifold.markets"
+                />
+              )}
+          </div>
         </div>
-      </div>
-      {/* Divider */}
-      <div class="w-full md:w-auto h-1 md:h-64 bg-gray-700 md:my-0 my-4 md:mx-4">
-      </div>{" "}
-      {/* Added mx-4 for horizontal spacing */}
+        <div class="hidden md:block md:w-auto h-1 md:h-64 bg-gray-700 md:my-0 my-4 md:mx-4">
+        </div>
 
-      {/* Contestant B */}
-      <div class="w-full md:w-5/12 flex flex-col items-center">
-        <h2 class="text-xl md:text-2xl font-bold text-white mb-4">
-          Contestant B
-        </h2>
-        <div class="w-4/5 mx-auto">
-          {isLoading.value && (!hasData)
-            ? <p class="text-gray-400">Loading...</p>
-            : user2Error.value
-            ? <p class="text-red-500 text-center">{user2Error.value}</p>
-            : (
-              <ScoreResult
-                username={user2Data.value?.username || "N/A"}
-                creditScore={user2Data.value?.creditScore || 0}
-                riskMultiplier={user2Data.value?.riskMultiplier || 0}
-                avatarUrl={user2Data.value?.avatarUrl || null}
-                isWaiting={false}
-                urlPrefix="https://manifold.markets"
-              />
-            )}
+        <div class="w-full md:w-5/12 flex flex-col items-center">
+          <h2 class="text-xl md:text-2xl font-bold text-white mb-4">
+            Contestant B
+          </h2>
+          <div class="w-4/5 mx-auto">
+            {isLoading.value && (!hasData)
+              ? <p class="text-gray-400">Loading...</p>
+              : user2Error.value
+              ? <p class="text-red-500 text-center">{user2Error.value}</p>
+              : (
+                <ScoreResult
+                  username={user2Data.value?.username || "N/A"}
+                  creditScore={user2Data.value?.creditScore || 0}
+                  riskMultiplier={user2Data.value?.riskMultiplier || 0}
+                  avatarUrl={user2Data.value?.avatarUrl || null}
+                  isWaiting={false}
+                  urlPrefix="https://manifold.markets"
+                />
+              )}
+          </div>
         </div>
       </div>
 
-      {/* Timer display at the bottom */}
-      <div class="absolute bottom-4 left-0 right-0 text-center text-gray-200 text-sm md:text-base flex flex-col items-center">
-        <p class="text-xl md:text-4xl mb-8">
+      <div class="w-full text-center text-gray-200 text-sm md:text-base mt-auto py-4">
+        <p class="text-xl md:text-4xl mb-2">
           Credit Scores refresh in{" "}
           <span class="font-bold text-white">{formatTime(timeLeft.value)}</span>
         </p>
-        <div class="flex items-center text-xs md:text-sm text-white opacity-50">
-          <span>brought to you by:</span>
-          <img
-            src="/risk-logo-mini-t.png"
-            alt="RISK Logo"
-            class="h-6 ml-2"
-          />
-        </div>
+      </div>
+
+      <div class="absolute bottom-4 left-0 right-0 text-center text-white opacity-50 flex items-center justify-center px-4">
+        <span>brought to you by:</span>
+        <img
+          src="/risk-logo-mini-t.png"
+          alt="RISK Logo"
+          class="h-6 ml-2"
+        />
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ export default function GameShowPage({ params }: PageProps) {
 
       {/* Main content area, simplified positioning with negative margin-top */}
       {/* Remove absolute positioning and z-index. Add mt-[-Xpx] directly. */}
-      <div class="w-full max-w-screen-xl px-4 mt-[-60px]">
+      <div class="w-full max-w-screen-xl md:px-4 md:mt-[-90px] mt-[-40px]">
         {/* Adjust mt-[-value] as needed */}
         <GameShowCreditScore usernames={usernameList} />
       </div>
