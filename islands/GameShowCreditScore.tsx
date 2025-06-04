@@ -17,6 +17,8 @@ interface GameShowCreditScoreProps {
 }
 
 const FIVE_MINUTES_MS = 5 * 60 * 1000;
+// const ONE_MINUTE_MS = 60 * 1000; // REMOVED THIS LINE
+const ONE_SECOND_MS = 1000;
 
 export default function GameShowCreditScore(
   { usernames }: GameShowCreditScoreProps,
@@ -26,6 +28,7 @@ export default function GameShowCreditScore(
   const user1Error = useSignal<string>("");
   const user2Error = useSignal<string>("");
   const isLoading = useSignal(true);
+  const timeLeft = useSignal(FIVE_MINUTES_MS);
 
   async function fetchScoreData(
     user: string,
@@ -64,9 +67,12 @@ export default function GameShowCreditScore(
     user2Data.value = null;
     user1Error.value = "";
     user2Error.value = "";
+    timeLeft.value = FIVE_MINUTES_MS; // Reset timer on initial load/username change
 
     const initiateFetches = async () => {
       isLoading.value = true;
+      timeLeft.value = FIVE_MINUTES_MS; // Reset timer here each time fetches are initiated by interval
+
       // Fetch user 1
       if (usernames[0]) {
         await fetchScoreData(usernames[0], user1Data, user1Error);
@@ -89,6 +95,31 @@ export default function GameShowCreditScore(
     return () => clearInterval(intervalId);
   }, [usernames]);
 
+  useEffect(() => {
+    let timerId: number | undefined;
+
+    const tick = () => {
+      timeLeft.value = Math.max(0, timeLeft.value - ONE_SECOND_MS);
+    };
+
+    if (timeLeft.value > 0) {
+      timerId = setInterval(tick, ONE_SECOND_MS);
+    }
+
+    return () => {
+      if (timerId) clearInterval(timerId);
+    };
+  }, [timeLeft.value]);
+
+  const formatTime = (ms: number): string => {
+    const totalSeconds = Math.floor(ms / ONE_SECOND_MS);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, "0")}:${
+      seconds.toString().padStart(2, "0")
+    }`;
+  };
+
   const hasValidUsers = (usernames.length >= 1 && !!usernames[0]) ||
     (usernames.length >= 2 && !!usernames[1]);
   const hasData = user1Data.value || user2Data.value;
@@ -108,11 +139,11 @@ export default function GameShowCreditScore(
       class="flex flex-col gap-4 md:flex-row w-full max-w-screen-xl mx-auto items-start justify-center"
     >
       {/* Contestant A */}
-      <div class="w-full md:w-5/12 flex flex-col items-center">
+      <div class="w-full md:w-5/12 flex flex-col items-center px-4">
         <h2 class="text-xl md:text-2xl font-bold text-white mb-4">
           Contestant A
         </h2>
-        <div class="w-4/5">
+        <div class="w-4/5 mx-auto">
           {isLoading.value && (!hasData)
             ? <p class="text-gray-400">Loading...</p>
             : user1Error.value
@@ -139,7 +170,7 @@ export default function GameShowCreditScore(
         <h2 class="text-xl md:text-2xl font-bold text-white mb-4">
           Contestant B
         </h2>
-        <div class="w-4/5">
+        <div class="w-4/5 mx-auto">
           {isLoading.value && (!hasData)
             ? <p class="text-gray-400">Loading...</p>
             : user2Error.value
@@ -155,6 +186,11 @@ export default function GameShowCreditScore(
               />
             )}
         </div>
+      </div>
+
+      {/* Timer display at the bottom */}
+      <div class="absolute bottom-4 left-0 right-0 text-center text-gray-400 text-sm md:text-base">
+        Credit Scores refresh in {formatTime(timeLeft.value)}
       </div>
     </div>
   );
