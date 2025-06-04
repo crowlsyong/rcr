@@ -187,7 +187,7 @@ export default function GameShowCreditScore(
 
       {/* Timer display at the bottom */}
       <div class="absolute bottom-4 left-0 right-0 text-center text-gray-200 text-sm md:text-base flex flex-col items-center">
-        <p class="text-xl md:text-2xl mb-8">
+        <p class="text-xl md:text-4xl mb-8">
           Credit Scores refresh in{" "}
           <span class="font-bold text-white">{formatTime(timeLeft.value)}</span>
         </p>
