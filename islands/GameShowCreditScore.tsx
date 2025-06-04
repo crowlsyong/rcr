@@ -186,8 +186,19 @@ export default function GameShowCreditScore(
       </div>
 
       {/* Timer display at the bottom */}
-      <div class="absolute bottom-4 left-0 right-0 text-center text-gray-400 text-sm md:text-base">
-        Credit Scores refresh in {formatTime(timeLeft.value)}
+      <div class="absolute bottom-4 left-0 right-0 text-center text-gray-200 text-sm md:text-base flex flex-col items-center">
+        <p class="text-xl md:text-2xl mb-8">
+          Credit Scores refresh in{" "}
+          <span class="font-bold text-white">{formatTime(timeLeft.value)}</span>
+        </p>
+        <div class="flex items-center text-xs md:text-sm text-white opacity-50">
+          <span>brought to you by:</span>
+          <img
+            src="/risk-logo-mini-t.png"
+            alt="RISK Logo"
+            class="h-6 ml-2"
+          />
+        </div>
       </div>
     </div>
   );
