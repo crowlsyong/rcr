@@ -32,7 +32,6 @@ export default function App({ Component, url }: PageProps) {
         <meta property="og:image" content="/risk-logo-manifold-seo.png" />{" "}
         {/* Optional if you have a social preview image */}
         <meta property="og:url" content="https://risk.markets" />{" "}
-        {/* Update this */}
         <meta property="og:type" content="website" />
 
         <meta name="twitter:card" content="summary_large_image" />
@@ -44,8 +43,7 @@ export default function App({ Component, url }: PageProps) {
         <meta name="twitter:image" content="/risk-logo-manifold-seo.png" />{" "}
         {/* Optional */}
 
-        <link rel="canonical" href="https://risk.markets" />{" "}
-        {/* Update this */}
+        <link rel="canonical" href="https://risk.markets" />
         <link rel="stylesheet" href="/styles.css" />
       </head>
       <body>
