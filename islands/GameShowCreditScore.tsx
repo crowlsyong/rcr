@@ -105,29 +105,30 @@ export default function GameShowCreditScore(
   return (
     <div
       style="background-color: #0F1729;"
-      class="flex flex-col md:flex-row w-full max-w-screen-xl mx-auto items-start justify-center" // IMPORTANT: Removed `h-full`, changed `items-center` to `items-start`
+      class="flex flex-col gap-4 md:flex-row w-full max-w-screen-xl mx-auto items-start justify-center"
     >
       {/* Contestant A */}
       <div class="w-full md:w-5/12 flex flex-col items-center">
         <h2 class="text-xl md:text-2xl font-bold text-white mb-4">
           Contestant A
         </h2>
-        {isLoading.value && (!hasData)
-          ? <p class="text-gray-400">Loading...</p>
-          : user1Error.value
-          ? <p class="text-red-500 text-center">{user1Error.value}</p>
-          : (
-            <ScoreResult
-              username={user1Data.value?.username || "N/A"}
-              creditScore={user1Data.value?.creditScore || 0}
-              riskMultiplier={user1Data.value?.riskMultiplier || 0}
-              avatarUrl={user1Data.value?.avatarUrl || null}
-              isWaiting={false}
-              urlPrefix="https://manifold.markets"
-            />
-          )}
+        <div class="w-4/5">
+          {isLoading.value && (!hasData)
+            ? <p class="text-gray-400">Loading...</p>
+            : user1Error.value
+            ? <p class="text-red-500 text-center">{user1Error.value}</p>
+            : (
+              <ScoreResult
+                username={user1Data.value?.username || "N/A"}
+                creditScore={user1Data.value?.creditScore || 0}
+                riskMultiplier={user1Data.value?.riskMultiplier || 0}
+                avatarUrl={user1Data.value?.avatarUrl || null}
+                isWaiting={false}
+                urlPrefix="https://manifold.markets"
+              />
+            )}
+        </div>
       </div>
-
       {/* Divider */}
       <div class="w-full md:w-auto h-1 md:h-64 bg-gray-700 md:my-0 my-4 md:mx-4">
       </div>{" "}
@@ -138,20 +139,22 @@ export default function GameShowCreditScore(
         <h2 class="text-xl md:text-2xl font-bold text-white mb-4">
           Contestant B
         </h2>
-        {isLoading.value && (!hasData)
-          ? <p class="text-gray-400">Loading...</p>
-          : user2Error.value
-          ? <p class="text-red-500 text-center">{user2Error.value}</p>
-          : (
-            <ScoreResult
-              username={user2Data.value?.username || "N/A"}
-              creditScore={user2Data.value?.creditScore || 0}
-              riskMultiplier={user2Data.value?.riskMultiplier || 0}
-              avatarUrl={user2Data.value?.avatarUrl || null}
-              isWaiting={false}
-              urlPrefix="https://manifold.markets"
-            />
-          )}
+        <div class="w-4/5">
+          {isLoading.value && (!hasData)
+            ? <p class="text-gray-400">Loading...</p>
+            : user2Error.value
+            ? <p class="text-red-500 text-center">{user2Error.value}</p>
+            : (
+              <ScoreResult
+                username={user2Data.value?.username || "N/A"}
+                creditScore={user2Data.value?.creditScore || 0}
+                riskMultiplier={user2Data.value?.riskMultiplier || 0}
+                avatarUrl={user2Data.value?.avatarUrl || null}
+                isWaiting={false}
+                urlPrefix="https://manifold.markets"
+              />
+            )}
+        </div>
       </div>
     </div>
   );
