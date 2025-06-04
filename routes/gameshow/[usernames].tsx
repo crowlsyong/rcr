@@ -9,11 +9,11 @@ export default function GameShowPage({ params }: PageProps) {
 
   return (
     <div class="bg-[#0F1729] min-h-screen flex flex-col items-center py-4">
-      <div>
+<div>
         <img
           src="/nash-pit-transaprent-risk.png"
           alt="Company Logo"
-          class="max-w-xs md:max-w-sm lg:max-w-md mx-auto"
+          class="max-w-[240px] md:max-w-sm lg:max-w-md mx-auto" // Adjusted max-width for mobile
         />
       </div>
 
