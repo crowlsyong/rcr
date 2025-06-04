@@ -18,6 +18,7 @@ import * as $iframe_credit_score from "./routes/iframe/credit-score.tsx";
 import * as $iframe_insurance_fee_calculator from "./routes/iframe/insurance-fee-calculator.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $insurance from "./routes/insurance.tsx";
+import * as $qr_string_ from "./routes/qr/[string].tsx";
 import * as $u_username_ from "./routes/u/[username].tsx";
 import * as $Chart from "./islands/Chart.tsx";
 import * as $CreditScore from "./islands/CreditScore.tsx";
@@ -51,6 +52,7 @@ const manifest = {
       $iframe_insurance_fee_calculator,
     "./routes/index.tsx": $index,
     "./routes/insurance.tsx": $insurance,
+    "./routes/qr/[string].tsx": $qr_string_,
     "./routes/u/[username].tsx": $u_username_,
   },
   islands: {
