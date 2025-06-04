@@ -134,10 +134,7 @@ export default function GameShowCreditScore(
   }
 
   return (
-    <div
-      style="background-color: #0F1729;"
-      class="flex flex-col gap-4 md:flex-row w-full max-w-screen-xl mx-auto items-start justify-center"
-    >
+    <div class="flex flex-col gap-4 md:flex-row w-full max-w-screen-xl mx-auto items-start justify-center">
       {/* Contestant A */}
       <div class="w-full md:w-5/12 flex flex-col items-center px-4">
         <h2 class="text-xl md:text-2xl font-bold text-white mb-4">
