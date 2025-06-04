@@ -12,7 +12,7 @@ export default function GameShowPage({ params }: PageProps) {
       {/* Prominent Logo at the top middle */}
       <div class="mb-8">
         <img
-          src="/logo-bg-transparent.png"
+          src="/nash-pit-transaprent-risk.png"
           alt="Company Logo"
           class="max-w-xs md:max-w-sm lg:max-w-md mx-auto" // Adjust max-width as needed
         />
