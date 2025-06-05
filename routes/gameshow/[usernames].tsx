@@ -25,11 +25,14 @@ export default function GameShowPage({ params }: PageProps) {
       </div>
       <div class="md:absolute relative bottom-2 left-0 right-0 text-center text-white opacity-50 flex items-center justify-center px-4">
         <span>brought to you by:</span>
-        <img
-          src="/risk-logo-mini-t.png"
-          alt="RISK Logo"
-          class="h-6 ml-2"
-        />
+        <a href="/" class="block ml-2">
+          {/* Link only the image, making it a block to control margin */}
+          <img
+            src="/risk-logo-mini-t.png"
+            alt="RISK Logo"
+            class="h-6"
+          />
+        </a>
       </div>
     </div>
   );
