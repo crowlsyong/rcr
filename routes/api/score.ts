@@ -36,32 +36,32 @@ export async function handler(req: Request): Promise<Response> {
     );
   }
 
-  // Hardcode credit score for 'Ziddletwix'
-  if (username === "Ziddletwix") {
-    console.info("Handler: Returning hardcoded credit score for Ziddletwix.");
-    return new Response(
-      JSON.stringify({
-        username: "Ziddletwix",
-        creditScore: 1001,
-        riskMultiplier: 0.02, // Corresponds to a score of 1000
-        avatarUrl: null, // You might want to fetch this for Ziddletwix if needed
-        userExists: true,
-        fetchSuccess: true,
-        historicalDataSaved: false,
-        userDeleted: false,
-        latestRank: 1, // Placeholder
-        outstandingDebtImpact: 0, // Placeholder
-        calculatedProfit: 0, // Placeholder
-        balance: 0, // Placeholder
-        rawMMR: 0, // Placeholder
-        userId: "Ziddletwix-ID", // Placeholder ID
-      }),
-      {
-        headers: { "Content-Type": "application/json" },
-        status: 200,
-      },
-    );
-  }
+  // // Hardcode credit score for 'Ziddletwix'
+  // if (username === "Ziddletwix") {
+  //   console.info("Handler: Returning hardcoded credit score for Ziddletwix.");
+  //   return new Response(
+  //     JSON.stringify({
+  //       username: "Ziddletwix",
+  //       creditScore: 1001,
+  //       riskMultiplier: 0.02, // Corresponds to a score of 1000
+  //       avatarUrl: null, // You might want to fetch this for Ziddletwix if needed
+  //       userExists: true,
+  //       fetchSuccess: true,
+  //       historicalDataSaved: false,
+  //       userDeleted: false,
+  //       latestRank: 1, // Placeholder
+  //       outstandingDebtImpact: 0, // Placeholder
+  //       calculatedProfit: 0, // Placeholder
+  //       balance: 0, // Placeholder
+  //       rawMMR: 0, // Placeholder
+  //       userId: "Ziddletwix-ID", // Placeholder ID
+  //     }),
+  //     {
+  //       headers: { "Content-Type": "application/json" },
+  //       status: 200,
+  //     },
+  //   );
+  // }
 
   const {
     userData: rawUserData,
