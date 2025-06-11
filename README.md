@@ -3,9 +3,9 @@
 **https://risk.markets**
 
 This is an app for [Manifold Markets](https://manifold.markets) that calculates
-a user's credit score based on their account activity and can also estimate loan
-insurance fees for underwriting purposes. It provides fast analysis via a clean
-interface powered by Deno and Fresh. It also generates credit history charts.
+a user's credit score based on their account information and activity. It
+provides fast analysis via a clean interface powered by Deno and Fresh. It can
+also estimate loan insurance fees. It also generates credit history charts.
 
 ## ✨ Features
 
@@ -15,7 +15,7 @@ interface powered by Deno and Fresh. It also generates credit history charts.
   cost to cover a loan to a specific user.
 - Built with [Fresh](https://fresh.deno.dev) and [Deno](https://deno.land),
   using the Manifold API.
-- Mobile-first responsive layout.
+- **Mobile-first responsive layout.**
 - **Credit History** - Creates a nice graph with chart.js to view credit
   history.
 
@@ -75,6 +75,8 @@ minimal configuration.
    https://dash.deno.com
 3. Click settings tab and add environment variables
 4. Set the entry point to `main.ts`.
+5. (optional) Add auth environment variables in the Deno Dashboard at
+   `https://dash.deno.com/projects/YOUR_PROJECT_NAME/settings`
 
 ## 🧠 How the Credit Score Works
 
@@ -90,12 +92,13 @@ You can review the scoring algorithm in
 
 The insurance calculator uses the credit score as a baseline and adds a risk
 premium. Higher risk scores lead to lower insurance costs. This is experimental
-and subject to change.
+and subject to change. More info on fees: https://manifold.markets/news/risk
 
 ## 🤝 Contributing
 
 Contributions are welcome. Please open an issue if you have suggestions, or a PR
-if you'd like to fix or add a feature.
+if you'd like to fix or add a feature. Messaging me on Discord or Manifold is
+okay too.
 
 ## 📜 License
 
