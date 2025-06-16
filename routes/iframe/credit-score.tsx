@@ -1,6 +1,6 @@
 // routes/iframe/insurance-fee-calculator.tsx
 
-import CreditScore from "../../islands/CreditScore.tsx";
+import CreditScore from "../../islands/tools/creditscore/CreditScore.tsx";
 // import TechnicalDifficulties from "../components/TechnicalDifficulties.tsx";
 // import MenuBar from "../../components/MenuBar.tsx"; // Import the MenuBar
 

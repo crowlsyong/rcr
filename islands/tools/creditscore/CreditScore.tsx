@@ -2,9 +2,9 @@
 
 import { useSignal } from "@preact/signals";
 import { useEffect, useRef, useState } from "preact/hooks";
-import ScoreResult from "./ScoreResult.tsx";
-import ShareButton from "./buttons/ShareButton.tsx";
-import ChartButton from "./buttons/ChartButton.tsx";
+import ScoreResult from "../creditscore/ScoreResult.tsx";
+import ShareButton from "../../buttons/ShareButton.tsx";
+import ChartButton from "../../buttons/ChartButton.tsx";
 
 interface CreditScoreData {
   username: string;

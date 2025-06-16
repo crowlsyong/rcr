@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "preact/hooks";
 import { Chart, registerables } from "chart.js";
-import ScoreResult from "./ScoreResult.tsx";
+import ScoreResult from "../tools/creditscore/ScoreResult.tsx";
 
 Chart.register(...registerables);
 

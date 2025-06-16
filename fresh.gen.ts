@@ -22,19 +22,22 @@ import * as $insurance from "./routes/insurance.tsx";
 import * as $limits from "./routes/limits.tsx";
 import * as $qr_string_ from "./routes/qr/[string].tsx";
 import * as $u_username_ from "./routes/u/[username].tsx";
-import * as $Chart from "./islands/Chart.tsx";
-import * as $CreditScore from "./islands/CreditScore.tsx";
-import * as $CreditScoreChExt from "./islands/CreditScoreChExt.tsx";
-import * as $GameShowCreditScore from "./islands/GameShowCreditScore.tsx";
-import * as $InsuranceCalc from "./islands/InsuranceCalc.tsx";
 import * as $MenuBar from "./islands/MenuBar.tsx";
 import * as $PasswordGate from "./islands/PasswordGate.tsx";
-import * as $ScoreResult from "./islands/ScoreResult.tsx";
 import * as $buttons_Button from "./islands/buttons/Button.tsx";
 import * as $buttons_ChartButton from "./islands/buttons/ChartButton.tsx";
 import * as $buttons_ShareButton from "./islands/buttons/ShareButton.tsx";
 import * as $buttons_ShareURL from "./islands/buttons/ShareURL.tsx";
-import * as $tools_LimitOrderCalculator from "./islands/tools/LimitOrderCalculator.tsx";
+import * as $tools_Chart from "./islands/tools/Chart.tsx";
+import * as $tools_GameShowCreditScore from "./islands/tools/GameShowCreditScore.tsx";
+import * as $tools_InsuranceCalc from "./islands/tools/InsuranceCalc.tsx";
+import * as $tools_creditscore_CreditScore from "./islands/tools/creditscore/CreditScore.tsx";
+import * as $tools_creditscore_CreditScoreChExt from "./islands/tools/creditscore/CreditScoreChExt.tsx";
+import * as $tools_creditscore_ScoreResult from "./islands/tools/creditscore/ScoreResult.tsx";
+import * as $tools_limits_LimitOrderCalculator from "./islands/tools/limits/LimitOrderCalculator.tsx";
+import * as $tools_limits_LimitOrderCalculatorForm from "./islands/tools/limits/LimitOrderCalculatorForm.tsx";
+import * as $tools_limits_LimitOrderResultsDisplay from "./islands/tools/limits/LimitOrderResultsDisplay.tsx";
+import * as $tools_limits_MarketInfoDisplay from "./islands/tools/limits/MarketInfoDisplay.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -62,19 +65,29 @@ const manifest = {
     "./routes/u/[username].tsx": $u_username_,
   },
   islands: {
-    "./islands/Chart.tsx": $Chart,
-    "./islands/CreditScore.tsx": $CreditScore,
-    "./islands/CreditScoreChExt.tsx": $CreditScoreChExt,
-    "./islands/GameShowCreditScore.tsx": $GameShowCreditScore,
-    "./islands/InsuranceCalc.tsx": $InsuranceCalc,
     "./islands/MenuBar.tsx": $MenuBar,
     "./islands/PasswordGate.tsx": $PasswordGate,
-    "./islands/ScoreResult.tsx": $ScoreResult,
     "./islands/buttons/Button.tsx": $buttons_Button,
     "./islands/buttons/ChartButton.tsx": $buttons_ChartButton,
     "./islands/buttons/ShareButton.tsx": $buttons_ShareButton,
     "./islands/buttons/ShareURL.tsx": $buttons_ShareURL,
-    "./islands/tools/LimitOrderCalculator.tsx": $tools_LimitOrderCalculator,
+    "./islands/tools/Chart.tsx": $tools_Chart,
+    "./islands/tools/GameShowCreditScore.tsx": $tools_GameShowCreditScore,
+    "./islands/tools/InsuranceCalc.tsx": $tools_InsuranceCalc,
+    "./islands/tools/creditscore/CreditScore.tsx":
+      $tools_creditscore_CreditScore,
+    "./islands/tools/creditscore/CreditScoreChExt.tsx":
+      $tools_creditscore_CreditScoreChExt,
+    "./islands/tools/creditscore/ScoreResult.tsx":
+      $tools_creditscore_ScoreResult,
+    "./islands/tools/limits/LimitOrderCalculator.tsx":
+      $tools_limits_LimitOrderCalculator,
+    "./islands/tools/limits/LimitOrderCalculatorForm.tsx":
+      $tools_limits_LimitOrderCalculatorForm,
+    "./islands/tools/limits/LimitOrderResultsDisplay.tsx":
+      $tools_limits_LimitOrderResultsDisplay,
+    "./islands/tools/limits/MarketInfoDisplay.tsx":
+      $tools_limits_MarketInfoDisplay,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

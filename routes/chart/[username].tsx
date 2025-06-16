@@ -1,7 +1,7 @@
 // routes/chart/[username].tsx
 
 import { PageProps } from "$fresh/server.ts";
-import CreditScoreChart from "../../islands/Chart.tsx"; // Import the Chart island
+import CreditScoreChart from "../../islands/tools/Chart.tsx"; // Import the Chart island
 import ShareURL from "../../islands/buttons/ShareURL.tsx";
 
 export default function UserChartPage({ params }: PageProps) {

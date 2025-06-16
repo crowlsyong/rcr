@@ -1,7 +1,7 @@
 // routes/index.tsx
 
 import Version from "../components/Version.tsx";
-import CreditScore from "../islands/CreditScore.tsx";
+import CreditScore from "../islands/tools/creditscore/CreditScore.tsx";
 
 import { RouteContext } from "$fresh/server.ts";
 
