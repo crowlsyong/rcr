@@ -5,15 +5,15 @@ import { getMarketDataBySlug, MarketData } from "../../utils/limit_calc.ts";
 interface CalculationResult {
   yesLimitOrderAmount: number | null;
   noLimitOrderAmount: number | null;
-  sharesAcquired: number | null; // This will now represent true shares
+  sharesAcquired: number | null;
   error: string | null;
 }
 
 export default function LimitOrderCalculator() {
   const [marketUrlInput, setMarketUrlInput] = useState("");
-  const [lowerProbabilityInput, setLowerProbabilityInput] = useState(0); // This is P_min (for YES)
-  const [upperProbabilityInput, setUpperProbabilityInput] = useState(0); // This is P_max (for YES)
-  const [totalBetAmountInput, setTotalBetAmountInput] = useState(0); // Renamed from initialBetAmountInput
+  const [lowerProbabilityInput, setLowerProbabilityInput] = useState(0);
+  const [upperProbabilityInput, setUpperProbabilityInput] = useState(0);
+  const [totalBetAmountInput, setTotalBetAmountInput] = useState(0);
 
   const [marketData, setMarketData] = useState<MarketData | null>(null);
   const [calculationResult, setCalculationResult] = useState<
@@ -28,7 +28,6 @@ export default function LimitOrderCalculator() {
     setMarketData(null);
     setCalculationResult(null);
 
-    // Validate inputs
     if (!marketUrlInput) {
       setFetchError("Market URL is required");
       setLoading(false);
@@ -36,13 +35,13 @@ export default function LimitOrderCalculator() {
     }
     if (
       isNaN(lowerProbabilityInput) || isNaN(upperProbabilityInput) ||
-      isNaN(totalBetAmountInput) // Changed to totalBetAmountInput
+      isNaN(totalBetAmountInput)
     ) {
       setFetchError("All numeric inputs must be valid numbers");
       setLoading(false);
       return;
     }
-    if (totalBetAmountInput <= 0) { // Changed to totalBetAmountInput
+    if (totalBetAmountInput <= 0) {
       setFetchError("Total bet amount must be greater than zero");
       setLoading(false);
       return;
@@ -90,10 +89,9 @@ export default function LimitOrderCalculator() {
         return;
       }
 
-      const pLower = lowerProbabilityInput / 100; // P_min for YES
-      const pUpper = upperProbabilityInput / 100; // P_max for YES
+      const pLower = lowerProbabilityInput / 100;
+      const pUpper = upperProbabilityInput / 100;
 
-      // Ensure probabilities are not zero or one for division (cost of shares would be 0 or infinite)
       if (pLower <= 0 || pUpper >= 1) {
         setFetchError(
           "Probabilities cannot be 0% or 100%. Please choose a range within (0%, 100%).",
@@ -102,8 +100,6 @@ export default function LimitOrderCalculator() {
         return;
       }
 
-      // --- NEW CALCULATION LOGIC FOR TOTAL BET AMOUNT ---
-      // S = Total Bet Amount / (P_lower_YES + (1 - P_upper_YES))
       const denominator = pLower + (1 - pUpper);
       if (denominator <= 0) {
         setFetchError(
@@ -116,7 +112,6 @@ export default function LimitOrderCalculator() {
       const sharesAcquired: number = totalBetAmountInput / denominator;
       const calculatedYesAmount: number = sharesAcquired * pLower;
       const calculatedNoAmount: number = sharesAcquired * (1 - pUpper);
-      // --- END NEW CALCULATION LOGIC ---
 
       setCalculationResult({
         yesLimitOrderAmount: calculatedYesAmount,
@@ -164,7 +159,6 @@ export default function LimitOrderCalculator() {
       </p>
 
       <form onSubmit={handleSubmit} class="space-y-4 mb-8">
-        {/* Market URL */}
         <div>
           <label
             htmlFor="market-url"
@@ -184,7 +178,6 @@ export default function LimitOrderCalculator() {
           />
         </div>
 
-        {/* Total Bet Amount */}
         <div>
           <label
             htmlFor="total-bet-amount"
@@ -195,10 +188,10 @@ export default function LimitOrderCalculator() {
           <input
             type="number"
             id="total-bet-amount"
-            name="totalBetAmount" // Changed name
-            value={totalBetAmountInput} // Changed value state
+            name="totalBetAmount"
+            value={totalBetAmountInput}
             onChange={(e) =>
-              setTotalBetAmountInput(Number(e.currentTarget.value))} // Changed handler
+              setTotalBetAmountInput(Number(e.currentTarget.value))}
             min="1"
             step="1"
             class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
@@ -206,7 +199,6 @@ export default function LimitOrderCalculator() {
           />
         </div>
 
-        {/* Probability Range (Side-by-Side) */}
         <div>
           <p class="block text-sm font-medium text-gray-300 mb-2">
             Desired Probability Range:
