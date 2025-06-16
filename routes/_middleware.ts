@@ -1,4 +1,5 @@
 // routes/_middleware.ts
+
 import { FreshContext } from "$fresh/server.ts";
 import { deleteCookie, getCookies } from "$std/http/cookie.ts";
 import { deleteAdminSession, getAdminLoginBySession } from "../database/db.ts";
@@ -79,7 +80,11 @@ export async function handler(
       "data:",
     ],
     fontSrc: ["'self'", "https://manifold.markets"],
-    connectSrc: ["'self'", "https://manifold.markets"],
+    connectSrc: [
+      "'self'",
+      "https://manifold.markets",
+      "https://api.manifold.markets",
+    ], // <-- ADDED THIS LINE
   };
 
   const cspString = Object.entries(cspDirectives)
