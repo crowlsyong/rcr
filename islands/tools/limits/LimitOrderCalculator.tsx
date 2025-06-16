@@ -150,7 +150,7 @@ export default function LimitOrderCalculator() {
   return (
     <div class="p-4 mx-auto max-w-screen-md text-gray-100">
       <h1 class="text-2xl font-bold mb-4">
-        Manifold Markets Limit Order Calculator
+        Limit Order App
       </h1>
       <p class="mb-6 text-gray-300">
         Enter the market URL, your{" "}
