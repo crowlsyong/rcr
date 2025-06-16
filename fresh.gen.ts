@@ -29,9 +29,11 @@ import * as $buttons_Button from "./islands/buttons/Button.tsx";
 import * as $buttons_ChartButton from "./islands/buttons/ChartButton.tsx";
 import * as $buttons_ShareButton from "./islands/buttons/ShareButton.tsx";
 import * as $buttons_ShareURL from "./islands/buttons/ShareURL.tsx";
-import * as $tools_Chart from "./islands/tools/Chart.tsx";
 import * as $tools_GameShowCreditScore from "./islands/tools/GameShowCreditScore.tsx";
 import * as $tools_InsuranceCalc from "./islands/tools/InsuranceCalc.tsx";
+import * as $tools_chart_Chart from "./islands/tools/chart/Chart.tsx";
+import * as $tools_chart_CreditScoreChart from "./islands/tools/chart/CreditScoreChart.tsx";
+import * as $tools_chart_TimeRangeSelector from "./islands/tools/chart/TimeRangeSelector.tsx";
 import * as $tools_creditscore_CreditScore from "./islands/tools/creditscore/CreditScore.tsx";
 import * as $tools_creditscore_CreditScoreChExt from "./islands/tools/creditscore/CreditScoreChExt.tsx";
 import * as $tools_creditscore_ScoreResult from "./islands/tools/creditscore/ScoreResult.tsx";
@@ -76,9 +78,12 @@ const manifest = {
     "./islands/buttons/ChartButton.tsx": $buttons_ChartButton,
     "./islands/buttons/ShareButton.tsx": $buttons_ShareButton,
     "./islands/buttons/ShareURL.tsx": $buttons_ShareURL,
-    "./islands/tools/Chart.tsx": $tools_Chart,
     "./islands/tools/GameShowCreditScore.tsx": $tools_GameShowCreditScore,
     "./islands/tools/InsuranceCalc.tsx": $tools_InsuranceCalc,
+    "./islands/tools/chart/Chart.tsx": $tools_chart_Chart,
+    "./islands/tools/chart/CreditScoreChart.tsx": $tools_chart_CreditScoreChart,
+    "./islands/tools/chart/TimeRangeSelector.tsx":
+      $tools_chart_TimeRangeSelector,
     "./islands/tools/creditscore/CreditScore.tsx":
       $tools_creditscore_CreditScore,
     "./islands/tools/creditscore/CreditScoreChExt.tsx":

@@ -2,10 +2,9 @@
 // islands/Chart.tsx
 
 import { useEffect, useState } from "preact/hooks";
-import { Chart, registerables } from "chart.js";
-import ScoreResult from "../tools/creditscore/ScoreResult.tsx";
-
-Chart.register(...registerables);
+import ScoreResult from "../../tools/creditscore/ScoreResult.tsx";
+import CreditScoreChart from "../chart/CreditScoreChart.tsx";
+import TimeRangeSelector from "../chart/TimeRangeSelector.tsx";
 
 interface UserScoreData {
   username: string;
@@ -33,20 +32,50 @@ interface ChartProps {
   username: string;
 }
 
-export default function CreditScoreChart({ username }: ChartProps) {
+function filterDataByTimeRange(
+  data: HistoricalDataPoint[],
+  range: string,
+): HistoricalDataPoint[] {
+  if (range === "ALL" || data.length === 0) return data;
+
+  const now = Date.now();
+  let cutoffTime: number;
+
+  switch (range) {
+    case "7D":
+      cutoffTime = now - (7 * 24 * 60 * 60 * 1000);
+      break;
+    case "30D":
+      cutoffTime = now - (30 * 24 * 60 * 60 * 1000);
+      break;
+    case "90D":
+      cutoffTime = now - (90 * 24 * 60 * 60 * 1000);
+      break;
+    case "6M":
+      cutoffTime = now - (6 * 30 * 24 * 60 * 60 * 1000);
+      break;
+    default:
+      return data;
+  }
+
+  return data.filter((point) => point.timestamp >= cutoffTime);
+}
+
+export default function Chart({ username }: ChartProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [scoreData, setScoreData] = useState<UserScoreData | null>(null);
-  const [historicalData, setHistoricalData] = useState<HistoricalDataPoint[]>(
-    [],
-  );
+  const [allHistoricalData, setAllHistoricalData] = useState<
+    HistoricalDataPoint[]
+  >([]);
+  const [selectedTimeRange, setSelectedTimeRange] = useState("30D");
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       setError(null);
       setScoreData(null);
-      setHistoricalData([]);
+      setAllHistoricalData([]);
 
       if (!username) {
         setIsLoading(false);
@@ -56,7 +85,6 @@ export default function CreditScoreChart({ username }: ChartProps) {
       try {
         const scoreRes = await fetch(`/api/score?username=${username}`);
         if (!scoreRes.ok) {
-          // This block handles non-200 responses from your /api/score endpoint
           setError(
             `Failed to fetch current score data: ${scoreRes.statusText}`,
           );
@@ -66,15 +94,12 @@ export default function CreditScoreChart({ username }: ChartProps) {
         const currentScoreData: UserScoreData = await scoreRes.json();
         setScoreData(currentScoreData);
 
-        // --- NEW/MODIFIED LOGIC HERE ---
-        // Check if the user actually exists from the API's perspective
         if (!currentScoreData.userExists) {
           setError(`User '${username}' not found on Manifold Markets.`);
           setIsLoading(false);
           return;
         }
 
-        // Only proceed to fetch history if the user was found and a userId is available
         if (!currentScoreData.userId) {
           setError(
             `User '${username}' found, but user ID is missing. Cannot fetch history.`,
@@ -82,7 +107,6 @@ export default function CreditScoreChart({ username }: ChartProps) {
           setIsLoading(false);
           return;
         }
-        // --- END NEW/MODIFIED LOGIC ---
 
         const historyRes = await fetch(
           `/api/history?userId=${currentScoreData.userId}`,
@@ -91,10 +115,10 @@ export default function CreditScoreChart({ username }: ChartProps) {
           console.error(
             `Failed to fetch historical data: ${historyRes.statusText}`,
           );
-          setError(`Failed to fetch historical data.`); // Provide a user-facing error
+          setError(`Failed to fetch historical data.`);
         } else {
           const historicalData: HistoricalDataPoint[] = await historyRes.json();
-          setHistoricalData(historicalData);
+          setAllHistoricalData(historicalData);
         }
       } catch (err) {
         console.error("Error fetching data for chart:", err);
@@ -107,118 +131,11 @@ export default function CreditScoreChart({ username }: ChartProps) {
     fetchData();
   }, [username]);
 
-  useEffect(() => {
-    if (historicalData.length === 0 || isLoading || error) {
-      return;
-    }
-
-    const canvas = document.getElementById(`creditScoreChart-${username}`) as
-      | HTMLCanvasElement
-      | null;
-    const ctx = canvas?.getContext("2d");
-    if (!ctx) return;
-
-    const labels = historicalData.map((dp) =>
-      new Date(dp.timestamp).toLocaleDateString()
-    );
-    const dataPoints = historicalData.map((dp) => dp.creditScore);
-
-    const existingChart = Chart.getChart(ctx);
-    if (existingChart) {
-      existingChart.destroy();
-    }
-
-    new Chart(ctx, {
-      type: "line",
-      data: {
-        labels,
-        datasets: [{
-          label: "Credit Score",
-          data: dataPoints,
-          fill: true,
-          backgroundColor: "rgba(75, 192, 192, 0.2)",
-          borderColor: "rgb(75, 192, 192)",
-          tension: 0.4,
-          pointHitRadius: 20,
-          pointRadius: 5,
-          pointHoverRadius: 7,
-          pointBackgroundColor: "rgb(75, 192, 192)",
-          pointBorderColor: "#fff",
-        }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false,
-            labels: { color: "#f0f0f0" },
-          },
-          title: {
-            display: false,
-            text: "Credit Score History",
-            color: "#f0f0f0",
-          },
-          tooltip: {
-            backgroundColor: "rgba(0, 0, 0, 0.8)",
-            titleColor: "#fff",
-            bodyColor: "#ccc",
-            borderColor: "rgba(75, 192, 192, 0.8)",
-            borderWidth: 1,
-            caretPadding: 10,
-            displayColors: false,
-          },
-        },
-        scales: {
-          x: {
-            title: {
-              display: false,
-              text: "Date",
-              color: "#ccc",
-              font: { size: 12 },
-            },
-            ticks: {
-              color: "#ccc",
-              font: { size: 10 },
-            },
-            grid: {
-              color: "#444",
-            },
-            border: { display: false },
-          },
-          y: {
-            title: {
-              display: false,
-              text: "Credit Score",
-              color: "#ccc",
-              font: { size: 12 },
-            },
-            beginAtZero: false,
-            min: 0,
-            max: 1000,
-            ticks: {
-              color: "#ccc",
-              font: { size: 10 },
-            },
-            grid: {
-              color: "#444",
-            },
-            border: { display: false },
-          },
-        },
-        layout: {
-          padding: {
-            left: 0,
-            right: 10,
-            top: 10,
-            bottom: 0,
-          },
-        },
-      },
-    });
-  }, [historicalData, isLoading, error, username]);
-
-  const canvasId = `creditScoreChart-${username}`;
+  // Filter data based on time range for display
+  const filteredHistoricalData = filterDataByTimeRange(
+    allHistoricalData,
+    selectedTimeRange,
+  );
 
   if (isLoading) {
     return <p class="text-center text-gray-400 py-8">Loading data...</p>;
@@ -245,23 +162,29 @@ export default function CreditScoreChart({ username }: ChartProps) {
             Enter a username to see score details.
           </p>
         )}
-      <div class="mt-6 bg-gray-900 p-4 md:p-6 rounded-lg shadow-inner">
-        <h2 class="text-xl font-semibold mb-4 text-gray-100">Score History</h2>
-        {" "}
-        {historicalData.length === 0
-          ? (
-            <p class="text-gray-400 text-sm text-center py-4">
-              No historical data available yet.
-            </p>
-          )
-          : (
-            <div
-              style={{ position: "relative", width: "100%", height: "300px" }}
-            >
-              {/* Reduced height for mobile */}
-              <canvas id={canvasId}></canvas>
-            </div>
-          )}
+
+      <div class="mt-6">
+        <div class="bg-gray-900 p-4 md:p-6 rounded-lg shadow-inner">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+            <h2 class="text-xl font-semibold text-gray-100 mb-2 md:mb-0">
+              Score History
+            </h2>
+            {allHistoricalData.length > 0 && (
+              <TimeRangeSelector
+                selectedRange={selectedTimeRange}
+                onRangeChange={setSelectedTimeRange}
+              />
+            )}
+          </div>
+
+          <CreditScoreChart
+            username={username}
+            historicalData={filteredHistoricalData}
+            selectedTimeRange={selectedTimeRange}
+            isLoading={false}
+            error={null}
+          />
+        </div>
       </div>
 
       <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-200">
@@ -298,6 +221,7 @@ export default function CreditScoreChart({ username }: ChartProps) {
               </p>
             )}
         </div>
+
         <div class="bg-gray-900 p-4 md:p-6 rounded-lg shadow-inner">
           <h2 class="text-xl font-semibold mb-3 text-gray-100">Notes</h2>
           <p class="text-xs md:text-sm text-gray-400">
