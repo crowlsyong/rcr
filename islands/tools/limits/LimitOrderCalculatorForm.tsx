@@ -111,7 +111,7 @@ export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
           Manifold API Key (optional)
         </label>
         <p class="text-xs text-gray-500 mt-1">
-          (Generates placement options. We do not store this key)
+          Generates additional options. We do not store this key
         </p>
         <input
           type="password"
