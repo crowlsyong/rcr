@@ -164,7 +164,7 @@ export default function LimitOrderCalculator() {
         >
           this section{" "}
         </a>
-        of the Manifold FAQ.
+        of the Manifold FAQ. Only works for BINARY markets.
       </p>
 
       <LimitOrderCalculatorForm
