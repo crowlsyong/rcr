@@ -26,7 +26,14 @@ export const handler: Handlers<AdminPageData, AdminState> = {
     const entries: DisplayKvEntry[] = [];
     let error: string | undefined;
     try {
-      for await (const entry of db.list({ prefix: [] })) {
+      // Use the 'list' method with limit and reverse: true to get the latest entries
+      const MAX_ENTRIES_TO_DISPLAY = 40; // Define the limit
+      for await (
+        const entry of db.list({ prefix: [] }, {
+          limit: MAX_ENTRIES_TO_DISPLAY,
+          reverse: true, // Get the latest entries first
+        })
+      ) {
         entries.push({
           key: entry.key,
           value: entry.value,
@@ -35,7 +42,11 @@ export const handler: Handlers<AdminPageData, AdminState> = {
       }
     } catch (err) {
       console.error("Error fetching KV data for admin panel:", err);
-      error = "An error occurred while fetching database entries";
+      error = `An error occurred while fetching database entries: ${
+        typeof err === "object" && err !== null && "message" in err
+          ? (err as { message: string }).message
+          : String(err)
+      }`;
     }
     return ctx.render({ entries, error });
   },
