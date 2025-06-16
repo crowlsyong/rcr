@@ -35,7 +35,6 @@ export default function LimitOrderCalculator() {
     setMarketData(null);
     setCalculationResult(null);
 
-    // ... (validation and calculation logic remains exactly the same) ...
     if (!marketUrlInput) {
       setFetchError("Market URL is required");
       setLoading(false);
@@ -123,9 +122,9 @@ export default function LimitOrderCalculator() {
       const calculatedNoAmount: number = sharesAcquired * (1 - pUpper);
 
       setCalculationResult({
-        yesLimitOrderAmount: calculatedYesAmount,
-        noLimitOrderAmount: calculatedNoAmount,
-        sharesAcquired: sharesAcquired,
+        yesLimitOrderAmount: Math.round(calculatedYesAmount),
+        noLimitOrderAmount: Math.round(calculatedNoAmount),
+        sharesAcquired: Math.round(sharesAcquired), // Round shares acquired here
         error: null,
         contractId: data.id,
       });
@@ -203,11 +202,11 @@ export default function LimitOrderCalculator() {
               {totalBetAmountInput.toFixed(2)}
             </span>, you will acquire approximately{" "}
             <span class="font-bold text-white">
-              {calculationResult.sharesAcquired!.toFixed(2)} shares
+              {calculationResult.sharesAcquired!} shares
             </span>{" "}
             of each outcome (potential payout of M
             <span class="font-bold text-white">
-              {calculationResult.sharesAcquired!.toFixed(2)}
+              {calculationResult.sharesAcquired!}
             </span>):
           </p>
           <ul class="list-disc pl-5 mt-4 text-gray-200 text-lg">
@@ -215,16 +214,14 @@ export default function LimitOrderCalculator() {
               Bet <span class="font-bold text-green-400">YES</span> at{" "}
               {lowerProbabilityInput}%:{" "}
               <span class="font-bold text-white">
-                M
-                {calculationResult.yesLimitOrderAmount!.toFixed(2)}
+                M{calculationResult.yesLimitOrderAmount!}
               </span>
             </li>
             <li>
               Bet <span class="font-bold text-red-400">NO</span> at{" "}
               {upperProbabilityInput}%:{" "}
               <span class="font-bold text-white">
-                M
-                {calculationResult.noLimitOrderAmount!.toFixed(2)}
+                M{calculationResult.noLimitOrderAmount!}
               </span>
             </li>
           </ul>
