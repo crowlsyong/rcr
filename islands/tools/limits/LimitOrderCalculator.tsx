@@ -1,10 +1,9 @@
-// islands/tools/LimitOrderCalculator.tsx
+// islands/tools/limits/LimitOrderCalculator.tsx
 import { useState } from "preact/hooks";
 import { getMarketDataBySlug, MarketData } from "../../../utils/limit_calc.ts";
 
-// Import the sub-components/islands
 import LimitOrderCalculatorForm from "./LimitOrderCalculatorForm.tsx";
-import LimitOrderResultsDisplay from "./LimitOrderResultsDisplay.tsx";
+import LimitOrderPlacementOptions from "./LimitOrderPlacementOptions.tsx"; // Correctly import the new island
 import MarketInfoDisplay from "./MarketInfoDisplay.tsx";
 
 interface CalculationResult {
@@ -13,7 +12,6 @@ interface CalculationResult {
   sharesAcquired: number | null;
   error: string | null;
   contractId: string | null;
-  marketUrl: string | null; // Added marketUrl here as well to store the fetched URL
 }
 
 export default function LimitOrderCalculator() {
@@ -94,7 +92,6 @@ export default function LimitOrderCalculator() {
           sharesAcquired: null,
           error: "Only BINARY markets are supported for this calculation",
           contractId: null,
-          marketUrl: null, // Also set to null if not binary
         });
         setLoading(false);
         return;
@@ -130,7 +127,6 @@ export default function LimitOrderCalculator() {
         sharesAcquired: sharesAcquired,
         error: null,
         contractId: data.id,
-        marketUrl: data.url, // THIS IS THE LINE ADDED/CHANGED
       });
     } catch (e) {
       setFetchError(
@@ -145,6 +141,11 @@ export default function LimitOrderCalculator() {
     }
   };
 
+  const hasValidAmounts = calculationResult &&
+    !calculationResult.error &&
+    calculationResult.yesLimitOrderAmount! > 0 &&
+    calculationResult.noLimitOrderAmount! > 0;
+
   return (
     <div class="p-4 mx-auto max-w-screen-md text-gray-100">
       <h1 class="text-2xl font-bold mb-4">
@@ -157,7 +158,7 @@ export default function LimitOrderCalculator() {
         budget into two limit orders to acquire the same number of shares for
         both YES and NO outcomes within your chosen range. More info{" "}
         <a
-          href="https://docs.manifold.markets/faq#what-is-a-limit-order"
+          href="https://docs.manifold.markets/faq#example"
           target="_blank"
           rel="noopener noreferrer"
           class="text-blue-400 hover:underline"
@@ -166,7 +167,6 @@ export default function LimitOrderCalculator() {
         </a>.
       </p>
 
-      {/* The Calculator Form Sub-Island */}
       <LimitOrderCalculatorForm
         marketUrlInput={marketUrlInput}
         setMarketUrlInput={setMarketUrlInput}
@@ -184,29 +184,66 @@ export default function LimitOrderCalculator() {
 
       {fetchError && <p class="text-red-400 mb-4">Error: {fetchError}</p>}
 
-      {/* Results Display Sub-Island */}
       {calculationResult && calculationResult.error && (
         <p class="text-red-400 mb-4">
           Calculation Error: {calculationResult.error}
         </p>
       )}
 
-      {calculationResult && !calculationResult.error && (
-        <LimitOrderResultsDisplay
-          yesLimitOrderAmount={calculationResult.yesLimitOrderAmount}
-          noLimitOrderAmount={calculationResult.noLimitOrderAmount}
-          sharesAcquired={calculationResult.sharesAcquired}
-          totalBetAmount={totalBetAmountInput}
-          lowerProbability={lowerProbabilityInput}
-          upperProbability={upperProbabilityInput}
-          apiKey={apiKeyInput}
-          contractId={calculationResult.contractId}
-          marketUrl={calculationResult.marketUrl} // THIS IS THE LINE ADDED/CHANGED
-        />
-      )}
-
-      {/* Market Information Display Sub-Island */}
       {marketData && <MarketInfoDisplay marketData={marketData} />}
+
+      {hasValidAmounts && (
+        <div class="bg-gray-800 shadow overflow-hidden sm:rounded-lg p-6 mb-6 border border-gray-700">
+          <h2 class="text-xl font-semibold mb-3 text-white">
+            Calculated Limit Orders
+          </h2>
+          <p>
+            With a total budget of M
+            <span class="font-bold text-white">
+              {totalBetAmountInput.toFixed(2)}
+            </span>, you will acquire approximately{" "}
+            <span class="font-bold text-white">
+              {calculationResult.sharesAcquired!.toFixed(2)} shares
+            </span>{" "}
+            of each outcome (potential payout of M
+            <span class="font-bold text-white">
+              {calculationResult.sharesAcquired!.toFixed(2)}
+            </span>):
+          </p>
+          <ul class="list-disc pl-5 mt-4 text-gray-200 text-lg">
+            <li>
+              Bet <span class="font-bold text-green-400">YES</span> at{" "}
+              {lowerProbabilityInput}%:{" "}
+              <span class="font-bold text-white">
+                M
+                {calculationResult.yesLimitOrderAmount!.toFixed(2)}
+              </span>
+            </li>
+            <li>
+              Bet <span class="font-bold text-red-400">NO</span> at{" "}
+              {upperProbabilityInput}%:{" "}
+              <span class="font-bold text-white">
+                M
+                {calculationResult.noLimitOrderAmount!.toFixed(2)}
+              </span>
+            </li>
+          </ul>
+
+          {/* --- THIS IS THE CORRECTED SECTION --- */}
+          {/* It now renders the new island with the button and tabs */}
+          {apiKeyInput && calculationResult.contractId && marketData?.url && (
+            <LimitOrderPlacementOptions
+              yesLimitOrderAmount={calculationResult.yesLimitOrderAmount!}
+              noLimitOrderAmount={calculationResult.noLimitOrderAmount!}
+              lowerProbability={lowerProbabilityInput}
+              upperProbability={upperProbabilityInput}
+              apiKey={apiKeyInput}
+              contractId={calculationResult.contractId}
+              marketUrl={marketData.url}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }

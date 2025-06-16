@@ -1,5 +1,4 @@
-// islands/tools/LimitOrderCalculatorForm.tsx
-
+// islands/tools/limits/LimitOrderCalculatorForm.tsx
 interface LimitOrderFormProps {
   marketUrlInput: string;
   setMarketUrlInput: (value: string) => void;
@@ -112,17 +111,21 @@ export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
           Manifold API Key (optional)
         </label>
         <p class="text-xs text-gray-500 mt-1">
-          Generates cURL commands. We do not save or store this key
+          (Generates cURL options. We do not save or store this key)
         </p>
         <input
-          type="password" // Use type="password" for API keys
+          type="password"
           id="api-key"
           name="apiKey"
           value={props.apiKeyInput}
           onChange={(e) => props.setApiKeyInput(e.currentTarget.value)}
-          placeholder="xxxxxx-xxxx-xxxx-xxxxxxxxxxxx"
+          placeholder="xxxxxx-xxxx-xxxx-xxxxxxxxxxxxxxx"
           class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
         />
+        <p class="mt-1 text-sm text-gray-400">
+          Find your API key on your Manifold profile page by clicking the gear
+          icon and selecting Account Settings.
+        </p>
       </div>
 
       <button

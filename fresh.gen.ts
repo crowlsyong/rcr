@@ -7,6 +7,7 @@ import * as $_app from "./routes/_app.tsx";
 import * as $_middleware from "./routes/_middleware.ts";
 import * as $admin_index from "./routes/admin/index.tsx";
 import * as $api_history from "./routes/api/history.ts";
+import * as $api_place_limit_orders from "./routes/api/place-limit-orders.ts";
 import * as $api_score from "./routes/api/score.ts";
 import * as $auth_oauth2callback from "./routes/auth/oauth2callback.ts";
 import * as $auth_signin from "./routes/auth/signin.ts";
@@ -36,6 +37,7 @@ import * as $tools_creditscore_CreditScoreChExt from "./islands/tools/creditscor
 import * as $tools_creditscore_ScoreResult from "./islands/tools/creditscore/ScoreResult.tsx";
 import * as $tools_limits_LimitOrderCalculator from "./islands/tools/limits/LimitOrderCalculator.tsx";
 import * as $tools_limits_LimitOrderCalculatorForm from "./islands/tools/limits/LimitOrderCalculatorForm.tsx";
+import * as $tools_limits_LimitOrderPlacementOptions from "./islands/tools/limits/LimitOrderPlacementOptions.tsx";
 import * as $tools_limits_LimitOrderResultsDisplay from "./islands/tools/limits/LimitOrderResultsDisplay.tsx";
 import * as $tools_limits_MarketInfoDisplay from "./islands/tools/limits/MarketInfoDisplay.tsx";
 import type { Manifest } from "$fresh/server.ts";
@@ -47,6 +49,7 @@ const manifest = {
     "./routes/_middleware.ts": $_middleware,
     "./routes/admin/index.tsx": $admin_index,
     "./routes/api/history.ts": $api_history,
+    "./routes/api/place-limit-orders.ts": $api_place_limit_orders,
     "./routes/api/score.ts": $api_score,
     "./routes/auth/oauth2callback.ts": $auth_oauth2callback,
     "./routes/auth/signin.ts": $auth_signin,
@@ -84,6 +87,8 @@ const manifest = {
       $tools_limits_LimitOrderCalculator,
     "./islands/tools/limits/LimitOrderCalculatorForm.tsx":
       $tools_limits_LimitOrderCalculatorForm,
+    "./islands/tools/limits/LimitOrderPlacementOptions.tsx":
+      $tools_limits_LimitOrderPlacementOptions,
     "./islands/tools/limits/LimitOrderResultsDisplay.tsx":
       $tools_limits_LimitOrderResultsDisplay,
     "./islands/tools/limits/MarketInfoDisplay.tsx":
