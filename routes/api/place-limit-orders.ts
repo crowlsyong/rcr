@@ -6,9 +6,11 @@ interface BetPayload {
   contractId: string;
   outcome: "YES" | "NO";
   limitProb: number;
-  expiresMillisAfter?: number; // Optional
+  expiresMillisAfter?: number;
+  expiresAt?: number; // Add optional expiresAt
 }
 
+// ... (BetResponse interface remains the same) ...
 interface BetResponse {
   id: string;
   userId: string;
@@ -33,11 +35,11 @@ export const handler: Handlers = {
         noAmount,
         yesLimitProb,
         noLimitProb,
-        expiresMillisAfter, // This can be a number or undefined
+        expiresMillisAfter,
+        expiresAt, // This can be a number or undefined
       } = await req.json();
 
-      // --- THIS IS THE CORRECTED VALIDATION ---
-      // 1. Check all required fields first.
+      // ... (Validation logic remains the same) ...
       if (
         !apiKey || !contractId || isNaN(yesAmount) || isNaN(noAmount) ||
         isNaN(yesLimitProb) || isNaN(noLimitProb)
@@ -51,7 +53,6 @@ export const handler: Handlers = {
         );
       }
 
-      // 2. Check the optional field only if it was provided.
       if (expiresMillisAfter !== undefined && isNaN(expiresMillisAfter)) {
         return new Response(
           JSON.stringify({
@@ -63,7 +64,18 @@ export const handler: Handlers = {
           },
         );
       }
-      // --- END OF CORRECTED VALIDATION ---
+
+      if (expiresAt !== undefined && isNaN(expiresAt)) {
+        return new Response(
+          JSON.stringify({
+            error: "If provided, expiresAt must be a number",
+          }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
 
       const manifoldApiUrl = "https://api.manifold.markets/v0/bet";
       const authHeaders = {
@@ -86,9 +98,10 @@ export const handler: Handlers = {
           outcome: "YES",
           limitProb: yesLimitProb,
         };
-        // This logic is correct: only add the key if the value is truthy
         if (expiresMillisAfter) {
           yesPayload.expiresMillisAfter = expiresMillisAfter;
+        } else if (expiresAt) {
+          yesPayload.expiresAt = expiresAt;
         }
 
         const yesResponse = await fetch(manifoldApiUrl, {
@@ -114,6 +127,8 @@ export const handler: Handlers = {
         };
         if (expiresMillisAfter) {
           noPayload.expiresMillisAfter = expiresMillisAfter;
+        } else if (expiresAt) {
+          noPayload.expiresAt = expiresAt;
         }
 
         const noResponse = await fetch(manifoldApiUrl, {

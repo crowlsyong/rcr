@@ -13,13 +13,13 @@ interface ManualExecutionProps {
   expirationSettings: ExpirationSettings;
 }
 
-// ... (rest of the file remains the same)
 interface BetPayload {
   amount: number;
   contractId: string;
   outcome: "YES" | "NO";
   limitProb: number;
-  expiresMillisAfter?: number; // Make optional
+  expiresMillisAfter?: number;
+  expiresAt?: number;
 }
 
 export default function ManualExecution(props: ManualExecutionProps) {
@@ -44,13 +44,17 @@ export default function ManualExecution(props: ManualExecutionProps) {
       limitProb: roundedLimitProb,
     };
 
-    // --- THIS IS THE FIX ---
-    // Conditionally add expiresMillisAfter only if the type is 'duration'
+    // --- THIS IS THE UPDATED LOGIC ---
     if (
       props.expirationSettings.type === "duration" &&
       props.expirationSettings.value
     ) {
       betData.expiresMillisAfter = props.expirationSettings.value;
+    } else if (
+      props.expirationSettings.type === "date" &&
+      props.expirationSettings.value
+    ) {
+      betData.expiresAt = props.expirationSettings.value;
     }
 
     return JSON.stringify(betData);

@@ -22,8 +22,9 @@ export default function LimitOrderCalculator() {
   const [apiKeyInput, setApiKeyInput] = useState("");
 
   const [marketData, setMarketData] = useState<MarketData | null>(null);
-  const [calculationResult, setCalculationResult] =
-    useState<CalculationResult | null>(null);
+  const [calculationResult, setCalculationResult] = useState<
+    CalculationResult | null
+  >(null);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
@@ -214,14 +215,16 @@ export default function LimitOrderCalculator() {
             <li>
               Bet <span class="font-bold text-green-400">YES</span> at{" "}
               {lowerProbabilityInput}%:{" "}
-              <span class="font-bold text-white">M
+              <span class="font-bold text-white">
+                M
                 {calculationResult.yesLimitOrderAmount!.toFixed(2)}
               </span>
             </li>
             <li>
               Bet <span class="font-bold text-red-400">NO</span> at{" "}
               {upperProbabilityInput}%:{" "}
-              <span class="font-bold text-white">M
+              <span class="font-bold text-white">
+                M
                 {calculationResult.noLimitOrderAmount!.toFixed(2)}
               </span>
             </li>

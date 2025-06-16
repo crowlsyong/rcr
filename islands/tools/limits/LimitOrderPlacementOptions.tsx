@@ -1,12 +1,12 @@
 // islands/tools/limits/LimitOrderPlacementOptions.tsx
-import { useState, useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import DirectExecution from "./DirectExecution.tsx";
 import ManualExecution from "./ManualExecution.tsx";
 
 // Define and export the shared interface here
 export interface ExpirationSettings {
-  type: "never" | "duration";
-  value: number | null;
+  type: "never" | "duration" | "date";
+  value: number | null; // value will be milliseconds for both duration and date
 }
 
 interface PlacementOptionsProps {
@@ -22,22 +22,43 @@ interface PlacementOptionsProps {
 export default function LimitOrderPlacementOptions(
   props: PlacementOptionsProps,
 ) {
-  // State for expiration settings now lives here
-  const [expirationSettings, setExpirationSettings] = useState<ExpirationSettings>({
-    type: "never", // Default to "never"
+  const [expirationSettings, setExpirationSettings] = useState<
+    ExpirationSettings
+  >({
+    type: "never",
     value: null,
   });
-  const [expirationMode, setExpirationMode] = useState<"never" | "duration">(
+  const [expirationMode, setExpirationMode] = useState<
+    "never" | "duration" | "date"
+  >(
     "never",
   );
   const [durationValue, setDurationValue] = useState(24);
   const [durationUnit, setDurationUnit] = useState("hours");
+  const [dateValue, setDateValue] = useState("");
+
+  // --- THIS IS THE NEW EFFECT HOOK FOR THE FIX ---
+  // When the user selects "date" mode, pre-populate the input if it's empty.
+  useEffect(() => {
+    if (expirationMode === "date" && !dateValue) {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(12, 0, 0, 0); // Set to noon
+
+      // Format to YYYY-MM-DDTHH:mm which is required by datetime-local
+      const year = tomorrow.getFullYear();
+      const month = String(tomorrow.getMonth() + 1).padStart(2, "0");
+      const day = String(tomorrow.getDate()).padStart(2, "0");
+      const defaultValue = `${year}-${month}-${day}T12:00`;
+      setDateValue(defaultValue);
+    }
+  }, [expirationMode]); // This runs whenever the radio button selection changes.
 
   // Effect to update the main expirationSettings state when UI changes
   useEffect(() => {
     if (expirationMode === "never") {
       setExpirationSettings({ type: "never", value: null });
-    } else {
+    } else if (expirationMode === "duration") {
       let multiplier = 1;
       if (durationUnit === "minutes") multiplier = 60 * 1000;
       if (durationUnit === "hours") multiplier = 60 * 60 * 1000;
@@ -46,8 +67,11 @@ export default function LimitOrderPlacementOptions(
         type: "duration",
         value: durationValue * multiplier,
       });
+    } else if (expirationMode === "date") {
+      const timestamp = dateValue ? new Date(dateValue).getTime() : null;
+      setExpirationSettings({ type: "date", value: timestamp });
     }
-  }, [expirationMode, durationValue, durationUnit]);
+  }, [expirationMode, durationValue, durationUnit, dateValue]);
 
   return (
     <div class="mt-8 border-t border-gray-700 pt-6">
@@ -97,7 +121,8 @@ export default function LimitOrderPlacementOptions(
               <input
                 type="number"
                 value={durationValue}
-                onChange={(e) => setDurationValue(Number(e.currentTarget.value))}
+                onChange={(e) =>
+                  setDurationValue(Number(e.currentTarget.value))}
                 class="w-24 border border-gray-600 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
               />
               <select
@@ -109,6 +134,32 @@ export default function LimitOrderPlacementOptions(
                 <option value="hours">Hours</option>
                 <option value="days">Days</option>
               </select>
+            </div>
+          )}
+          <div class="flex items-center">
+            <input
+              id="expires-date"
+              name="expiration-mode"
+              type="radio"
+              checked={expirationMode === "date"}
+              onChange={() => setExpirationMode("date")}
+              class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
+            />
+            <label
+              htmlFor="expires-date"
+              class="ml-3 block text-sm font-medium text-gray-300"
+            >
+              Expires on a specific date
+            </label>
+          </div>
+          {expirationMode === "date" && (
+            <div class="pl-7">
+              <input
+                type="datetime-local"
+                value={dateValue}
+                onChange={(e) => setDateValue(e.currentTarget.value)}
+                class="border border-gray-600 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
+              />
             </div>
           )}
         </div>

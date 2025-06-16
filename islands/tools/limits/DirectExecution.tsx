@@ -20,7 +20,8 @@ interface BetPlacementBody {
   noAmount: number;
   yesLimitProb: number;
   noLimitProb: number;
-  expiresMillisAfter?: number; // This is now optional
+  expiresMillisAfter?: number;
+  expiresAt?: number;
 }
 
 export default function DirectExecution(props: DirectExecutionProps) {
@@ -51,13 +52,17 @@ export default function DirectExecution(props: DirectExecutionProps) {
       noLimitProb: props.upperProbability / 100,
     };
 
-    // --- THIS IS THE FIX ---
-    // Conditionally add expiresMillisAfter only if the type is 'duration'
+    // --- THIS IS THE UPDATED LOGIC ---
     if (
       props.expirationSettings.type === "duration" &&
       props.expirationSettings.value
     ) {
       body.expiresMillisAfter = props.expirationSettings.value;
+    } else if (
+      props.expirationSettings.type === "date" &&
+      props.expirationSettings.value
+    ) {
+      body.expiresAt = props.expirationSettings.value;
     }
 
     try {
@@ -98,7 +103,7 @@ export default function DirectExecution(props: DirectExecutionProps) {
   return (
     <div class="mb-4">
       <h4 class="font-medium text-gray-300 mb-2">
-        1. Direct Execution (Recommended)
+        1. Direct Execution
       </h4>
       <p class="mb-2 text-gray-400 text-sm">
         Place both orders securely through our server. If one fails, the other
@@ -110,7 +115,7 @@ export default function DirectExecution(props: DirectExecutionProps) {
         disabled={placingOrders}
         class={`inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
           isConfirming
-            ? "bg-yellow-700 hover:bg-yellow-800 focus:ring-yellow-400"
+            ? "bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-400"
             : "bg-green-600 hover:bg-green-700 focus:ring-green-500"
         }`}
       >
