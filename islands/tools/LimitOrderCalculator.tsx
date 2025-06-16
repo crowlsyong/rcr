@@ -152,7 +152,15 @@ export default function LimitOrderCalculator() {
         <span class="font-bold text-white">total Mana budget</span>, and your
         desired probability range. This tool will calculate how to split your
         budget into two limit orders to acquire the same number of shares for
-        both YES and NO outcomes within your chosen range.
+        both YES and NO outcomes within your chosen range. More info{" "}
+        <a
+          href="https://docs.manifold.markets/faq#what-is-a-limit-order"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-blue-400 hover:underline"
+        >
+          here
+        </a>.
       </p>
 
       <form onSubmit={handleSubmit} class="space-y-4 mb-8">
