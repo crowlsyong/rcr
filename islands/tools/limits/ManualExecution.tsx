@@ -1,6 +1,6 @@
 // islands/tools/limits/ManualExecution.tsx
 import { useState } from "preact/hooks";
-import { ExpirationSettings } from "./LimitOrderCalculatorForm.tsx";
+import { ExpirationSettings } from "./LimitOrderPlacementOptions.tsx";
 
 interface ManualExecutionProps {
   yesLimitOrderAmount: number;
@@ -13,6 +13,7 @@ interface ManualExecutionProps {
   expirationSettings: ExpirationSettings;
 }
 
+// ... (rest of the file remains the same)
 interface BetPayload {
   amount: number;
   contractId: string;

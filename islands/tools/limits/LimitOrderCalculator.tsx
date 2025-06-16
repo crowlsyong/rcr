@@ -2,9 +2,7 @@
 import { useState } from "preact/hooks";
 import { getMarketDataBySlug, MarketData } from "../../../utils/limit_calc.ts";
 
-import LimitOrderCalculatorForm, {
-  ExpirationSettings,
-} from "./LimitOrderCalculatorForm.tsx";
+import LimitOrderCalculatorForm from "./LimitOrderCalculatorForm.tsx";
 import LimitOrderPlacementOptions from "./LimitOrderPlacementOptions.tsx";
 import MarketInfoDisplay from "./MarketInfoDisplay.tsx";
 
@@ -22,18 +20,10 @@ export default function LimitOrderCalculator() {
   const [upperProbabilityInput, setUpperProbabilityInput] = useState(0);
   const [totalBetAmountInput, setTotalBetAmountInput] = useState(0);
   const [apiKeyInput, setApiKeyInput] = useState("");
-  // New state for expiration settings
-  const [expirationSettings, setExpirationSettings] = useState<
-    ExpirationSettings
-  >({
-    type: "duration",
-    value: 24 * 60 * 60 * 1000, // Default to 24 hours
-  });
 
   const [marketData, setMarketData] = useState<MarketData | null>(null);
-  const [calculationResult, setCalculationResult] = useState<
-    CalculationResult | null
-  >(null);
+  const [calculationResult, setCalculationResult] =
+    useState<CalculationResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
@@ -44,7 +34,7 @@ export default function LimitOrderCalculator() {
     setMarketData(null);
     setCalculationResult(null);
 
-    // ... (rest of validation logic remains the same) ...
+    // ... (validation and calculation logic remains exactly the same) ...
     if (!marketUrlInput) {
       setFetchError("Market URL is required");
       setLoading(false);
@@ -190,7 +180,6 @@ export default function LimitOrderCalculator() {
         setApiKeyInput={setApiKeyInput}
         loading={loading}
         onSubmit={calculateLimitOrders}
-        onExpirationChange={setExpirationSettings} // Pass the setter down
       />
 
       {fetchError && <p class="text-red-400 mb-4">Error: {fetchError}</p>}
@@ -225,16 +214,14 @@ export default function LimitOrderCalculator() {
             <li>
               Bet <span class="font-bold text-green-400">YES</span> at{" "}
               {lowerProbabilityInput}%:{" "}
-              <span class="font-bold text-white">
-                M
+              <span class="font-bold text-white">M
                 {calculationResult.yesLimitOrderAmount!.toFixed(2)}
               </span>
             </li>
             <li>
               Bet <span class="font-bold text-red-400">NO</span> at{" "}
               {upperProbabilityInput}%:{" "}
-              <span class="font-bold text-white">
-                M
+              <span class="font-bold text-white">M
                 {calculationResult.noLimitOrderAmount!.toFixed(2)}
               </span>
             </li>
@@ -249,7 +236,6 @@ export default function LimitOrderCalculator() {
               apiKey={apiKeyInput}
               contractId={calculationResult.contractId}
               marketUrl={marketData.url}
-              expirationSettings={expirationSettings} // Pass the settings down
             />
           )}
         </div>
