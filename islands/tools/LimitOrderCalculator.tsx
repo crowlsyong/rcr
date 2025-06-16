@@ -149,7 +149,7 @@ export default function LimitOrderCalculator() {
         budget into two limit orders to acquire the same number of shares for
         both YES and NO outcomes within your chosen range. More info{" "}
         <a
-          href="https://docs.manifold.markets/faq#what-is-a-limit-order"
+          href="https://docs.manifold.markets/faq#example"
           target="_blank"
           rel="noopener noreferrer"
           class="text-blue-400 hover:underline"
