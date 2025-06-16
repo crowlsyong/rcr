@@ -19,6 +19,7 @@ import * as $iframe_credit_score from "./routes/iframe/credit-score.tsx";
 import * as $iframe_insurance_fee_calculator from "./routes/iframe/insurance-fee-calculator.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $insurance from "./routes/insurance.tsx";
+import * as $limits from "./routes/limits.tsx";
 import * as $qr_string_ from "./routes/qr/[string].tsx";
 import * as $u_username_ from "./routes/u/[username].tsx";
 import * as $Chart from "./islands/Chart.tsx";
@@ -33,6 +34,7 @@ import * as $buttons_Button from "./islands/buttons/Button.tsx";
 import * as $buttons_ChartButton from "./islands/buttons/ChartButton.tsx";
 import * as $buttons_ShareButton from "./islands/buttons/ShareButton.tsx";
 import * as $buttons_ShareURL from "./islands/buttons/ShareURL.tsx";
+import * as $tools_LimitOrderCalculator from "./islands/tools/LimitOrderCalculator.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -55,6 +57,7 @@ const manifest = {
       $iframe_insurance_fee_calculator,
     "./routes/index.tsx": $index,
     "./routes/insurance.tsx": $insurance,
+    "./routes/limits.tsx": $limits,
     "./routes/qr/[string].tsx": $qr_string_,
     "./routes/u/[username].tsx": $u_username_,
   },
@@ -71,6 +74,7 @@ const manifest = {
     "./islands/buttons/ChartButton.tsx": $buttons_ChartButton,
     "./islands/buttons/ShareButton.tsx": $buttons_ShareButton,
     "./islands/buttons/ShareURL.tsx": $buttons_ShareURL,
+    "./islands/tools/LimitOrderCalculator.tsx": $tools_LimitOrderCalculator,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

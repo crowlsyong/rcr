@@ -30,6 +30,11 @@ const links = [
     targetBlank: false,
   },
   {
+    label: "🧮 Limit Orders",
+    url: "/limits",
+    targetBlank: false,
+  },
+  {
     label: "🏦 Payment Portal",
     url: "https://manifold.markets/crowlsyong/risk-payment-portal",
     targetBlank: true,
