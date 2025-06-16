@@ -6,10 +6,9 @@ interface BetPayload {
   contractId: string;
   outcome: "YES" | "NO";
   limitProb: number;
-  expiresMillisAfter: number;
+  expiresMillisAfter?: number; // Optional
 }
 
-// Define a type for the bet response from Manifold
 interface BetResponse {
   id: string;
   userId: string;
@@ -22,7 +21,6 @@ interface BetResponse {
   probAfter: number;
   isFilled: boolean;
   isCancelled: boolean;
-  // Add other fields if needed
 }
 
 export const handler: Handlers = {
@@ -35,21 +33,37 @@ export const handler: Handlers = {
         noAmount,
         yesLimitProb,
         noLimitProb,
-        expiresMillisAfter,
+        expiresMillisAfter, // This can be a number or undefined
       } = await req.json();
 
+      // --- THIS IS THE CORRECTED VALIDATION ---
+      // 1. Check all required fields first.
       if (
         !apiKey || !contractId || isNaN(yesAmount) || isNaN(noAmount) ||
-        isNaN(yesLimitProb) || isNaN(noLimitProb) || isNaN(expiresMillisAfter)
+        isNaN(yesLimitProb) || isNaN(noLimitProb)
       ) {
         return new Response(
-          JSON.stringify({ error: "Missing or invalid parameters for bets" }),
+          JSON.stringify({ error: "Missing or invalid required parameters" }),
           {
             status: 400,
             headers: { "Content-Type": "application/json" },
           },
         );
       }
+
+      // 2. Check the optional field only if it was provided.
+      if (expiresMillisAfter !== undefined && isNaN(expiresMillisAfter)) {
+        return new Response(
+          JSON.stringify({
+            error: "If provided, expiresMillisAfter must be a number",
+          }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+      // --- END OF CORRECTED VALIDATION ---
 
       const manifoldApiUrl = "https://api.manifold.markets/v0/bet";
       const authHeaders = {
@@ -59,7 +73,6 @@ export const handler: Handlers = {
 
       let yesBetId: string | null = null;
       let overallSuccess = false;
-      // Use the new BetResponse type instead of 'any'
       const placementResults: {
         yesBetResponse?: BetResponse;
         noBetResponse?: BetResponse;
@@ -72,8 +85,12 @@ export const handler: Handlers = {
           contractId: contractId,
           outcome: "YES",
           limitProb: yesLimitProb,
-          expiresMillisAfter: expiresMillisAfter,
         };
+        // This logic is correct: only add the key if the value is truthy
+        if (expiresMillisAfter) {
+          yesPayload.expiresMillisAfter = expiresMillisAfter;
+        }
+
         const yesResponse = await fetch(manifoldApiUrl, {
           method: "POST",
           headers: authHeaders,
@@ -94,8 +111,11 @@ export const handler: Handlers = {
           contractId: contractId,
           outcome: "NO",
           limitProb: noLimitProb,
-          expiresMillisAfter: expiresMillisAfter,
         };
+        if (expiresMillisAfter) {
+          noPayload.expiresMillisAfter = expiresMillisAfter;
+        }
+
         const noResponse = await fetch(manifoldApiUrl, {
           method: "POST",
           headers: authHeaders,

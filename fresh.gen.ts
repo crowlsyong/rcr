@@ -35,10 +35,12 @@ import * as $tools_InsuranceCalc from "./islands/tools/InsuranceCalc.tsx";
 import * as $tools_creditscore_CreditScore from "./islands/tools/creditscore/CreditScore.tsx";
 import * as $tools_creditscore_CreditScoreChExt from "./islands/tools/creditscore/CreditScoreChExt.tsx";
 import * as $tools_creditscore_ScoreResult from "./islands/tools/creditscore/ScoreResult.tsx";
+import * as $tools_limits_DirectExecution from "./islands/tools/limits/DirectExecution.tsx";
 import * as $tools_limits_LimitOrderCalculator from "./islands/tools/limits/LimitOrderCalculator.tsx";
 import * as $tools_limits_LimitOrderCalculatorForm from "./islands/tools/limits/LimitOrderCalculatorForm.tsx";
 import * as $tools_limits_LimitOrderPlacementOptions from "./islands/tools/limits/LimitOrderPlacementOptions.tsx";
 import * as $tools_limits_LimitOrderResultsDisplay from "./islands/tools/limits/LimitOrderResultsDisplay.tsx";
+import * as $tools_limits_ManualExecution from "./islands/tools/limits/ManualExecution.tsx";
 import * as $tools_limits_MarketInfoDisplay from "./islands/tools/limits/MarketInfoDisplay.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
@@ -83,6 +85,7 @@ const manifest = {
       $tools_creditscore_CreditScoreChExt,
     "./islands/tools/creditscore/ScoreResult.tsx":
       $tools_creditscore_ScoreResult,
+    "./islands/tools/limits/DirectExecution.tsx": $tools_limits_DirectExecution,
     "./islands/tools/limits/LimitOrderCalculator.tsx":
       $tools_limits_LimitOrderCalculator,
     "./islands/tools/limits/LimitOrderCalculatorForm.tsx":
@@ -91,6 +94,7 @@ const manifest = {
       $tools_limits_LimitOrderPlacementOptions,
     "./islands/tools/limits/LimitOrderResultsDisplay.tsx":
       $tools_limits_LimitOrderResultsDisplay,
+    "./islands/tools/limits/ManualExecution.tsx": $tools_limits_ManualExecution,
     "./islands/tools/limits/MarketInfoDisplay.tsx":
       $tools_limits_MarketInfoDisplay,
   },

@@ -2,8 +2,10 @@
 import { useState } from "preact/hooks";
 import { getMarketDataBySlug, MarketData } from "../../../utils/limit_calc.ts";
 
-import LimitOrderCalculatorForm from "./LimitOrderCalculatorForm.tsx";
-import LimitOrderPlacementOptions from "./LimitOrderPlacementOptions.tsx"; // Correctly import the new island
+import LimitOrderCalculatorForm, {
+  ExpirationSettings,
+} from "./LimitOrderCalculatorForm.tsx";
+import LimitOrderPlacementOptions from "./LimitOrderPlacementOptions.tsx";
 import MarketInfoDisplay from "./MarketInfoDisplay.tsx";
 
 interface CalculationResult {
@@ -20,6 +22,13 @@ export default function LimitOrderCalculator() {
   const [upperProbabilityInput, setUpperProbabilityInput] = useState(0);
   const [totalBetAmountInput, setTotalBetAmountInput] = useState(0);
   const [apiKeyInput, setApiKeyInput] = useState("");
+  // New state for expiration settings
+  const [expirationSettings, setExpirationSettings] = useState<
+    ExpirationSettings
+  >({
+    type: "duration",
+    value: 24 * 60 * 60 * 1000, // Default to 24 hours
+  });
 
   const [marketData, setMarketData] = useState<MarketData | null>(null);
   const [calculationResult, setCalculationResult] = useState<
@@ -35,6 +44,7 @@ export default function LimitOrderCalculator() {
     setMarketData(null);
     setCalculationResult(null);
 
+    // ... (rest of validation logic remains the same) ...
     if (!marketUrlInput) {
       setFetchError("Market URL is required");
       setLoading(false);
@@ -180,6 +190,7 @@ export default function LimitOrderCalculator() {
         setApiKeyInput={setApiKeyInput}
         loading={loading}
         onSubmit={calculateLimitOrders}
+        onExpirationChange={setExpirationSettings} // Pass the setter down
       />
 
       {fetchError && <p class="text-red-400 mb-4">Error: {fetchError}</p>}
@@ -229,8 +240,6 @@ export default function LimitOrderCalculator() {
             </li>
           </ul>
 
-          {/* --- THIS IS THE CORRECTED SECTION --- */}
-          {/* It now renders the new island with the button and tabs */}
           {apiKeyInput && calculationResult.contractId && marketData?.url && (
             <LimitOrderPlacementOptions
               yesLimitOrderAmount={calculationResult.yesLimitOrderAmount!}
@@ -240,6 +249,7 @@ export default function LimitOrderCalculator() {
               apiKey={apiKeyInput}
               contractId={calculationResult.contractId}
               marketUrl={marketData.url}
+              expirationSettings={expirationSettings} // Pass the settings down
             />
           )}
         </div>
