@@ -1,4 +1,4 @@
-// routes/index.tsx
+// routes/limits.tsx
 import { Head } from "$fresh/runtime.ts";
 import LimitOrderCalculator from "../islands/tools/LimitOrderCalculator.tsx";
 
