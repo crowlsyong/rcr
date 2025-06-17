@@ -8,7 +8,7 @@ export default function Home(_req: Request, _ctx: RouteContext) {
   return (
     <>
       <Head>
-        <title>RISK Limit App</title>
+        <title>RISK Insurance App</title>
       </Head>
 
       <div class="pt-14 bg-[#0F1729] text-white dark:bg-[#0F1729] dark:text-white">
