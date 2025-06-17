@@ -12,7 +12,7 @@ interface PlacementOptionsProps {
   orders: Order[];
   apiKey: string;
   contractId: string;
-  answerId?: string | null;
+  answerId: string | null;
   marketUrl: string;
 }
 

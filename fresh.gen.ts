@@ -7,6 +7,7 @@ import * as $_app from "./routes/_app.tsx";
 import * as $_middleware from "./routes/_middleware.ts";
 import * as $admin_index from "./routes/admin/index.tsx";
 import * as $api_history from "./routes/api/history.ts";
+import * as $api_place_arbitrage_bets from "./routes/api/place-arbitrage-bets.ts";
 import * as $api_place_limit_orders from "./routes/api/place-limit-orders.ts";
 import * as $api_score from "./routes/api/score.ts";
 import * as $arbitrage from "./routes/arbitrage.tsx";
@@ -64,6 +65,7 @@ const manifest = {
     "./routes/_middleware.ts": $_middleware,
     "./routes/admin/index.tsx": $admin_index,
     "./routes/api/history.ts": $api_history,
+    "./routes/api/place-arbitrage-bets.ts": $api_place_arbitrage_bets,
     "./routes/api/place-limit-orders.ts": $api_place_limit_orders,
     "./routes/api/score.ts": $api_score,
     "./routes/arbitrage.tsx": $arbitrage,

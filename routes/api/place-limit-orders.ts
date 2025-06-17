@@ -1,14 +1,12 @@
 import { Handlers } from "$fresh/server.ts";
-
-interface SingleBetPayload {
-  amount: number;
-  contractId: string;
-  outcome: "YES" | "NO";
-  limitProb: number;
-  answerId?: string;
-  expiresMillisAfter?: number;
-  expiresAt?: number;
-}
+import {
+  cancelManifoldBet,
+  placeManifoldBet,
+} from "../../utils/api/manifold_bet_helpers.ts";
+import {
+  BetPayload,
+  ManifoldBetResponse,
+} from "../../utils/api/manifold_types.ts";
 
 interface ApiOrder {
   amount: number;
@@ -27,7 +25,7 @@ interface MultiBetPlacementBody {
 
 type IncomingRequestBody =
   | MultiBetPlacementBody
-  | (SingleBetPayload & {
+  | (BetPayload & {
     apiKey: string;
     contractId: string;
     answerId?: string;
@@ -36,88 +34,6 @@ type IncomingRequestBody =
     yesLimitProb: number;
     noLimitProb: number;
   });
-
-interface ManifoldBetResponse {
-  id: string;
-  userId: string;
-  contractId: string;
-  createdTime: number;
-  amount: number;
-  outcome: "YES" | "NO";
-  shares: number;
-  probBefore: number;
-  probAfter: number;
-  isFilled: boolean;
-  isCancelled: boolean;
-}
-
-async function placeManifoldBet(
-  apiKey: string,
-  betData: SingleBetPayload,
-): Promise<{ data: ManifoldBetResponse | null; error: string | null }> {
-  try {
-    const response = await fetch("https://api.manifold.markets/v0/bet", {
-      method: "POST",
-      headers: {
-        "Authorization": `Key ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(betData),
-    });
-
-    const responseData = await response.json();
-
-    if (!response.ok) {
-      return {
-        data: null,
-        error: responseData.message || "Manifold API returned an error",
-      };
-    }
-    return { data: responseData as ManifoldBetResponse, error: null };
-  } catch (e) {
-    return {
-      data: null,
-      error: `Network/fetch error: ${
-        typeof e === "object" && e !== null && "message" in e
-          ? (e as { message: string }).message
-          : String(e)
-      }`,
-    };
-  }
-}
-
-async function cancelManifoldBet(apiKey: string, betId: string) {
-  try {
-    const response = await fetch(
-      `https://api.manifold.markets/v0/bet/cancel/${betId}`,
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Key ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-      },
-    );
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error(
-        `Failed to cancel bet ${betId}: ${JSON.stringify(errorData)}`,
-      );
-      return { success: false, error: errorData.message || "Failed to cancel" };
-    }
-    return { success: true, error: null };
-  } catch (e) {
-    console.error(`Network error canceling bet ${betId}: ${String(e)}`);
-    return {
-      success: false,
-      error: `Network error: ${
-        typeof e === "object" && e !== null && "message" in e
-          ? (e as { message: string }).message
-          : String(e)
-      }`,
-    };
-  }
-}
 
 export const handler: Handlers = {
   async POST(req, _ctx) {
@@ -169,7 +85,7 @@ export const handler: Handlers = {
               throw new Error("Invalid individual order parameters");
             }
 
-            const betPayload: SingleBetPayload = {
+            const betPayload: BetPayload = {
               contractId,
               amount: order.amount,
               outcome: order.outcome,
@@ -245,7 +161,7 @@ export const handler: Handlers = {
         } = {};
 
         try {
-          const yesPayload: SingleBetPayload = {
+          const yesPayload: BetPayload = {
             amount: yesAmount,
             contractId: contractId,
             outcome: "YES",
@@ -266,7 +182,7 @@ export const handler: Handlers = {
           yesBetId = yesData.id;
           placementResults.yesBetResponse = yesData;
 
-          const noPayload: SingleBetPayload = {
+          const noPayload: BetPayload = {
             amount: noAmount,
             contractId: contractId,
             outcome: "NO",

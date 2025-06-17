@@ -1,29 +1,5 @@
-// Interface for a single bet payload
-interface BetPayload {
-  amount: number;
-  contractId: string;
-  outcome: "YES" | "NO";
-  limitProb?: number;
-  expiresMillisAfter?: number;
-  expiresAt?: number;
-}
+import { BetPayload, ManifoldBetResponse } from "./manifold_types.ts";
 
-// Response interface from Manifold API for a successful bet
-export interface ManifoldBetResponse {
-  id: string;
-  userId: string;
-  contractId: string;
-  createdTime: number;
-  amount: number;
-  outcome: "YES" | "NO";
-  shares: number;
-  probBefore: number;
-  probAfter: number;
-  isFilled: boolean;
-  isCancelled: boolean;
-}
-
-// Helper to place a single bet on Manifold
 export async function placeManifoldBet(
   apiKey: string,
   betData: BetPayload,
@@ -59,7 +35,6 @@ export async function placeManifoldBet(
   }
 }
 
-// Helper to cancel a bet on Manifold
 export async function cancelManifoldBet(apiKey: string, betId: string) {
   try {
     const response = await fetch(

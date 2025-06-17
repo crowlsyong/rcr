@@ -6,7 +6,7 @@ interface DirectExecutionProps {
   orders: Order[];
   apiKey: string;
   contractId: string;
-  answerId?: string | null;
+  answerId: string | null;
   marketUrl: string;
   expirationSettings: ExpirationSettings;
 }
@@ -20,8 +20,8 @@ interface ApiOrder {
 interface BetPlacementBody {
   apiKey: string;
   contractId: string;
-  orders: ApiOrder[];
   answerId?: string;
+  orders: ApiOrder[];
   expiresMillisAfter?: number;
   expiresAt?: number;
 }

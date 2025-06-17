@@ -79,6 +79,7 @@ export interface BetPayload {
   contractId: string;
   outcome: "YES" | "NO";
   limitProb?: number;
+  answerId?: string;
   expiresMillisAfter?: number;
   expiresAt?: number;
 }
