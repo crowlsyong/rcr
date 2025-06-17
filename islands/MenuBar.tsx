@@ -1,19 +1,18 @@
-// islands/MenuBar.tsx
-
 import { useSignal } from "@preact/signals";
 import { useEffect, useRef } from "preact/hooks";
-import { TbExternalLink } from "@preact-icons/tb";
+import { TbChevronDown, TbExternalLink } from "@preact-icons/tb";
 
-// Imports for casting
 import type { ComponentType } from "preact";
 import type { JSX } from "preact/jsx-runtime";
 
-// Cast TbExternalLink to a valid component type for JSX usage.
 const ExternalLinkIcon = TbExternalLink as ComponentType<
   JSX.IntrinsicElements["svg"]
 >;
+const ChevronDownIcon = TbChevronDown as ComponentType<
+  JSX.IntrinsicElements["svg"]
+>;
 
-const links = [
+const mainLinks = [
   {
     label: "📰 Dashboard",
     url: "https://manifold.markets/news/risk",
@@ -34,6 +33,14 @@ const links = [
     url: "/limits",
     targetBlank: false,
   },
+  {
+    label: "⚖️ Arbitrage",
+    url: "/arbitrage",
+    targetBlank: false,
+  },
+];
+
+const servicesLinks = [
   {
     label: "🏦 Payment Portal",
     url: "https://manifold.markets/crowlsyong/risk-payment-portal",
@@ -58,6 +65,7 @@ const links = [
 
 export default function MenuBar() {
   const isMenuOpen = useSignal(false);
+  const isServicesOpen = useSignal(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -78,7 +86,6 @@ export default function MenuBar() {
 
   return (
     <div>
-      {/* Top Bar */}
       <div class="fixed top-0 left-0 w-full flex items-center justify-between px-4 py-3 bg-[#0F1729] text-white bg-opacity-70 backdrop-blur-lg z-50">
         <a href="/">
           <img
@@ -93,13 +100,11 @@ export default function MenuBar() {
           />
         </a>
 
-        {/* Hamburger, yummy */}
         <button
           type="button"
-          class="text-white p-3 -m-3" // increases tappable area without changing layout
+          class="text-white p-3 -m-3"
           onClick={() => (isMenuOpen.value = !isMenuOpen.value)}
         >
-          {/* The hamburger icon is an SVG, not from @preact-icons */}
           <svg
             class="w-6 h-6"
             fill="none"
@@ -117,7 +122,6 @@ export default function MenuBar() {
         </button>
       </div>
 
-      {/* Slide-in Menu Panel */}
       <div
         ref={menuRef}
         class={`fixed top-0 right-0 h-full w-full md:w-[300px] bg-[#0F1729] bg-opacity-70 backdrop-blur-lg text-white p-6 z-50 md:rounded-l-lg md:border-l-2 border-[#334155] transform transition-transform duration-300 ease-in-out ${
@@ -130,11 +134,11 @@ export default function MenuBar() {
           type="button"
           onClick={() => (isMenuOpen.value = false)}
           class="absolute top-2 right-5 text-white text-2xl p-3 -m-3"
+          tabIndex={isMenuOpen.value ? 0 : -1}
         >
           &times;
         </button>
 
-        {/* Mobile mascot */}
         <div class="flex justify-center mb-8 md:hidden">
           <img
             src="/risk-logo-mini-t.png"
@@ -143,30 +147,70 @@ export default function MenuBar() {
           />
         </div>
 
-        {/* Menu Links */}
-        <div class="space-y-4 mt-10">
-          {links.map((link) => (
+        <div class="space-y-2 mt-10">
+          {mainLinks.map((link) => (
             <a
               key={link.url}
               href={link.url}
               target={link.targetBlank ? "_blank" : "_self"}
               rel={link.targetBlank ? "noopener noreferrer" : undefined}
-              class="flex items-center justify-center gap-1 border border-[#334155] text-white py-3 px-4 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-base md:text-xs"
+              class="relative flex items-center justify-center border border-[#334155] text-white py-2 px-3 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-sm"
+              tabIndex={isMenuOpen.value ? 0 : -1}
             >
               <span>{link.label}</span>
-              {link.targetBlank &&
-                typeof window !== "undefined" && (
-                  // Use the casted icon
-                  <ExternalLinkIcon class="w-4 h-4 opacity-70 absolute right-10" />
-                )}
+              {link.targetBlank && typeof window !== "undefined" && (
+                <ExternalLinkIcon class="absolute right-3 w-4 h-4 opacity-70" />
+              )}
             </a>
           ))}
+
+          <div>
+            <button
+              type="button"
+              onClick={() => isServicesOpen.value = !isServicesOpen.value}
+              class="w-full flex items-center justify-center gap-2 border border-[#334155] text-white py-2 px-3 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-sm"
+              tabIndex={isMenuOpen.value ? 0 : -1}
+            >
+              <span>🛠️ Services</span>
+              {typeof window !== "undefined" && (
+                <ChevronDownIcon
+                  class={`w-4 h-4 opacity-70 transition-transform duration-300 ${
+                    isServicesOpen.value ? "rotate-180" : ""
+                  }`}
+                />
+              )}
+            </button>
+            <div
+              class={`transition-all duration-300 ease-in-out overflow-hidden ${
+                isServicesOpen.value ? "max-h-96 mt-2" : "max-h-0"
+              }`}
+            >
+              <div class="space-y-2 pl-4 border-l-2 border-gray-700/50">
+                {servicesLinks.map((link) => (
+                  <a
+                    key={link.url}
+                    href={link.url}
+                    target={link.targetBlank ? "_blank" : "_self"}
+                    rel={link.targetBlank ? "noopener noreferrer" : undefined}
+                    class="relative flex items-center justify-center border border-[#334155] text-white py-2 px-3 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-sm"
+                    tabIndex={isMenuOpen.value ? 0 : -1}
+                  >
+                    <span>{link.label}</span>
+                    {link.targetBlank && typeof window !== "undefined" && (
+                      <ExternalLinkIcon class="absolute right-3 w-4 h-4 opacity-70" />
+                    )}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
         <div class="pt-10 text-xs w-full text-center text-[10px] text-gray-500 mt-auto">
           this is a 3rd party app | built by{" "}
           <a
             href="https://manifold.markets/crowlsyong"
             class="underline hover:text-blue-500"
+            tabIndex={isMenuOpen.value ? 0 : -1}
           >
             crowlsyong
           </a>
