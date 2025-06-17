@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { getMarketDataBySlug, MarketData } from "../../../utils/limit_calc.ts";
 
 import LimitOrderCalculatorForm from "./LimitOrderCalculatorForm.tsx";
@@ -27,6 +27,7 @@ export default function LimitOrderCalculator() {
   const [totalBetAmountInput, setTotalBetAmountInput] = useState(0);
   const [apiKeyInput, setApiKeyInput] = useState("");
   const [isVolatilityBet, setIsVolatilityBet] = useState(false);
+  const [granularityInput, setGranularityInput] = useState(1);
 
   const [marketData, setMarketData] = useState<MarketData | null>(null);
   const [calculationResult, setCalculationResult] = useState<
@@ -35,12 +36,11 @@ export default function LimitOrderCalculator() {
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-  const calculateLimitOrders = async (e: Event) => {
-    e.preventDefault();
+  const calculateLimitOrders = async (e?: Event) => {
+    e?.preventDefault();
     setLoading(true);
     setFetchError(null);
-    setMarketData(null);
-    setCalculationResult(null);
+    // setCalculationResult(null); // Keep old results to prevent page jump
 
     if (!marketUrlInput) {
       setFetchError("Market URL is required");
@@ -70,6 +70,11 @@ export default function LimitOrderCalculator() {
     }
     if (lowerProbabilityInput >= upperProbabilityInput) {
       setFetchError("Lower probability must be less than upper probability");
+      setLoading(false);
+      return;
+    }
+    if (isVolatilityBet && (granularityInput <= 0 || granularityInput > 10)) {
+      setFetchError("Granularity must be between 1% and 10%");
       setLoading(false);
       return;
     }
@@ -116,20 +121,53 @@ export default function LimitOrderCalculator() {
 
       const calculatedOrders: Order[] = [];
       let totalShares = 0;
+      let totalBudgetUsed = 0;
 
       if (isVolatilityBet) {
-        const numPairs = 5;
-        const pMid = (pLower + pUpper) / 2;
-        const halfWidth = (pUpper - pLower) / 2;
+        const step = granularityInput / 100;
 
-        if (halfWidth <= 0) {
+        if ((pUpper - pLower) < (2 * step)) {
+          const rangeWidth = (upperProbabilityInput - lowerProbabilityInput)
+            .toFixed(1);
+          const requiredWidth = granularityInput * 2;
           setFetchError(
-            "Probability range must have a width greater than zero for volatility bet",
+            `The ${rangeWidth}% range (${lowerProbabilityInput}% to ${upperProbabilityInput}%) is too narrow for a ${granularityInput}% step size. The range must be at least ${requiredWidth}% wide.`,
           );
           setLoading(false);
           return;
         }
 
+        const orderPairsData = [];
+        // NEW LOGIC: Iterate from the outside-in, not from the midpoint.
+        for (
+          let currentPLower = pLower, currentPUpper = pUpper;
+          currentPLower < currentPUpper;
+          currentPLower += step, currentPUpper -= step
+        ) {
+          const denominator = currentPLower + (1 - currentPUpper);
+          if (denominator <= 0) continue;
+
+          const sharesPerMana = 1 / denominator;
+          orderPairsData.push({
+            yesProb: currentPLower,
+            noProb: currentPUpper,
+            sharesPerMana: sharesPerMana,
+          });
+        }
+
+        if (orderPairsData.length === 0) {
+          setFetchError(
+            "No valid order pairs could be generated for the given range and granularity. Try a wider range or smaller granularity.",
+          );
+          setLoading(false);
+          return;
+        }
+
+        // Reverse the pairs so the narrowest range (innermost bet) is first.
+        orderPairsData.reverse();
+
+        // Apply weights: narrowest pair gets the biggest weight.
+        const numPairs = orderPairsData.length;
         const weights = Array.from(
           { length: numPairs },
           (_, i) => numPairs - i,
@@ -139,31 +177,24 @@ export default function LimitOrderCalculator() {
         for (let i = 0; i < numPairs; i++) {
           const budgetPortion = (totalBetAmountInput * weights[i]) /
             totalWeight;
-          const stepFactor = (i + 1) / numPairs;
-          const currentHalfWidth = halfWidth * stepFactor;
-          const currentPLower = pMid - currentHalfWidth;
-          const currentPUpper = pMid + currentHalfWidth;
-          const denominator = currentPLower + (1 - currentPUpper);
+          const { yesProb, noProb, sharesPerMana } = orderPairsData[i];
 
-          if (denominator <= 0) continue;
+          const shares = budgetPortion * sharesPerMana;
+          const yesAmount = shares * yesProb;
+          const noAmount = shares * (1 - noProb);
 
-          const shares = budgetPortion / denominator;
-          const yesAmount = shares * currentPLower;
-          const noAmount = shares * (1 - currentPUpper);
-
-          if (yesAmount > 0.5 && noAmount > 0.5) {
+          if (Math.round(yesAmount) >= 1 && Math.round(noAmount) >= 1) {
             calculatedOrders.push({
               yesAmount: Math.round(yesAmount),
               noAmount: Math.round(noAmount),
-              yesProb: currentPLower,
-              noProb: currentPUpper,
+              yesProb: yesProb,
+              noProb: noProb,
               shares: Math.round(shares),
             });
-            totalShares += shares;
+            totalShares += Math.round(shares);
+            totalBudgetUsed += Math.round(yesAmount) + Math.round(noAmount);
           }
         }
-        // Round totalShares at the end as well
-        totalShares = Math.round(totalShares);
         calculatedOrders.sort((a, b) => (a.yesProb < b.yesProb ? 1 : -1));
       } else {
         const denominator = pLower + (1 - pUpper);
@@ -175,19 +206,25 @@ export default function LimitOrderCalculator() {
           return;
         }
         const sharesAcquired = totalBetAmountInput / denominator;
-        calculatedOrders.push({
-          yesAmount: Math.round(sharesAcquired * pLower),
-          noAmount: Math.round(sharesAcquired * (1 - pUpper)),
-          yesProb: pLower,
-          noProb: pUpper,
-          shares: Math.round(sharesAcquired),
-        });
-        totalShares = Math.round(sharesAcquired); // Also round here
+        const yesAmount = sharesAcquired * pLower;
+        const noAmount = sharesAcquired * (1 - pUpper);
+
+        if (Math.round(yesAmount) >= 1 && Math.round(noAmount) >= 1) {
+          calculatedOrders.push({
+            yesAmount: Math.round(yesAmount),
+            noAmount: Math.round(noAmount),
+            yesProb: pLower,
+            noProb: pUpper,
+            shares: Math.round(sharesAcquired),
+          });
+          totalShares = Math.round(sharesAcquired);
+          totalBudgetUsed = Math.round(yesAmount) + Math.round(noAmount);
+        }
       }
 
       if (calculatedOrders.length === 0) {
         setFetchError(
-          "Could not calculate any valid orders for the given range and budget",
+          "Could not calculate any valid orders for the given range and budget. Ensure the range is wide enough and budget is sufficient for at least 1 Mana per bet.",
         );
         setLoading(false);
         return;
@@ -212,10 +249,29 @@ export default function LimitOrderCalculator() {
     }
   };
 
+  useEffect(() => {
+    const hasRequiredInputs = marketUrlInput && totalBetAmountInput > 0 &&
+      lowerProbabilityInput >= 0 && upperProbabilityInput <= 100 &&
+      lowerProbabilityInput < upperProbabilityInput;
+
+    if (hasRequiredInputs) {
+      calculateLimitOrders(undefined);
+    } else {
+      setCalculationResult(null);
+      setFetchError(null);
+    }
+  }, [
+    isVolatilityBet,
+    granularityInput,
+    marketUrlInput,
+    totalBetAmountInput,
+    lowerProbabilityInput,
+    upperProbabilityInput,
+  ]);
+
   const hasValidResults = calculationResult && !calculationResult.error &&
     calculationResult.orders && calculationResult.orders.length > 0;
 
-  // Helper to format numbers: removes .00 if it's a whole number, otherwise keeps two decimals
   const formatMana = (amount: number): string => {
     return Number.isInteger(amount) ? amount.toString() : amount.toFixed(2);
   };
@@ -255,6 +311,8 @@ export default function LimitOrderCalculator() {
         onSubmit={calculateLimitOrders}
         isVolatilityBet={isVolatilityBet}
         setIsVolatilityBet={setIsVolatilityBet}
+        granularityInput={granularityInput}
+        setGranularityInput={setGranularityInput}
       />
 
       {fetchError && <p class="text-red-400 mb-4">Error: {fetchError}</p>}
@@ -282,6 +340,7 @@ export default function LimitOrderCalculator() {
             </span>{" "}
             across all orders.
           </p>
+
           <ul class="space-y-3 mt-4 text-gray-200 text-base">
             {calculationResult.orders!.map((order, index) => (
               <li
@@ -296,14 +355,14 @@ export default function LimitOrderCalculator() {
                   <span>
                     Bet <span class="font-bold text-green-400">YES</span> at
                     {" "}
-                    {(order.yesProb * 100).toFixed(1)}%:{" "}
+                    {Math.round(order.yesProb * 100)}%:{" "}
                     <span class="font-bold text-white">
                       M{formatMana(order.yesAmount)}
                     </span>
                   </span>
                   <span>
                     Bet <span class="font-bold text-red-400">NO</span> at{" "}
-                    {(order.noProb * 100).toFixed(1)}%:{" "}
+                    {Math.round(order.noProb * 100)}%:{" "}
                     <span class="font-bold text-white">
                       M{formatMana(order.noAmount)}
                     </span>

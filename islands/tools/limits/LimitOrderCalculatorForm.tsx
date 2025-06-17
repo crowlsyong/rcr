@@ -15,9 +15,13 @@ interface LimitOrderFormProps {
   onSubmit: (e: Event) => void;
   isVolatilityBet: boolean;
   setIsVolatilityBet: (value: boolean) => void;
+  granularityInput: number;
+  setGranularityInput: (value: number) => void;
 }
 
 export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
+  const showVolatilityToggle = props.apiKeyInput.length > 7;
+
   return (
     <form onSubmit={props.onSubmit} class="space-y-6 mb-8">
       <div>
@@ -32,7 +36,7 @@ export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
           id="market-url"
           name="marketUrl"
           value={props.marketUrlInput}
-          onChange={(e) => props.setMarketUrlInput(e.currentTarget.value)}
+          onInput={(e) => props.setMarketUrlInput(e.currentTarget.value)}
           placeholder="e.g. https://manifold.markets/Austin/will-carrick-flynn-win-the-general"
           class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
           required
@@ -51,7 +55,7 @@ export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
           id="total-bet-amount"
           name="totalBetAmount"
           value={props.totalBetAmountInput}
-          onChange={(e) =>
+          onInput={(e) =>
             props.setTotalBetAmountInput(Number(e.currentTarget.value))}
           min="1"
           step="1"
@@ -74,7 +78,7 @@ export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
               id="lower-probability"
               name="lowerProbability"
               value={props.lowerProbabilityInput}
-              onChange={(e) =>
+              onInput={(e) =>
                 props.setLowerProbabilityInput(Number(e.currentTarget.value))}
               min="0"
               max="100"
@@ -93,7 +97,7 @@ export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
               id="upper-probability"
               name="upperProbability"
               value={props.upperProbabilityInput}
-              onChange={(e) =>
+              onInput={(e) =>
                 props.setUpperProbabilityInput(Number(e.currentTarget.value))}
               min="0"
               max="100"
@@ -104,18 +108,6 @@ export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
             />
           </div>
         </div>
-      </div>
-
-      <div>
-        <VolatilityToggle
-          label="Volatility Bet:"
-          isVolatilityBet={props.isVolatilityBet}
-          setIsVolatilityBet={props.setIsVolatilityBet}
-        />
-        <p class="text-xs text-gray-500 mt-1">
-          Distributes the budget across multiple orders within the range to
-          profit from smaller price movements.
-        </p>
       </div>
 
       <div>
@@ -133,7 +125,7 @@ export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
           id="api-key"
           name="apiKey"
           value={props.apiKeyInput}
-          onChange={(e) => props.setApiKeyInput(e.currentTarget.value)}
+          onInput={(e) => props.setApiKeyInput(e.currentTarget.value)}
           placeholder="xxxxx-xxxx-xxxx-xxxxxxxxxxxxxxx"
           class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
         />
@@ -143,13 +135,15 @@ export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
         </p>
       </div>
 
-      <button
-        type="submit"
-        disabled={props.loading}
-        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {props.loading ? "Calculating..." : "Calculate Limit Orders"}
-      </button>
+      {showVolatilityToggle && (
+        <VolatilityToggle
+          label="Volatility Bet:"
+          isVolatilityBet={props.isVolatilityBet}
+          setIsVolatilityBet={props.setIsVolatilityBet}
+          granularity={props.granularityInput}
+          setGranularity={props.setGranularityInput}
+        />
+      )}
     </form>
   );
 }

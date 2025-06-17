@@ -1,17 +1,45 @@
-// routes/api/place-limit-orders.ts
 import { Handlers } from "$fresh/server.ts";
 
-interface BetPayload {
+// Interface for a single bet payload (used internally and by old frontend)
+interface SingleBetPayload {
   amount: number;
   contractId: string;
   outcome: "YES" | "NO";
   limitProb: number;
   expiresMillisAfter?: number;
-  expiresAt?: number; // Add optional expiresAt
+  expiresAt?: number;
 }
 
-// ... (BetResponse interface remains the same) ...
-interface BetResponse {
+// Interface for the incoming order objects within the new 'orders' array
+interface ApiOrder {
+  amount: number;
+  outcome: "YES" | "NO";
+  limitProb: number;
+}
+
+// Interface for the new request body (for volatility bets)
+interface MultiBetPlacementBody {
+  apiKey: string;
+  contractId: string;
+  orders: ApiOrder[];
+  expiresMillisAfter?: number;
+  expiresAt?: number;
+}
+
+// Combined interface to handle both possible incoming request body shapes
+type IncomingRequestBody =
+  | MultiBetPlacementBody
+  | (SingleBetPayload & {
+    apiKey: string;
+    contractId: string;
+    yesAmount: number; // For the old format
+    noAmount: number; // For the old format
+    yesLimitProb: number; // For the old format
+    noLimitProb: number; // For the old format
+  });
+
+// Response interface from Manifold API for a successful bet
+interface ManifoldBetResponse {
   id: string;
   userId: string;
   contractId: string;
@@ -25,209 +53,320 @@ interface BetResponse {
   isCancelled: boolean;
 }
 
-export const handler: Handlers = {
-  async POST(req) {
-    try {
-      const {
-        apiKey,
-        contractId,
-        yesAmount,
-        noAmount,
-        yesLimitProb,
-        noLimitProb,
-        expiresMillisAfter,
-        expiresAt, // This can be a number or undefined
-      } = await req.json();
+// Helper to place a single bet on Manifold
+async function placeManifoldBet(
+  apiKey: string,
+  betData: {
+    contractId: string;
+    amount: number;
+    outcome: "YES" | "NO";
+    limitProb: number;
+    expiresMillisAfter?: number;
+    expiresAt?: number;
+  },
+): Promise<{ data: ManifoldBetResponse | null; error: string | null }> {
+  try {
+    const response = await fetch("https://api.manifold.markets/v0/bet", {
+      method: "POST",
+      headers: {
+        "Authorization": `Key ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(betData),
+    });
 
-      // ... (Validation logic remains the same) ...
-      if (
-        !apiKey || !contractId || isNaN(yesAmount) || isNaN(noAmount) ||
-        isNaN(yesLimitProb) || isNaN(noLimitProb)
-      ) {
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      return {
+        data: null,
+        error: responseData.message || "Manifold API returned an error",
+      };
+    }
+    return { data: responseData as ManifoldBetResponse, error: null };
+  } catch (e) {
+    return {
+      data: null,
+      error: `Network/fetch error: ${
+        typeof e === "object" && e !== null && "message" in e
+          ? (e as { message: string }).message
+          : String(e)
+      }`,
+    };
+  }
+}
+
+// Helper to cancel a bet on Manifold
+async function cancelManifoldBet(apiKey: string, betId: string) {
+  try {
+    const response = await fetch(
+      `https://api.manifold.markets/v0/bet/cancel/${betId}`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Key ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error(
+        `Failed to cancel bet ${betId}: ${JSON.stringify(errorData)}`,
+      );
+      return { success: false, error: errorData.message || "Failed to cancel" };
+    }
+    return { success: true, error: null };
+  } catch (e) {
+    console.error(`Network error canceling bet ${betId}: ${String(e)}`);
+    return {
+      success: false,
+      error: `Network error: ${
+        typeof e === "object" && e !== null && "message" in e
+          ? (e as { message: string }).message
+          : String(e)
+      }`,
+    };
+  }
+}
+
+export const handler: Handlers = {
+  async POST(req, _ctx) {
+    try {
+      const body: IncomingRequestBody = await req.json();
+      const { apiKey, contractId, expiresAt, expiresMillisAfter } = body;
+
+      // Basic common validation
+      if (!apiKey || !contractId) {
         return new Response(
-          JSON.stringify({ error: "Missing or invalid required parameters" }),
-          {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          },
+          JSON.stringify({ error: "Missing API Key or Contract ID" }),
+          { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
 
+      // Check for expiration parameter validity if provided
       if (expiresMillisAfter !== undefined && isNaN(expiresMillisAfter)) {
         return new Response(
           JSON.stringify({
             error: "If provided, expiresMillisAfter must be a number",
           }),
-          {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          },
+          { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
-
       if (expiresAt !== undefined && isNaN(expiresAt)) {
         return new Response(
           JSON.stringify({
             error: "If provided, expiresAt must be a number",
           }),
-          {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          },
+          { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
 
-      const manifoldApiUrl = "https://api.manifold.markets/v0/bet";
-      const authHeaders = {
-        "Authorization": `Key ${apiKey}`,
-        "Content-Type": "application/json",
-      };
-
-      let yesBetId: string | null = null;
-      let overallSuccess = false;
-      const placementResults: {
-        yesBetResponse?: BetResponse;
-        noBetResponse?: BetResponse;
-        error?: string;
-      } = {};
-
-      try {
-        const yesPayload: BetPayload = {
-          amount: yesAmount,
-          contractId: contractId,
-          outcome: "YES",
-          limitProb: yesLimitProb,
-        };
-        if (expiresMillisAfter) {
-          yesPayload.expiresMillisAfter = expiresMillisAfter;
-        } else if (expiresAt) {
-          yesPayload.expiresAt = expiresAt;
-        }
-
-        const yesResponse = await fetch(manifoldApiUrl, {
-          method: "POST",
-          headers: authHeaders,
-          body: JSON.stringify(yesPayload),
-        });
-
-        const yesData = await yesResponse.json();
-        if (!yesResponse.ok) {
-          throw new Error(
-            `YES bet failed: ${JSON.stringify(yesData?.message || yesData)}`,
+      // --- LOGIC TO HANDLE BOTH OLD AND NEW PAYLOAD STRUCTURES ---
+      // New payload: expects 'orders' array
+      if ("orders" in body && Array.isArray(body.orders)) {
+        if (body.orders.length === 0) {
+          return new Response(
+            JSON.stringify({ error: "No orders provided for multi-bet" }),
+            { status: 400, headers: { "Content-Type": "application/json" } },
           );
         }
-        yesBetId = yesData.id;
-        placementResults.yesBetResponse = yesData as BetResponse;
 
-        const noPayload: BetPayload = {
-          amount: noAmount,
-          contractId: contractId,
-          outcome: "NO",
-          limitProb: noLimitProb,
-        };
-        if (expiresMillisAfter) {
-          noPayload.expiresMillisAfter = expiresMillisAfter;
-        } else if (expiresAt) {
-          noPayload.expiresAt = expiresAt;
-        }
+        const successfulBetIds: string[] = [];
 
-        const noResponse = await fetch(manifoldApiUrl, {
-          method: "POST",
-          headers: authHeaders,
-          body: JSON.stringify(noPayload),
-        });
+        try {
+          for (const order of body.orders) {
+            // Validate individual order structure
+            if (
+              isNaN(order.amount) || !order.outcome || isNaN(order.limitProb) ||
+              (order.outcome !== "YES" && order.outcome !== "NO")
+            ) {
+              throw new Error("Invalid individual order parameters");
+            }
 
-        const noData = await noResponse.json();
-        if (!noResponse.ok) {
-          throw new Error(
-            `NO bet failed: ${JSON.stringify(noData?.message || noData)}`,
+            const betPayload: SingleBetPayload = {
+              contractId,
+              amount: order.amount,
+              outcome: order.outcome,
+              limitProb: order.limitProb,
+              ...(expiresAt && { expiresAt }),
+              ...(expiresMillisAfter && { expiresMillisAfter }),
+            };
+
+            const { data, error } = await placeManifoldBet(apiKey, betPayload);
+
+            if (error || !data) {
+              throw new Error(error || "Bet placement failed with no message");
+            }
+            successfulBetIds.push(data.id);
+          }
+
+          return new Response(
+            JSON.stringify({
+              message:
+                `Successfully placed ${successfulBetIds.length} limit orders`,
+              betIds: successfulBetIds,
+            }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
           );
-        }
-        placementResults.noBetResponse = noData as BetResponse;
-
-        overallSuccess = true;
-      } catch (betError) {
-        placementResults.error = `Bet placement failed: ${
-          typeof betError === "object" && betError !== null &&
-            "message" in betError
-            ? (betError as { message: string }).message
-            : String(betError)
-        }`;
-        console.error("Bet placement attempt failed:", placementResults.error);
-      } finally {
-        if (!overallSuccess && yesBetId) {
-          console.warn(
-            `Attempting to cancel YES bet ${yesBetId} due to NO bet failure.`,
-          );
-          try {
-            const cancelResponse = await fetch(
-              `https://api.manifold.markets/v0/bet/cancel/${yesBetId}`,
-              {
-                method: "POST",
-                headers: { "Authorization": `Key ${apiKey}` },
-              },
+        } catch (e) {
+          // If any bet fails, attempt to cancel the ones that succeeded
+          if (successfulBetIds.length > 0) {
+            console.warn(
+              `Attempting to cancel ${successfulBetIds.length} successful bet(s) due to a subsequent failure.`,
             );
-            if (!cancelResponse.ok) {
-              const cancelError = await cancelResponse.json();
-              const errorMsg = `Failed to cancel YES bet ${yesBetId}: ${
-                JSON.stringify(cancelError)
-              }`;
-              console.error(errorMsg);
+            await Promise.all(
+              successfulBetIds.map((betId) => cancelManifoldBet(apiKey, betId)),
+            );
+          }
+
+          const errorMessage = typeof e === "object" && e !== null &&
+              "message" in e
+            ? (e as { message: string }).message
+            : String(e);
+
+          return new Response(
+            JSON.stringify({
+              error:
+                `A bet failed: ${errorMessage}. Attempted to cancel ${successfulBetIds.length} prior successful bet(s). Please verify on Manifold.`,
+            }),
+            { status: 500, headers: { "Content-Type": "application/json" } },
+          );
+        }
+      } // Old payload: expects yesAmount, noAmount etc. (for single pair)
+      else if (
+        "yesAmount" in body && "noAmount" in body && "yesLimitProb" in body &&
+        "noLimitProb" in body
+      ) {
+        const { yesAmount, noAmount, yesLimitProb, noLimitProb } = body;
+
+        // Validation for old format
+        if (
+          isNaN(yesAmount) || isNaN(noAmount) || isNaN(yesLimitProb) ||
+          isNaN(noLimitProb)
+        ) {
+          return new Response(
+            JSON.stringify({
+              error: "Missing or invalid required parameters for single bet",
+            }),
+            { status: 400, headers: { "Content-Type": "application/json" } },
+          );
+        }
+
+        let yesBetId: string | null = null;
+        let overallSuccess = false;
+        const placementResults: {
+          yesBetResponse?: ManifoldBetResponse;
+          noBetResponse?: ManifoldBetResponse;
+          error?: string;
+        } = {};
+
+        try {
+          const yesPayload: SingleBetPayload = {
+            amount: yesAmount,
+            contractId: contractId,
+            outcome: "YES",
+            limitProb: yesLimitProb,
+            ...(expiresMillisAfter && { expiresMillisAfter }),
+            ...(expiresAt && { expiresAt }),
+          };
+
+          const { data: yesData, error: yesError } = await placeManifoldBet(
+            apiKey,
+            yesPayload,
+          );
+
+          if (yesError || !yesData) {
+            throw new Error(`YES bet failed: ${yesError}`);
+          }
+          yesBetId = yesData.id;
+          placementResults.yesBetResponse = yesData;
+
+          const noPayload: SingleBetPayload = {
+            amount: noAmount,
+            contractId: contractId,
+            outcome: "NO",
+            limitProb: noLimitProb,
+            ...(expiresMillisAfter && { expiresMillisAfter }),
+            ...(expiresAt && { expiresAt }),
+          };
+
+          const { data: noData, error: noError } = await placeManifoldBet(
+            apiKey,
+            noPayload,
+          );
+
+          if (noError || !noData) {
+            throw new Error(`NO bet failed: ${noError}`);
+          }
+          placementResults.noBetResponse = noData;
+
+          overallSuccess = true;
+        } catch (betError) {
+          placementResults.error = `Bet placement failed: ${
+            typeof betError === "object" && betError !== null &&
+              "message" in betError
+              ? (betError as { message: string }).message
+              : String(betError)
+          }`;
+          console.error(
+            "Single bet placement attempt failed:",
+            placementResults.error,
+          );
+        } finally {
+          if (!overallSuccess && yesBetId) {
+            console.warn(
+              `Attempting to cancel YES bet ${yesBetId} due to NO bet failure.`,
+            );
+            const { success, error } = await cancelManifoldBet(
+              apiKey,
+              yesBetId,
+            );
+            if (!success) {
               placementResults.error +=
-                `. Additionally, failed to automatically cancel the successful YES bet. Please manually cancel bet ID: ${yesBetId}`;
+                `. Additionally, failed to automatically cancel the successful YES bet. Please manually cancel bet ID: ${yesBetId}. Error: ${error}`;
             } else {
               placementResults.error +=
                 `. Successfully rolled back by canceling YES bet ${yesBetId}.`;
             }
-          } catch (cancelErr) {
-            const errorMsg =
-              `Network error during cancellation of YES bet ${yesBetId}: ${
-                String(cancelErr)
-              }`;
-            console.error(errorMsg);
-            placementResults.error +=
-              `. Network error while attempting to cancel the successful YES bet. Please manually cancel bet ID: ${yesBetId}`;
           }
         }
-      }
 
-      if (overallSuccess) {
-        return new Response(
-          JSON.stringify({
-            message: "Both bets placed successfully!",
-            data: placementResults,
-          }),
-          {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          },
-        );
+        if (overallSuccess) {
+          return new Response(
+            JSON.stringify({
+              message: "Both bets placed successfully!",
+              data: placementResults,
+            }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          );
+        } else {
+          return new Response(
+            JSON.stringify({
+              message: "Failed to place both bets.",
+              error: placementResults.error,
+              data: placementResults,
+            }),
+            { status: 500, headers: { "Content-Type": "application/json" } },
+          );
+        }
       } else {
+        // Fallback if neither expected structure is found
         return new Response(
-          JSON.stringify({
-            message: "Failed to place both bets.",
-            error: placementResults.error,
-            data: placementResults,
-          }),
-          {
-            status: 500,
-            headers: { "Content-Type": "application/json" },
-          },
+          JSON.stringify({ error: "Invalid request body structure" }),
+          { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
     } catch (e) {
       return new Response(
         JSON.stringify({
-          error: `Internal server error: ${
+          error: `Internal server error processing request: ${
             typeof e === "object" && e !== null && "message" in e
               ? (e as { message: string }).message
               : String(e)
           }`,
         }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        },
+        { status: 500, headers: { "Content-Type": "application/json" } },
       );
     }
   },
