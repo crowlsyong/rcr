@@ -1,4 +1,5 @@
 // islands/tools/MarketInfoDisplay.tsx
+
 import { MarketData } from "../../../utils/api/manifold_types.ts";
 
 interface MarketInfoDisplayProps {
