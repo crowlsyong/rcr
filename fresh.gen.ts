@@ -34,7 +34,9 @@ import * as $buttons_VolatilityGranularitySelector from "./islands/buttons/Volat
 import * as $buttons_VolatilityToggle from "./islands/buttons/VolatilityToggle.tsx";
 import * as $tools_GameShowCreditScore from "./islands/tools/GameShowCreditScore.tsx";
 import * as $tools_InsuranceCalc from "./islands/tools/InsuranceCalc.tsx";
-import * as $tools_arbitrage_Arbitrage from "./islands/tools/arbitrage/Arbitrage.tsx";
+import * as $tools_arbitrage_ArbitrageCalculator from "./islands/tools/arbitrage/ArbitrageCalculator.tsx";
+import * as $tools_arbitrage_ArbitrageResults from "./islands/tools/arbitrage/ArbitrageResults.tsx";
+import * as $tools_arbitrage_MarketInput from "./islands/tools/arbitrage/MarketInput.tsx";
 import * as $tools_chart_Chart from "./islands/tools/chart/Chart.tsx";
 import * as $tools_chart_CreditScoreChart from "./islands/tools/chart/CreditScoreChart.tsx";
 import * as $tools_chart_TimeRangeSelector from "./islands/tools/chart/TimeRangeSelector.tsx";
@@ -89,7 +91,11 @@ const manifest = {
     "./islands/buttons/VolatilityToggle.tsx": $buttons_VolatilityToggle,
     "./islands/tools/GameShowCreditScore.tsx": $tools_GameShowCreditScore,
     "./islands/tools/InsuranceCalc.tsx": $tools_InsuranceCalc,
-    "./islands/tools/arbitrage/Arbitrage.tsx": $tools_arbitrage_Arbitrage,
+    "./islands/tools/arbitrage/ArbitrageCalculator.tsx":
+      $tools_arbitrage_ArbitrageCalculator,
+    "./islands/tools/arbitrage/ArbitrageResults.tsx":
+      $tools_arbitrage_ArbitrageResults,
+    "./islands/tools/arbitrage/MarketInput.tsx": $tools_arbitrage_MarketInput,
     "./islands/tools/chart/Chart.tsx": $tools_chart_Chart,
     "./islands/tools/chart/CreditScoreChart.tsx": $tools_chart_CreditScoreChart,
     "./islands/tools/chart/TimeRangeSelector.tsx":

@@ -1,6 +1,5 @@
 import { fetchWithRetries } from "./fetch_utilities.ts";
 import {
-  Answer,
   ManaPaymentTransaction,
   ManifoldUser,
   MarketData,
