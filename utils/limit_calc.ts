@@ -1,4 +1,4 @@
-// utils/manifold-api.ts
+// utils/limit_calc.ts
 
 /**
  * Interface for the market data returned from the Manifold Markets API.
