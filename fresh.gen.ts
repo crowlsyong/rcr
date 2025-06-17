@@ -35,7 +35,11 @@ import * as $buttons_VolatilityToggle from "./islands/buttons/VolatilityToggle.t
 import * as $tools_GameShowCreditScore from "./islands/tools/GameShowCreditScore.tsx";
 import * as $tools_InsuranceCalc from "./islands/tools/InsuranceCalc.tsx";
 import * as $tools_arbitrage_ArbitrageCalculator from "./islands/tools/arbitrage/ArbitrageCalculator.tsx";
+import * as $tools_arbitrage_ArbitrageExecutionButton from "./islands/tools/arbitrage/ArbitrageExecutionButton.tsx";
+import * as $tools_arbitrage_ArbitragePlacement from "./islands/tools/arbitrage/ArbitragePlacement.tsx";
 import * as $tools_arbitrage_ArbitrageResults from "./islands/tools/arbitrage/ArbitrageResults.tsx";
+import * as $tools_arbitrage_BudgetSlider from "./islands/tools/arbitrage/BudgetSlider.tsx";
+import * as $tools_arbitrage_CalculationModeToggle from "./islands/tools/arbitrage/CalculationModeToggle.tsx";
 import * as $tools_arbitrage_MarketInput from "./islands/tools/arbitrage/MarketInput.tsx";
 import * as $tools_chart_Chart from "./islands/tools/chart/Chart.tsx";
 import * as $tools_chart_CreditScoreChart from "./islands/tools/chart/CreditScoreChart.tsx";
@@ -93,8 +97,15 @@ const manifest = {
     "./islands/tools/InsuranceCalc.tsx": $tools_InsuranceCalc,
     "./islands/tools/arbitrage/ArbitrageCalculator.tsx":
       $tools_arbitrage_ArbitrageCalculator,
+    "./islands/tools/arbitrage/ArbitrageExecutionButton.tsx":
+      $tools_arbitrage_ArbitrageExecutionButton,
+    "./islands/tools/arbitrage/ArbitragePlacement.tsx":
+      $tools_arbitrage_ArbitragePlacement,
     "./islands/tools/arbitrage/ArbitrageResults.tsx":
       $tools_arbitrage_ArbitrageResults,
+    "./islands/tools/arbitrage/BudgetSlider.tsx": $tools_arbitrage_BudgetSlider,
+    "./islands/tools/arbitrage/CalculationModeToggle.tsx":
+      $tools_arbitrage_CalculationModeToggle,
     "./islands/tools/arbitrage/MarketInput.tsx": $tools_arbitrage_MarketInput,
     "./islands/tools/chart/Chart.tsx": $tools_chart_Chart,
     "./islands/tools/chart/CreditScoreChart.tsx": $tools_chart_CreditScoreChart,

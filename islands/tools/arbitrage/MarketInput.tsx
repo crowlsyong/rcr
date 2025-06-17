@@ -21,7 +21,7 @@ export default function MarketInput(
 ) {
   return (
     <div class="flex-1">
-      <label class="block text-sm font-medium text-gray-300 mb-1">
+      <label class="block text-xs font-medium text-gray-300 mb-1">
         {sideLabel}
       </label>
       <input
@@ -29,24 +29,23 @@ export default function MarketInput(
         value={marketUrl}
         onInput={(e) => setMarketUrl(e.currentTarget.value)}
         placeholder={placeholder}
-        class="block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
+        class="block w-full border border-gray-600 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm bg-gray-800 text-gray-100"
       />
-      {isLoading && <p class="text-sm text-gray-400 mt-2">Loading data...</p>}
+      {isLoading && <p class="text-xs text-gray-400 mt-2">Loading...</p>}
       {marketData && (
-        <div class="mt-3 text-sm bg-gray-900/50 p-3 rounded-md border border-gray-700">
+        <div class="mt-2 text-xs bg-gray-900/50 p-2 rounded-md border border-gray-700">
           <p class="truncate text-gray-200" title={marketData.question}>
             {marketData.question}
           </p>
           <p class="text-gray-400">
-            Current Prob:{" "}
-            <span class="font-bold text-white">
+            Prob:{" "}
+            <span class="font-semibold text-white">
               {(marketData.probability! * 100).toFixed(2)}%
             </span>
-          </p>
-          <p class="text-gray-400">
-            Liquidity:{" "}
-            <span class="font-bold text-white">
-              M{Math.round(marketData.totalLiquidity)}
+            <span class="mx-2">|</span>
+            Volume:{" "}
+            <span class="font-semibold text-white">
+              M{Math.round(marketData.volume)}
             </span>
           </p>
         </div>
