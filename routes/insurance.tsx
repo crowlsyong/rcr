@@ -3,7 +3,6 @@
 import InsuranceCalc from "../islands/tools/InsuranceCalc.tsx";
 
 import { RouteContext } from "$fresh/server.ts";
-import Version from "../components/Version.tsx";
 
 export default function Home(_req: Request, _ctx: RouteContext) {
   return (
@@ -12,7 +11,6 @@ export default function Home(_req: Request, _ctx: RouteContext) {
         <h1 class="text-xl sm:text-4xl font-bold text-center mb-4">
           🦝Insurance Calculator
         </h1>
-        <Version />
         <InsuranceCalc />
       </div>
     </div>

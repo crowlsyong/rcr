@@ -1,6 +1,5 @@
 // routes/index.tsx
 
-import Version from "../components/Version.tsx";
 import CreditScore from "../islands/tools/creditscore/CreditScore.tsx";
 
 import { RouteContext } from "$fresh/server.ts";
@@ -12,7 +11,6 @@ export default function Home(_req: Request, _ctx: RouteContext) {
         <h1 class="text-xl sm:text-4xl font-bold text-center mb-4">
           🦝 Credit Score
         </h1>
-        <Version />
         <CreditScore />
       </div>
     </div>
