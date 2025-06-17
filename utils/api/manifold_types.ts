@@ -1,3 +1,5 @@
+// utils/api/manifold_types.ts
+
 export interface ManaPaymentTransaction {
   id: string;
   amount: number;
@@ -52,6 +54,4 @@ export interface ManifoldMarket {
   volume: number;
 }
 
-// Re-introducing MarketData to avoid refactoring
-// It extends ManifoldMarket, so it includes all necessary fields.
 export interface MarketData extends ManifoldMarket {}
