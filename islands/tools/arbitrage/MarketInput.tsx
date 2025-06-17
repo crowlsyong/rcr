@@ -33,7 +33,12 @@ export default function MarketInput(
       />
       {isLoading && <p class="text-xs text-gray-400 mt-2">Loading...</p>}
       {marketData && (
-        <div class="mt-2 text-xs bg-gray-900/50 p-2 rounded-md border border-gray-700">
+        <a
+          href={marketData.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="block mt-2 text-xs bg-gray-900/50 p-2 rounded-md border border-gray-700 hover:border-blue-500 transition-colors duration-200"
+        >
           <p class="truncate text-gray-200" title={marketData.question}>
             {marketData.question}
           </p>
@@ -48,7 +53,7 @@ export default function MarketInput(
               M{Math.round(marketData.volume)}
             </span>
           </p>
-        </div>
+        </a>
       )}
     </div>
   );

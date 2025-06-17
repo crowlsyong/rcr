@@ -93,7 +93,27 @@ export default function ArbitrageExecutionButton(
       >
         {isPlacing ? "Placing Bets..." : buttonText}
       </button>
-      {message && <p class="mt-2 text-green-400 text-xs">{message}</p>}
+      {message && (
+        <div class="mt-2 text-xs flex items-center gap-2">
+          <span class="text-green-400">{message}</span>
+          <a
+            href={calculation.marketA.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-blue-400 hover:underline"
+          >
+            (Market A)
+          </a>
+          <a
+            href={calculation.marketB.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-blue-400 hover:underline"
+          >
+            (Market B)
+          </a>
+        </div>
+      )}
       {error && <p class="mt-2 text-red-400 text-xs">Error: {error}</p>}
     </div>
   );
