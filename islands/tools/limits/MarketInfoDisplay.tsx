@@ -1,5 +1,5 @@
 // islands/tools/MarketInfoDisplay.tsx
-import { MarketData } from "../../../utils/limit_calc.ts";
+import { MarketData } from "../../../utils/api/manifold_types.ts";
 
 interface MarketInfoDisplayProps {
   marketData: MarketData | null;

@@ -1,5 +1,3 @@
-// utils/api/manifold_types.ts
-
 export interface ManaPaymentTransaction {
   id: string;
   amount: number;
@@ -38,3 +36,22 @@ export interface ManifoldUser {
   createdTime?: number;
   userDeleted?: boolean;
 }
+
+export interface ManifoldMarket {
+  id: string;
+  question: string;
+  slug: string;
+  url: string;
+  probability: number;
+  outcomeType: "BINARY" | "FREE_RESPONSE" | "PSEUDO_NUMERIC";
+  pool: {
+    YES: number;
+    NO: number;
+  };
+  totalLiquidity: number;
+  volume: number;
+}
+
+// Re-introducing MarketData to avoid refactoring
+// It extends ManifoldMarket, so it includes all necessary fields.
+export interface MarketData extends ManifoldMarket {}

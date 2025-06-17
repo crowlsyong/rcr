@@ -9,6 +9,7 @@ import * as $admin_index from "./routes/admin/index.tsx";
 import * as $api_history from "./routes/api/history.ts";
 import * as $api_place_limit_orders from "./routes/api/place-limit-orders.ts";
 import * as $api_score from "./routes/api/score.ts";
+import * as $arbitrage from "./routes/arbitrage.tsx";
 import * as $auth_oauth2callback from "./routes/auth/oauth2callback.ts";
 import * as $auth_signin from "./routes/auth/signin.ts";
 import * as $auth_signout from "./routes/auth/signout.ts";
@@ -33,6 +34,7 @@ import * as $buttons_VolatilityGranularitySelector from "./islands/buttons/Volat
 import * as $buttons_VolatilityToggle from "./islands/buttons/VolatilityToggle.tsx";
 import * as $tools_GameShowCreditScore from "./islands/tools/GameShowCreditScore.tsx";
 import * as $tools_InsuranceCalc from "./islands/tools/InsuranceCalc.tsx";
+import * as $tools_arbitrage_Arbitrage from "./islands/tools/arbitrage/Arbitrage.tsx";
 import * as $tools_chart_Chart from "./islands/tools/chart/Chart.tsx";
 import * as $tools_chart_CreditScoreChart from "./islands/tools/chart/CreditScoreChart.tsx";
 import * as $tools_chart_TimeRangeSelector from "./islands/tools/chart/TimeRangeSelector.tsx";
@@ -57,6 +59,7 @@ const manifest = {
     "./routes/api/history.ts": $api_history,
     "./routes/api/place-limit-orders.ts": $api_place_limit_orders,
     "./routes/api/score.ts": $api_score,
+    "./routes/arbitrage.tsx": $arbitrage,
     "./routes/auth/oauth2callback.ts": $auth_oauth2callback,
     "./routes/auth/signin.ts": $auth_signin,
     "./routes/auth/signout.ts": $auth_signout,
@@ -85,6 +88,7 @@ const manifest = {
     "./islands/buttons/VolatilityToggle.tsx": $buttons_VolatilityToggle,
     "./islands/tools/GameShowCreditScore.tsx": $tools_GameShowCreditScore,
     "./islands/tools/InsuranceCalc.tsx": $tools_InsuranceCalc,
+    "./islands/tools/arbitrage/Arbitrage.tsx": $tools_arbitrage_Arbitrage,
     "./islands/tools/chart/Chart.tsx": $tools_chart_Chart,
     "./islands/tools/chart/CreditScoreChart.tsx": $tools_chart_CreditScoreChart,
     "./islands/tools/chart/TimeRangeSelector.tsx":

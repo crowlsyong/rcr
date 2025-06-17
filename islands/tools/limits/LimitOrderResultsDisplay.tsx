@@ -1,5 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
-import { getMarketDataBySlug, MarketData } from "../../../utils/limit_calc.ts";
+import { getMarketDataBySlug } from "../../../utils/api/manifold_api_service.ts";
+import { MarketData } from "../../../utils/api/manifold_types.ts";
 
 import LimitOrderCalculatorForm from "./LimitOrderCalculatorForm.tsx";
 import LimitOrderPlacementOptions from "./LimitOrderPlacementOptions.tsx";

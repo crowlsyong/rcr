@@ -1,9 +1,8 @@
-// utils/api/manifold_api_service.ts
-
 import { fetchWithRetries } from "./fetch_utilities.ts";
 import {
   ManaPaymentTransaction,
   ManifoldUser,
+  MarketData, // Import MarketData here
   UserPortfolio,
 } from "./manifold_types.ts";
 
@@ -25,7 +24,9 @@ export async function fetchUserData(
   if (!success || !response) {
     console.warn(
       `fetchUserData: Failed to fetch data for '${username}' after retries. Error: ${
-        error ? error.message : (response ? response.statusText : "Unknown")
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : String(error)
       }`,
     );
     return { userData: null, fetchSuccess: false, userDeleted };
@@ -73,7 +74,9 @@ export async function fetchUserPortfolio(
   if (!success || !response) {
     console.warn(
       `fetchUserPortfolio: Failed for userId '${userId}' after retries. Error: ${
-        error ? error.message : (response ? response.statusText : "Unknown")
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : String(error)
       }`,
     );
     return { portfolio: null, success: false };
@@ -105,7 +108,9 @@ export async function fetchManaAndRecentRank(
   if (!success || !response) {
     console.warn(
       `fetchManaAndRecentRank: Failed for userId '${userId}' after retries. Error: ${
-        error ? error.message : (response ? response.statusText : "Unknown")
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : String(error)
       }`,
     );
     return { total: 0, latestRank: null, success: false };
@@ -151,7 +156,9 @@ export async function fetchTransactionCount(
   if (!success || !response) {
     console.warn(
       `fetchTransactionCount: Failed for '${username}' after retries. Error: ${
-        error ? error.message : (response ? response.statusText : "Unknown")
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : String(error)
       }`,
     );
     return { count: 0, success: false };
@@ -208,5 +215,73 @@ export async function fetchLoanTransactions(
       }`,
     );
     return { transactions: [], success: false };
+  }
+}
+
+// Renamed from fetchMarketBySlug to getMarketDataBySlug
+export async function getMarketDataBySlug(
+  slug: string,
+): Promise<{ data: MarketData | null; error: string | null }> {
+  const { response, success, error } = await fetchWithRetries(
+    `${MANIFOLD_API_BASE_URL}/slug/${slug}`,
+  );
+
+  if (!success || !response) {
+    console.warn(
+      `getMarketDataBySlug: Failed to fetch market data for slug '${slug}' after retries. Error: ${
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : String(error)
+      }`,
+    );
+    return { data: null, error: `Network/fetch error for slug '${slug}'.` };
+  }
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.warn(
+      `getMarketDataBySlug: Received non-OK status ${response.status} for slug '${slug}': ${errorText}`,
+    );
+    return {
+      data: null,
+      error:
+        `Failed to fetch market data for '${slug}': ${response.status} ${response.statusText} - ${errorText}`,
+    };
+  }
+
+  try {
+    // Type assertion to MarketData which extends ManifoldMarket
+    const marketData: MarketData = await response.json();
+    // Basic validation of crucial fields
+    if (
+      typeof marketData.id !== "string" ||
+      typeof marketData.question !== "string" ||
+      typeof marketData.probability !== "number" ||
+      typeof marketData.url !== "string" ||
+      typeof marketData.pool?.YES !== "number" ||
+      typeof marketData.pool?.NO !== "number" ||
+      typeof marketData.volume !== "number" ||
+      typeof marketData.slug !== "string" ||
+      typeof marketData.outcomeType !== "string"
+    ) {
+      return {
+        data: null,
+        error: `Invalid or incomplete market data received for slug '${slug}'.`,
+      };
+    }
+    return { data: marketData, error: null };
+  } catch (jsonError) {
+    console.error(
+      `getMarketDataBySlug: Error parsing JSON for slug '${slug}': ${
+        typeof jsonError === "object" && jsonError !== null &&
+          "message" in jsonError
+          ? (jsonError as { message: string }).message
+          : String(jsonError)
+      }`,
+    );
+    return {
+      data: null,
+      error: `Error parsing market data for slug '${slug}'.`,
+    };
   }
 }
