@@ -20,6 +20,7 @@ interface CalculationResult {
   totalSharesAcquired: number | null;
   error: string | null;
   contractId: string | null;
+  answerId?: string | null;
 }
 
 export default function LimitOrderCalculator() {
@@ -102,11 +103,12 @@ export default function LimitOrderCalculator() {
       }
       setMarketData(data);
 
-      let contractIdForBet: string | null = null;
+      let marketId: string | null = null;
+      let answerId: string | null = null;
       let marketIsSupported = false;
 
       if (data.outcomeType === "BINARY") {
-        contractIdForBet = data.id;
+        marketId = data.id;
         marketIsSupported = true;
       } else if (data.outcomeType === "MULTIPLE_CHOICE") {
         if (!selectedAnswerId) {
@@ -124,7 +126,8 @@ export default function LimitOrderCalculator() {
           setLoading(false);
           return;
         }
-        contractIdForBet = selectedAnswer.id;
+        marketId = data.id;
+        answerId = selectedAnswer.id;
         marketIsSupported = true;
       }
 
@@ -263,7 +266,8 @@ export default function LimitOrderCalculator() {
         orders: calculatedOrders,
         totalSharesAcquired: totalShares,
         error: null,
-        contractId: contractIdForBet,
+        contractId: marketId,
+        answerId: answerId,
       });
     } catch (e) {
       setFetchError(
@@ -416,6 +420,7 @@ export default function LimitOrderCalculator() {
               orders={calculationResult.orders!}
               apiKey={apiKeyInput}
               contractId={calculationResult.contractId}
+              answerId={calculationResult.answerId}
               marketUrl={marketData.url}
             />
           )}

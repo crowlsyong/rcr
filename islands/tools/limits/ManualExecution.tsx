@@ -1,5 +1,3 @@
-// islands/tools/limits/ManualExecution.tsx
-
 import { useState } from "preact/hooks";
 import { ExpirationSettings } from "./LimitOrderPlacementOptions.tsx";
 import { Order } from "./LimitOrderCalculator.tsx";
@@ -8,6 +6,7 @@ interface ManualExecutionProps {
   orders: Order[];
   apiKey: string;
   contractId: string;
+  answerId?: string | null;
   marketUrl: string;
   expirationSettings: ExpirationSettings;
 }
@@ -17,6 +16,7 @@ interface BetPayload {
   contractId: string;
   outcome: "YES" | "NO";
   limitProb: number;
+  answerId?: string;
   expiresMillisAfter?: number;
   expiresAt?: number;
 }
@@ -36,6 +36,10 @@ export default function ManualExecution(props: ManualExecutionProps) {
       outcome: outcome,
       limitProb: parseFloat(limitProb.toFixed(2)),
     };
+
+    if (props.answerId) {
+      betData.answerId = props.answerId;
+    }
 
     if (
       props.expirationSettings.type === "duration" &&

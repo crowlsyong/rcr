@@ -1,5 +1,3 @@
-// islands/tools/limits/DirectExecution.tsx
-
 import { useEffect, useState } from "preact/hooks";
 import { ExpirationSettings } from "./LimitOrderPlacementOptions.tsx";
 import { Order } from "./LimitOrderCalculator.tsx";
@@ -8,6 +6,7 @@ interface DirectExecutionProps {
   orders: Order[];
   apiKey: string;
   contractId: string;
+  answerId?: string | null;
   marketUrl: string;
   expirationSettings: ExpirationSettings;
 }
@@ -22,6 +21,7 @@ interface BetPlacementBody {
   apiKey: string;
   contractId: string;
   orders: ApiOrder[];
+  answerId?: string;
   expiresMillisAfter?: number;
   expiresAt?: number;
 }
@@ -55,6 +55,10 @@ export default function DirectExecution(props: DirectExecutionProps) {
       contractId: props.contractId,
       orders: apiOrders,
     };
+
+    if (props.answerId) {
+      body.answerId = props.answerId;
+    }
 
     if (
       props.expirationSettings.type === "duration" &&

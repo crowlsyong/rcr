@@ -1,5 +1,3 @@
-// islands/tools/limits/LimitOrderPlacementOptions.tsx
-
 import { useEffect, useState } from "preact/hooks";
 import DirectExecution from "./DirectExecution.tsx";
 import ManualExecution from "./ManualExecution.tsx";
@@ -14,6 +12,7 @@ interface PlacementOptionsProps {
   orders: Order[];
   apiKey: string;
   contractId: string;
+  answerId?: string | null;
   marketUrl: string;
 }
 

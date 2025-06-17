@@ -73,3 +73,26 @@ export interface ManifoldMarket {
 }
 
 export interface MarketData extends ManifoldMarket {}
+
+export interface BetPayload {
+  amount: number;
+  contractId: string;
+  outcome: "YES" | "NO";
+  limitProb?: number;
+  expiresMillisAfter?: number;
+  expiresAt?: number;
+}
+
+export interface ManifoldBetResponse {
+  id: string;
+  userId: string;
+  contractId: string;
+  createdTime: number;
+  amount: number;
+  outcome: "YES" | "NO";
+  shares: number;
+  probBefore: number;
+  probAfter: number;
+  isFilled: boolean;
+  isCancelled: boolean;
+}
