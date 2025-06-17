@@ -5,7 +5,7 @@ export default function ArbitragePage() {
   return (
     <>
       <Head>
-        <title>Manifold Arbitrage Calculator</title>
+        <title>RISK Arbitrage App</title>
         <meta
           name="description"
           content="Calculate arbitrage opportunities between two Manifold prediction markets to find guaranteed profit."

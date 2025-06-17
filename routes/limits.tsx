@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Limit Order App</title>
+        <title>RISK Limit App</title>
       </Head>
       <div class="pt-14 bg-[#0F1729] text-white dark:bg-[#0F1729] dark:text-white">
         <LimitOrderCalculator />
