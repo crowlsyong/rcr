@@ -11,14 +11,16 @@ import BudgetSlider from "./BudgetSlider.tsx";
 import CalculationModeToggle from "./CalculationModeToggle.tsx";
 import MarketInput from "./MarketInput.tsx";
 
+type CalcMode = "equilibrium" | "average" | "horseRace" | "classic";
+
 export default function ArbitrageCalculator() {
   const [marketAUrl, setMarketAUrl] = useState("");
   const [marketBUrl, setMarketBUrl] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [budgetPercentage, setBudgetPercentage] = useState(100);
-  const [calculationMode, setCalculationMode] = useState<
-    "equilibrium" | "average"
-  >("equilibrium");
+  const [calculationMode, setCalculationMode] = useState<CalcMode>(
+    "equilibrium",
+  );
 
   const [marketA, setMarketA] = useState<MarketData | null>(null);
   const [marketB, setMarketB] = useState<MarketData | null>(null);
@@ -91,14 +93,16 @@ export default function ArbitrageCalculator() {
       (budgetPercentage / 100)
     : 0;
 
+  const marketALabel = calculationMode === "horseRace"
+    ? "Market A (Bet NO)"
+    : "Market A (Buy YES)";
+  const marketBLabel = "Market B (Buy NO)";
+
   return (
     <div class="p-4 mx-auto max-w-screen-md text-gray-100">
-      <h1 class="text-2xl font-bold mb-4">
-        Arbitrage App
-      </h1>
-      <p class="mb-4 text-gray-400">
-        Find RISK-free profit by identifying discrepancies between two BINARY
-        markets. Enter the market with the lower probability in Market A.
+      <h1 class="text-xl font-bold mb-1">Arbitrage Calculator</h1>
+      <p class="mb-4 text-sm text-gray-400">
+        Find risk-free profit between two markets.
       </p>
 
       <div class="flex flex-col md:flex-row gap-4">
@@ -106,16 +110,16 @@ export default function ArbitrageCalculator() {
           marketUrl={marketAUrl}
           setMarketUrl={setMarketAUrl}
           marketData={marketA}
-          sideLabel="Market A (Buy YES)"
-          placeholder="URL for lower probability market"
+          sideLabel={marketALabel}
+          placeholder="URL for first market"
           isLoading={loadingA}
         />
         <MarketInput
           marketUrl={marketBUrl}
           setMarketUrl={setMarketBUrl}
           marketData={marketB}
-          sideLabel="Market B (Buy NO)"
-          placeholder="URL for higher probability market"
+          sideLabel={marketBLabel}
+          placeholder="URL for second market"
           isLoading={loadingB}
         />
       </div>
@@ -130,6 +134,7 @@ export default function ArbitrageCalculator() {
         error={error}
         isLoading={loadingA || loadingB}
         budgetPercentage={budgetPercentage}
+        mode={calculationMode}
       />
 
       {calculation && (
@@ -171,6 +176,7 @@ export default function ArbitrageCalculator() {
               calculation={calculation}
               apiKey={apiKey}
               budgetPercentage={budgetPercentage}
+              mode={calculationMode}
             />
           </div>
         </>

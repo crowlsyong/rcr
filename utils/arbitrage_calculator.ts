@@ -6,13 +6,35 @@ export interface ArbitrageCalculation {
   betAmountA: number;
   betAmountB: number;
   profit: number;
-  newProbability: number;
+  newProbability?: number;
+  newProbabilityA?: number;
+  newProbabilityB?: number;
 }
+
+const getYesBetInfo = (k: number, p_initial: number, p_final: number) => {
+  const y_initial = Math.sqrt(k * (1 - p_initial) / p_initial);
+  const n_initial = Math.sqrt(k * p_initial / (1 - p_initial));
+  const y_final = Math.sqrt(k * (1 - p_final) / p_final);
+  const n_final = Math.sqrt(k * p_final / (1 - p_final));
+  const cost = n_final - n_initial;
+  const shares = y_initial - y_final;
+  return { cost, shares };
+};
+
+const getNoBetInfo = (k: number, p_initial: number, p_final: number) => {
+  const y_initial = Math.sqrt(k * (1 - p_initial) / p_initial);
+  const n_initial = Math.sqrt(k * p_initial / (1 - p_initial));
+  const y_final = Math.sqrt(k * (1 - p_final) / p_final);
+  const n_final = Math.sqrt(k * p_final / (1 - p_final));
+  const cost = y_final - y_initial;
+  const shares = n_initial - n_final;
+  return { cost, shares };
+};
 
 export function calculateArbitrage(
   marketA: MarketData,
   marketB: MarketData,
-  mode: "equilibrium" | "average",
+  mode: "classic" | "equilibrium" | "average" | "horseRace",
 ): { result: ArbitrageCalculation | null; error: string | null } {
   if (
     marketA.outcomeType !== "BINARY" || marketB.outcomeType !== "BINARY" ||
@@ -22,84 +44,97 @@ export function calculateArbitrage(
     return { result: null, error: "Both markets must be BINARY" };
   }
 
+  const kA = marketA.pool.YES * marketA.pool.NO;
+  const kB = marketB.pool.YES * marketB.pool.NO;
   const pA = marketA.probability;
-  const pB_inv = 1 - marketB.probability;
+  const pB = marketB.probability;
 
-  if (pA >= pB_inv) {
+  if (mode === "horseRace") {
+    if (pA + pB <= 1) {
+      return {
+        result: null,
+        error: "Horse Race: Probabilities must sum to more than 100%",
+      };
+    }
+    let low = 0, high = 1, p_target_A = 0.5;
+    for (let i = 0; i < 100; i++) {
+      p_target_A = (low + high) / 2;
+      const p_target_B = 1 - p_target_A;
+      if (p_target_A >= pA || p_target_B >= pB) {
+        high = p_target_A;
+        continue;
+      }
+      const { cost: costA, shares: sharesA } = getNoBetInfo(kA, pA, p_target_A);
+      const { cost: costB, shares: sharesB } = getNoBetInfo(kB, pB, p_target_B);
+      if (sharesB - costA > sharesA - costB) high = p_target_A;
+      else low = p_target_A;
+    }
+    const p_target_B = 1 - p_target_A;
+    const { cost: finalCostA } = getNoBetInfo(kA, pA, p_target_A);
+    const { cost: finalCostB, shares: finalSharesB } = getNoBetInfo(
+      kB,
+      pB,
+      p_target_B,
+    );
+    const profit = finalSharesB - finalCostA;
     return {
-      result: null,
-      error: `No arbitrage opportunity: Market A's probability (${
-        (pA * 100).toFixed(1)
-      }%) must be less than the inverse of Market B's probability (${
-        (pB_inv * 100).toFixed(1)
-      }%)`,
+      result: {
+        marketA,
+        marketB,
+        betAmountA: finalCostA,
+        betAmountB: finalCostB,
+        profit,
+        newProbabilityA: p_target_A,
+        newProbabilityB: p_target_B,
+      },
+      error: null,
     };
   }
 
-  const kA = marketA.pool.YES * marketA.pool.NO;
-  const kB = marketB.pool.YES * marketB.pool.NO;
+  if (pA >= pB) {
+    return {
+      result: null,
+      error: "Market A probability must be lower than Market B",
+    };
+  }
 
   let p_target: number;
-
   if (mode === "equilibrium") {
-    let low = pA;
-    let high = pB_inv;
+    let low = pA, high = pB;
     p_target = (low + high) / 2;
-
     for (let i = 0; i < 100; i++) {
       p_target = (low + high) / 2;
       if (p_target <= low || p_target >= high) break;
-
-      const costA = Math.sqrt(kA * p_target / (1 - p_target)) -
-        marketA.pool.NO;
-      const sharesA = marketA.pool.YES -
-        Math.sqrt(kA * (1 - p_target) / p_target);
-      const costB = Math.sqrt(kB * p_target / (1 - p_target)) -
-        marketB.pool.YES;
-      const sharesB = marketB.pool.NO -
-        Math.sqrt(kB * (1 - p_target) / p_target);
-
-      if (costA < 0 || costB < 0 || sharesA < 0 || sharesB < 0) {
-        return {
-          result: null,
-          error: "Invalid intermediate calculation: Negative value detected",
-        };
-      }
-
-      const profitIfYes = sharesA - costB;
-      const profitIfNo = sharesB - costA;
-
-      if (profitIfYes > profitIfNo) {
-        low = p_target;
-      } else {
-        high = p_target;
-      }
+      const { cost: costA, shares: sharesA } = getYesBetInfo(kA, pA, p_target);
+      const { cost: costB, shares: sharesB } = getNoBetInfo(kB, pB, p_target);
+      if (sharesA - costB > sharesB - costA) low = p_target;
+      else high = p_target;
     }
   } else {
-    p_target = (pA + pB_inv) / 2;
+    p_target = (pA + pB) / 2;
   }
 
-  const finalCostA = Math.sqrt(kA * p_target / (1 - p_target)) -
-    marketA.pool.NO;
-  const finalSharesA = marketA.pool.YES -
-    Math.sqrt(kA * (1 - p_target) / p_target);
-  const finalCostB = Math.sqrt(kB * p_target / (1 - p_target)) -
-    marketB.pool.YES;
-  const finalProfit = finalSharesA - finalCostB;
+  const { cost: finalBetA, shares: finalSharesA } = getYesBetInfo(
+    kA,
+    pA,
+    p_target,
+  );
+  const { cost: finalBetB } = getNoBetInfo(kB, pB, p_target);
+  const finalProfit = finalSharesA - finalBetB;
 
-  if (finalCostA <= 0.01 || finalCostB <= 0.01 || finalProfit <= 0.01) {
-    return {
-      result: null,
-      error: "No profitable arbitrage opportunity found for this mode",
-    };
+  if (
+    (mode !== "classic" &&
+      (finalBetA <= 0.01 || finalBetB <= 0.01 || finalProfit <= 0.01))
+  ) {
+    return { result: null, error: "No profitable arbitrage opportunity found" };
   }
 
   return {
     result: {
       marketA,
       marketB,
-      betAmountA: finalCostA,
-      betAmountB: finalCostB,
+      betAmountA: finalBetA,
+      betAmountB: finalBetB,
       profit: finalProfit,
       newProbability: p_target,
     },

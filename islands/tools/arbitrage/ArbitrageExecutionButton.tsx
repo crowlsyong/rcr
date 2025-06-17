@@ -5,10 +5,12 @@ interface ArbitrageExecutionButtonProps {
   calculation: ArbitrageCalculation;
   apiKey: string;
   budgetPercentage: number;
+  mode: "classic" | "equilibrium" | "average" | "horseRace";
 }
 
 export default function ArbitrageExecutionButton(
-  { calculation, apiKey, budgetPercentage }: ArbitrageExecutionButtonProps,
+  { calculation, apiKey, budgetPercentage, mode }:
+    ArbitrageExecutionButtonProps,
 ) {
   const [isPlacing, setIsPlacing] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -29,18 +31,20 @@ export default function ArbitrageExecutionButton(
     setError(null);
 
     const scale = budgetPercentage / 100;
+    const outcomeA = mode === "horseRace" ? "NO" : "YES";
+    const outcomeB = "NO";
 
     const body = {
       apiKey,
       betA: {
         contractId: calculation.marketA.id,
         amount: calculation.betAmountA * scale,
-        outcome: "YES",
+        outcome: outcomeA,
       },
       betB: {
         contractId: calculation.marketB.id,
         amount: calculation.betAmountB * scale,
-        outcome: "NO",
+        outcome: outcomeB,
       },
     };
 
@@ -93,27 +97,7 @@ export default function ArbitrageExecutionButton(
       >
         {isPlacing ? "Placing Bets..." : buttonText}
       </button>
-      {message && (
-        <div class="mt-2 text-xs flex items-center gap-2">
-          <span class="text-green-400">{message}</span>
-          <a
-            href={calculation.marketA.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-blue-400 hover:underline"
-          >
-            (Market A)
-          </a>
-          <a
-            href={calculation.marketB.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-blue-400 hover:underline"
-          >
-            (Market B)
-          </a>
-        </div>
-      )}
+      {message && <p class="mt-2 text-green-400 text-xs">{message}</p>}
       {error && <p class="mt-2 text-red-400 text-xs">Error: {error}</p>}
     </div>
   );
