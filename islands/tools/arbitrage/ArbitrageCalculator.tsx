@@ -93,7 +93,7 @@ export default function ArbitrageCalculator() {
 
   return (
     <div class="p-4 mx-auto max-w-screen-md text-gray-100">
-      <h1 class="text-xl font-bold mb-1">Arbitrage Calculator</h1>
+      <h1 class="text-xl font-bold mb-1">Arbitrage App</h1>
       <p class="mb-4 text-sm text-gray-400">
         Find RISK-free profit by identifying discrepancies between two BINARY
         markets. Enter the market with the lower probability in Market A.
