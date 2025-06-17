@@ -1,5 +1,3 @@
-// utils/api/manifold_types.ts
-
 export interface ManaPaymentTransaction {
   id: string;
   amount: number;
@@ -39,19 +37,39 @@ export interface ManifoldUser {
   userDeleted?: boolean;
 }
 
+export interface Answer {
+  id: string;
+  contractId: string;
+  text: string;
+  probability: number;
+  pool: {
+    YES: number;
+    NO: number;
+  };
+  index: number;
+  userId: string;
+  createdTime: number;
+  isOther?: boolean;
+}
+
 export interface ManifoldMarket {
   id: string;
   question: string;
   slug: string;
   url: string;
-  probability: number;
-  outcomeType: "BINARY" | "FREE_RESPONSE" | "PSEUDO_NUMERIC";
-  pool: {
+  outcomeType:
+    | "BINARY"
+    | "MULTIPLE_CHOICE"
+    | "FREE_RESPONSE"
+    | "PSEUDO_NUMERIC";
+  volume: number;
+  totalLiquidity: number;
+  probability?: number;
+  pool?: {
     YES: number;
     NO: number;
   };
-  totalLiquidity: number;
-  volume: number;
+  answers?: Answer[];
 }
 
 export interface MarketData extends ManifoldMarket {}

@@ -1,9 +1,8 @@
-// islands/tools/limits/LimitOrderCalculator.tsx
-
 import { useEffect, useState } from "preact/hooks";
 import { getMarketDataBySlug } from "../../../utils/api/manifold_api_service.ts";
 import { MarketData } from "../../../utils/api/manifold_types.ts";
 
+import AnswerSelector from "./AnswerSelector.tsx";
 import LimitOrderCalculatorForm from "./LimitOrderCalculatorForm.tsx";
 import LimitOrderPlacementOptions from "./LimitOrderPlacementOptions.tsx";
 import MarketInfoDisplay from "./MarketInfoDisplay.tsx";
@@ -33,6 +32,7 @@ export default function LimitOrderCalculator() {
   const [granularityInput, setGranularityInput] = useState(1);
 
   const [marketData, setMarketData] = useState<MarketData | null>(null);
+  const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null);
   const [calculationResult, setCalculationResult] = useState<
     CalculationResult | null
   >(null);
@@ -43,7 +43,6 @@ export default function LimitOrderCalculator() {
     e?.preventDefault();
     setLoading(true);
     setFetchError(null);
-    // setCalculationResult(null); // Keep old results to prevent page jump
 
     if (!marketUrlInput) {
       setFetchError("Market URL is required");
@@ -98,13 +97,43 @@ export default function LimitOrderCalculator() {
         return;
       }
 
+      if (marketData?.id !== data.id) {
+        setSelectedAnswerId(null);
+      }
       setMarketData(data);
 
-      if (data.outcomeType !== "BINARY") {
+      let contractIdForBet: string | null = null;
+      let marketIsSupported = false;
+
+      if (data.outcomeType === "BINARY") {
+        contractIdForBet = data.id;
+        marketIsSupported = true;
+      } else if (data.outcomeType === "MULTIPLE_CHOICE") {
+        if (!selectedAnswerId) {
+          setCalculationResult(null);
+          setLoading(false);
+          return;
+        }
+        const selectedAnswer = data.answers?.find((a) =>
+          a.id === selectedAnswerId
+        );
+        if (!selectedAnswer) {
+          setFetchError(
+            "Selected answer not found, it may be from a previous market",
+          );
+          setLoading(false);
+          return;
+        }
+        contractIdForBet = selectedAnswer.id;
+        marketIsSupported = true;
+      }
+
+      if (!marketIsSupported) {
         setCalculationResult({
           orders: [],
           totalSharesAcquired: null,
-          error: "Only BINARY markets are supported for this calculation",
+          error:
+            `Only BINARY and MULTIPLE_CHOICE markets are supported, this is a "${data.outcomeType}" market`,
           contractId: null,
         });
         setLoading(false);
@@ -141,7 +170,6 @@ export default function LimitOrderCalculator() {
         }
 
         const orderPairsData = [];
-        // NEW LOGIC: Iterate from the outside-in, not from the midpoint.
         for (
           let currentPLower = pLower, currentPUpper = pUpper;
           currentPLower < currentPUpper;
@@ -166,10 +194,8 @@ export default function LimitOrderCalculator() {
           return;
         }
 
-        // Reverse the pairs so the narrowest range (innermost bet) is first.
         orderPairsData.reverse();
 
-        // Apply weights: narrowest pair gets the biggest weight.
         const numPairs = orderPairsData.length;
         const weights = Array.from(
           { length: numPairs },
@@ -237,7 +263,7 @@ export default function LimitOrderCalculator() {
         orders: calculatedOrders,
         totalSharesAcquired: totalShares,
         error: null,
-        contractId: data.id,
+        contractId: contractIdForBet,
       });
     } catch (e) {
       setFetchError(
@@ -270,6 +296,7 @@ export default function LimitOrderCalculator() {
     totalBetAmountInput,
     lowerProbabilityInput,
     upperProbabilityInput,
+    selectedAnswerId,
   ]);
 
   const hasValidResults = calculationResult && !calculationResult.error &&
@@ -296,7 +323,7 @@ export default function LimitOrderCalculator() {
         >
           this section{" "}
         </a>
-        of the Manifold FAQ. Only works for BINARY markets.
+        of the Manifold FAQ. Works for BINARY and MULTIPLE_CHOICE markets.
       </p>
 
       <LimitOrderCalculatorForm
@@ -327,6 +354,15 @@ export default function LimitOrderCalculator() {
       )}
 
       {marketData && <MarketInfoDisplay marketData={marketData} />}
+
+      {marketData && marketData.outcomeType === "MULTIPLE_CHOICE" &&
+        marketData.answers && (
+        <AnswerSelector
+          answers={marketData.answers}
+          selectedAnswerId={selectedAnswerId}
+          onAnswerSelect={setSelectedAnswerId}
+        />
+      )}
 
       {hasValidResults && (
         <div class="bg-gray-800 shadow overflow-hidden sm:rounded-lg p-6 mb-6 border border-gray-700">

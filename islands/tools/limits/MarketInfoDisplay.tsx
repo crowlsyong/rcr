@@ -1,5 +1,3 @@
-// islands/tools/MarketInfoDisplay.tsx
-
 import { MarketData } from "../../../utils/api/manifold_types.ts";
 
 interface MarketInfoDisplayProps {
@@ -8,7 +6,7 @@ interface MarketInfoDisplayProps {
 
 export default function MarketInfoDisplay(props: MarketInfoDisplayProps) {
   if (!props.marketData) {
-    return null; // Don't render anything if market data is not available
+    return null;
   }
 
   return (
@@ -20,10 +18,14 @@ export default function MarketInfoDisplay(props: MarketInfoDisplayProps) {
         <span class="font-medium text-gray-300">Question:</span>{" "}
         {props.marketData.question}
       </p>
-      <p>
-        <span class="font-medium text-gray-300">Current Probability:</span>{" "}
-        {(props.marketData.probability * 100).toFixed(2)}%
-      </p>
+      {props.marketData.outcomeType === "BINARY" &&
+        props.marketData.probability != null && (
+        <p>
+          <span class="font-medium text-gray-300">Current Probability:</span>
+          {" "}
+          {(props.marketData.probability * 100).toFixed(2)}%
+        </p>
+      )}
       <p>
         <span class="font-medium text-gray-300">Market URL:</span>{" "}
         <a

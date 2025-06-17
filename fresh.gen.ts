@@ -41,6 +41,7 @@ import * as $tools_chart_TimeRangeSelector from "./islands/tools/chart/TimeRange
 import * as $tools_creditscore_CreditScore from "./islands/tools/creditscore/CreditScore.tsx";
 import * as $tools_creditscore_CreditScoreChExt from "./islands/tools/creditscore/CreditScoreChExt.tsx";
 import * as $tools_creditscore_ScoreResult from "./islands/tools/creditscore/ScoreResult.tsx";
+import * as $tools_limits_AnswerSelector from "./islands/tools/limits/AnswerSelector.tsx";
 import * as $tools_limits_DirectExecution from "./islands/tools/limits/DirectExecution.tsx";
 import * as $tools_limits_LimitOrderCalculator from "./islands/tools/limits/LimitOrderCalculator.tsx";
 import * as $tools_limits_LimitOrderCalculatorForm from "./islands/tools/limits/LimitOrderCalculatorForm.tsx";
@@ -99,6 +100,7 @@ const manifest = {
       $tools_creditscore_CreditScoreChExt,
     "./islands/tools/creditscore/ScoreResult.tsx":
       $tools_creditscore_ScoreResult,
+    "./islands/tools/limits/AnswerSelector.tsx": $tools_limits_AnswerSelector,
     "./islands/tools/limits/DirectExecution.tsx": $tools_limits_DirectExecution,
     "./islands/tools/limits/LimitOrderCalculator.tsx":
       $tools_limits_LimitOrderCalculator,

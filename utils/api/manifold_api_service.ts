@@ -1,10 +1,9 @@
-// utils/api/manifold_api_service.ts
-
 import { fetchWithRetries } from "./fetch_utilities.ts";
 import {
+  Answer,
   ManaPaymentTransaction,
   ManifoldUser,
-  MarketData, // Import MarketData here
+  MarketData,
   UserPortfolio,
 } from "./manifold_types.ts";
 
@@ -220,7 +219,6 @@ export async function fetchLoanTransactions(
   }
 }
 
-// Renamed from fetchMarketBySlug to getMarketDataBySlug
 export async function getMarketDataBySlug(
   slug: string,
 ): Promise<{ data: MarketData | null; error: string | null }> {
@@ -252,16 +250,11 @@ export async function getMarketDataBySlug(
   }
 
   try {
-    // Type assertion to MarketData which extends ManifoldMarket
     const marketData: MarketData = await response.json();
-    // Basic validation of crucial fields
     if (
       typeof marketData.id !== "string" ||
       typeof marketData.question !== "string" ||
-      typeof marketData.probability !== "number" ||
       typeof marketData.url !== "string" ||
-      typeof marketData.pool?.YES !== "number" ||
-      typeof marketData.pool?.NO !== "number" ||
       typeof marketData.volume !== "number" ||
       typeof marketData.slug !== "string" ||
       typeof marketData.outcomeType !== "string"
