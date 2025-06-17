@@ -1,12 +1,9 @@
-// islands/tools/limits/ManualExecution.tsx
 import { useState } from "preact/hooks";
 import { ExpirationSettings } from "./LimitOrderPlacementOptions.tsx";
+import { Order } from "./LimitOrderCalculator.tsx";
 
 interface ManualExecutionProps {
-  yesLimitOrderAmount: number;
-  noLimitOrderAmount: number;
-  lowerProbability: number;
-  upperProbability: number;
+  orders: Order[];
   apiKey: string;
   contractId: string;
   marketUrl: string;
@@ -26,25 +23,18 @@ export default function ManualExecution(props: ManualExecutionProps) {
   const [activeTab, setActiveTab] = useState<"bash" | "powershell">("bash");
   const [copied, setCopied] = useState(false);
 
-  const getBetPayloadString = (outcome: "YES" | "NO"): string => {
-    const amount = outcome === "YES"
-      ? props.yesLimitOrderAmount
-      : props.noLimitOrderAmount;
-    const limitProb = outcome === "YES"
-      ? props.lowerProbability / 100
-      : props.upperProbability / 100;
-
-    const roundedAmount = parseFloat(amount.toFixed(2));
-    const roundedLimitProb = parseFloat(limitProb.toFixed(2));
-
+  const getBetPayload = (
+    amount: number,
+    outcome: "YES" | "NO",
+    limitProb: number,
+  ): BetPayload => {
     const betData: BetPayload = {
-      amount: roundedAmount,
+      amount: parseFloat(amount.toFixed(2)),
       contractId: props.contractId,
       outcome: outcome,
-      limitProb: roundedLimitProb,
+      limitProb: parseFloat(limitProb.toFixed(2)),
     };
 
-    // --- THIS IS THE UPDATED LOGIC ---
     if (
       props.expirationSettings.type === "duration" &&
       props.expirationSettings.value
@@ -56,28 +46,48 @@ export default function ManualExecution(props: ManualExecutionProps) {
     ) {
       betData.expiresAt = props.expirationSettings.value;
     }
-
-    return JSON.stringify(betData);
+    return betData;
   };
 
   const generateBashCurlCommand = (): string => {
-    const yesCmd = `curl -s -X POST https://api.manifold.markets/v0/bet \\
-    -H 'Authorization: Key ${props.apiKey}' \\
-    -H 'Content-Type: application/json' \\
-    -d '${getBetPayloadString("YES")}'`;
-    const noCmd = `curl -s -X POST https://api.manifold.markets/v0/bet \\
-    -H 'Authorization: Key ${props.apiKey}' \\
-    -H 'Content-Type: application/json' \\
-    -d '${getBetPayloadString("NO")}'`;
+    const commands = props.orders.flatMap((order, i) => {
+      const yesPayload = JSON.stringify(
+        getBetPayload(order.yesAmount, "YES", order.yesProb),
+      );
+      const noPayload = JSON.stringify(
+        getBetPayload(order.noAmount, "NO", order.noProb),
+      );
+
+      const yesCmd = `echo "Placing YES bet for pair ${
+        i + 1
+      }..." && curl -s -X POST https://api.manifold.markets/v0/bet -H 'Authorization: Key ${props.apiKey}' -H 'Content-Type: application/json' -d '${yesPayload}'`;
+      const noCmd = `echo "Placing NO bet for pair ${
+        i + 1
+      }..." && curl -s -X POST https://api.manifold.markets/v0/bet -H 'Authorization: Key ${props.apiKey}' -H 'Content-Type: application/json' -d '${noPayload}'`;
+
+      return [yesCmd, noCmd];
+    }).join(" && \\\n");
+
     const errorMessage =
-      `echo "\\n*** WARNING: One or both bets failed. Please check the error above. ***" && \\
+      `echo "\\n*** WARNING: One or more bets may have failed. ***" && \\
     echo "Your bets might be in an unbalanced state. Please verify on Manifold: ${props.marketUrl}"`;
-    return `set -e ; (${yesCmd}) && (${noCmd}) || ( ${errorMessage} )`;
+
+    return `set -e\n${commands} && echo "\\nAll bets placed successfully!" || ( ${errorMessage} )`;
   };
 
   const generatePowerShellCurlCommand = (): string => {
-    const psYesPayload = getBetPayloadString("YES").replace(/"/g, '\\"');
-    const psNoPayload = getBetPayloadString("NO").replace(/"/g, '\\"');
+    const allPayloads = props.orders.flatMap((order, i) => {
+      const yesPayload = JSON.stringify(
+        getBetPayload(order.yesAmount, "YES", order.yesProb),
+      ).replace(/"/g, '\\"');
+      const noPayload = JSON.stringify(
+        getBetPayload(order.noAmount, "NO", order.noProb),
+      ).replace(/"/g, '\\"');
+      return [
+        `Place-Bet "YES (Pair ${i + 1})" '${yesPayload}'`,
+        `Place-Bet "NO (Pair ${i + 1})" '${noPayload}'`,
+      ];
+    }).join("\n    ");
 
     return `function Place-Bet($label, $json) {
     Write-Host "Attempting $label bet..."
@@ -98,10 +108,9 @@ export default function ManualExecution(props: ManualExecutionProps) {
 }
 
 try {
-    Place-Bet "YES" '${psYesPayload}'
-    Place-Bet "NO"  '${psNoPayload}'
+    ${allPayloads}
 
-    Write-Host "\`nBoth bets placed successfully!"
+    Write-Host "\`nAll bets placed successfully!" -ForegroundColor Green
 } catch {
     Write-Host "\`n*** WARNING: A bet failed. ***" -ForegroundColor Yellow
     Write-Host $_

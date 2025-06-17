@@ -1,0 +1,59 @@
+import { TbToggleLeftFilled, TbToggleRightFilled } from "@preact-icons/tb";
+import { useEffect, useState } from "preact/hooks";
+import type { ComponentType } from "preact";
+import type { JSX } from "preact/jsx-runtime";
+
+const ToggleOnIcon = TbToggleRightFilled as ComponentType<
+  JSX.IntrinsicElements["svg"]
+>;
+const ToggleOffIcon = TbToggleLeftFilled as ComponentType<
+  JSX.IntrinsicElements["svg"]
+>;
+
+interface VolatilityToggleProps {
+  isVolatilityBet: boolean;
+  setIsVolatilityBet: (value: boolean) => void;
+  label: string;
+}
+
+export default function VolatilityToggle({
+  isVolatilityBet,
+  setIsVolatilityBet,
+  label,
+}: VolatilityToggleProps) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const handleToggle = () => {
+    setIsVolatilityBet(!isVolatilityBet);
+  };
+
+  return (
+    <div class="flex items-center">
+      <label class="block text-sm font-medium text-gray-300 mr-4">
+        {label}
+      </label>
+      <button
+        type="button"
+        onClick={handleToggle}
+        class="flex items-center focus:outline-none"
+        aria-pressed={isVolatilityBet}
+      >
+        {isClient && (
+          isVolatilityBet
+            ? <ToggleOnIcon class="w-10 h-10 text-blue-500" />
+            : <ToggleOffIcon class="w-10 h-10 text-gray-500" />
+        )}
+        {!isClient && (
+          <div class="w-10 h-10 bg-gray-700 rounded-full animate-pulse"></div>
+        )}
+        <span class="ml-2 text-sm text-gray-300">
+          {isVolatilityBet ? "Enabled" : "Disabled"}
+        </span>
+      </button>
+    </div>
+  );
+}

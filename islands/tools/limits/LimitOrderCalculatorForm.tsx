@@ -1,4 +1,5 @@
-// islands/tools/limits/LimitOrderCalculatorForm.tsx
+import VolatilityToggle from "../../buttons/VolatilityToggle.tsx";
+
 interface LimitOrderFormProps {
   marketUrlInput: string;
   setMarketUrlInput: (value: string) => void;
@@ -12,11 +13,13 @@ interface LimitOrderFormProps {
   setApiKeyInput: (value: string) => void;
   loading: boolean;
   onSubmit: (e: Event) => void;
+  isVolatilityBet: boolean;
+  setIsVolatilityBet: (value: boolean) => void;
 }
 
 export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
   return (
-    <form onSubmit={props.onSubmit} class="space-y-4 mb-8">
+    <form onSubmit={props.onSubmit} class="space-y-6 mb-8">
       <div>
         <label
           htmlFor="market-url"
@@ -101,6 +104,18 @@ export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
             />
           </div>
         </div>
+      </div>
+
+      <div>
+        <VolatilityToggle
+          label="Volatility Bet:"
+          isVolatilityBet={props.isVolatilityBet}
+          setIsVolatilityBet={props.setIsVolatilityBet}
+        />
+        <p class="text-xs text-gray-500 mt-1">
+          Distributes the budget across multiple orders within the range to
+          profit from smaller price movements.
+        </p>
       </div>
 
       <div>

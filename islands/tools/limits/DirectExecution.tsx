@@ -1,25 +1,25 @@
-// islands/tools/limits/DirectExecution.tsx
 import { useEffect, useState } from "preact/hooks";
 import { ExpirationSettings } from "./LimitOrderPlacementOptions.tsx";
+import { Order } from "./LimitOrderCalculator.tsx";
 
 interface DirectExecutionProps {
-  yesLimitOrderAmount: number;
-  noLimitOrderAmount: number;
-  lowerProbability: number;
-  upperProbability: number;
+  orders: Order[];
   apiKey: string;
   contractId: string;
   marketUrl: string;
   expirationSettings: ExpirationSettings;
 }
 
+interface ApiOrder {
+  amount: number;
+  outcome: "YES" | "NO";
+  limitProb: number;
+}
+
 interface BetPlacementBody {
   apiKey: string;
   contractId: string;
-  yesAmount: number;
-  noAmount: number;
-  yesLimitProb: number;
-  noLimitProb: number;
+  orders: ApiOrder[];
   expiresMillisAfter?: number;
   expiresAt?: number;
 }
@@ -43,16 +43,17 @@ export default function DirectExecution(props: DirectExecutionProps) {
     setPlacementMessage(null);
     setPlacementError(null);
 
+    const apiOrders: ApiOrder[] = props.orders.flatMap((order) => [
+      { amount: order.yesAmount, outcome: "YES", limitProb: order.yesProb },
+      { amount: order.noAmount, outcome: "NO", limitProb: order.noProb },
+    ]);
+
     const body: BetPlacementBody = {
       apiKey: props.apiKey,
       contractId: props.contractId,
-      yesAmount: props.yesLimitOrderAmount,
-      noAmount: props.noLimitOrderAmount,
-      yesLimitProb: props.lowerProbability / 100,
-      noLimitProb: props.upperProbability / 100,
+      orders: apiOrders,
     };
 
-    // --- THIS IS THE UPDATED LOGIC ---
     if (
       props.expirationSettings.type === "duration" &&
       props.expirationSettings.value
@@ -74,7 +75,7 @@ export default function DirectExecution(props: DirectExecutionProps) {
 
       const data = await response.json();
       if (!response.ok) {
-        setPlacementError(data.error || "Failed to place orders.");
+        setPlacementError(data.error || "Failed to place orders");
       } else {
         setPlacementMessage(data.message || "Orders placed successfully!");
       }
@@ -100,14 +101,19 @@ export default function DirectExecution(props: DirectExecutionProps) {
     }
   };
 
+  const buttonText = isConfirming
+    ? "Are you sure? Click to Confirm"
+    : `Place All ${props.orders.length * 2} Limit Orders`;
+
   return (
     <div class="mb-4">
       <h4 class="font-medium text-gray-300 mb-2">
         1. Direct Execution
       </h4>
       <p class="mb-2 text-gray-400 text-sm">
-        Place both orders securely through our server. If one fails, the other
-        will be automatically canceled.
+        Place all orders securely through our server. The backend will attempt
+        to place all orders and cancel successful ones if a subsequent order
+        fails.
       </p>
       <button
         type="button"
@@ -119,11 +125,7 @@ export default function DirectExecution(props: DirectExecutionProps) {
             : "bg-green-600 hover:bg-green-700 focus:ring-green-500"
         }`}
       >
-        {placingOrders
-          ? "Placing Orders..."
-          : isConfirming
-          ? "Are you sure? Click to Confirm"
-          : "Place Both Limit Orders"}
+        {placingOrders ? "Placing Orders..." : buttonText}
       </button>
       {placementMessage && (
         <div class="mt-2 text-sm flex items-center gap-2">

@@ -1,4 +1,3 @@
-// islands/tools/limits/LimitOrderCalculator.tsx
 import { useState } from "preact/hooks";
 import { getMarketDataBySlug, MarketData } from "../../../utils/limit_calc.ts";
 
@@ -6,10 +5,17 @@ import LimitOrderCalculatorForm from "./LimitOrderCalculatorForm.tsx";
 import LimitOrderPlacementOptions from "./LimitOrderPlacementOptions.tsx";
 import MarketInfoDisplay from "./MarketInfoDisplay.tsx";
 
+export interface Order {
+  yesAmount: number;
+  noAmount: number;
+  yesProb: number;
+  noProb: number;
+  shares: number;
+}
+
 interface CalculationResult {
-  yesLimitOrderAmount: number | null;
-  noLimitOrderAmount: number | null;
-  sharesAcquired: number | null;
+  orders: Order[];
+  totalSharesAcquired: number | null;
   error: string | null;
   contractId: string | null;
 }
@@ -20,6 +26,7 @@ export default function LimitOrderCalculator() {
   const [upperProbabilityInput, setUpperProbabilityInput] = useState(0);
   const [totalBetAmountInput, setTotalBetAmountInput] = useState(0);
   const [apiKeyInput, setApiKeyInput] = useState("");
+  const [isVolatilityBet, setIsVolatilityBet] = useState(false);
 
   const [marketData, setMarketData] = useState<MarketData | null>(null);
   const [calculationResult, setCalculationResult] = useState<
@@ -87,9 +94,8 @@ export default function LimitOrderCalculator() {
 
       if (data.outcomeType !== "BINARY") {
         setCalculationResult({
-          yesLimitOrderAmount: null,
-          noLimitOrderAmount: null,
-          sharesAcquired: null,
+          orders: [],
+          totalSharesAcquired: null,
           error: "Only BINARY markets are supported for this calculation",
           contractId: null,
         });
@@ -102,29 +108,94 @@ export default function LimitOrderCalculator() {
 
       if (pLower <= 0 || pUpper >= 1) {
         setFetchError(
-          "Probabilities cannot be 0% or 100%. Please choose a range within (0%, 100%).",
+          "Probabilities cannot be 0% or 100%. Please choose a range within (0%, 100%)",
         );
         setLoading(false);
         return;
       }
 
-      const denominator = pLower + (1 - pUpper);
-      if (denominator <= 0) {
+      const calculatedOrders: Order[] = [];
+      let totalShares = 0;
+
+      if (isVolatilityBet) {
+        const numPairs = 5;
+        const pMid = (pLower + pUpper) / 2;
+        const halfWidth = (pUpper - pLower) / 2;
+
+        if (halfWidth <= 0) {
+          setFetchError(
+            "Probability range must have a width greater than zero for volatility bet",
+          );
+          setLoading(false);
+          return;
+        }
+
+        const weights = Array.from(
+          { length: numPairs },
+          (_, i) => numPairs - i,
+        );
+        const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+
+        for (let i = 0; i < numPairs; i++) {
+          const budgetPortion = (totalBetAmountInput * weights[i]) /
+            totalWeight;
+          const stepFactor = (i + 1) / numPairs;
+          const currentHalfWidth = halfWidth * stepFactor;
+          const currentPLower = pMid - currentHalfWidth;
+          const currentPUpper = pMid + currentHalfWidth;
+          const denominator = currentPLower + (1 - currentPUpper);
+
+          if (denominator <= 0) continue;
+
+          const shares = budgetPortion / denominator;
+          const yesAmount = shares * currentPLower;
+          const noAmount = shares * (1 - currentPUpper);
+
+          if (yesAmount > 0.5 && noAmount > 0.5) {
+            calculatedOrders.push({
+              yesAmount: Math.round(yesAmount),
+              noAmount: Math.round(noAmount),
+              yesProb: currentPLower,
+              noProb: currentPUpper,
+              shares: Math.round(shares),
+            });
+            totalShares += shares;
+          }
+        }
+        // Round totalShares at the end as well
+        totalShares = Math.round(totalShares);
+        calculatedOrders.sort((a, b) => (a.yesProb < b.yesProb ? 1 : -1));
+      } else {
+        const denominator = pLower + (1 - pUpper);
+        if (denominator <= 0) {
+          setFetchError(
+            "Invalid probability range. Denominator is non-positive",
+          );
+          setLoading(false);
+          return;
+        }
+        const sharesAcquired = totalBetAmountInput / denominator;
+        calculatedOrders.push({
+          yesAmount: Math.round(sharesAcquired * pLower),
+          noAmount: Math.round(sharesAcquired * (1 - pUpper)),
+          yesProb: pLower,
+          noProb: pUpper,
+          shares: Math.round(sharesAcquired),
+        });
+        totalShares = Math.round(sharesAcquired); // Also round here
+      }
+
+      if (calculatedOrders.length === 0) {
         setFetchError(
-          "Invalid probability range for calculation. Denominator for shares calculation is non-positive.",
+          "Could not calculate any valid orders for the given range and budget",
         );
         setLoading(false);
         return;
       }
-
-      const sharesAcquired: number = totalBetAmountInput / denominator;
-      const calculatedYesAmount: number = sharesAcquired * pLower;
-      const calculatedNoAmount: number = sharesAcquired * (1 - pUpper);
 
       setCalculationResult({
-        yesLimitOrderAmount: Math.round(calculatedYesAmount),
-        noLimitOrderAmount: Math.round(calculatedNoAmount),
-        sharesAcquired: Math.round(sharesAcquired), // Round shares acquired here
+        orders: calculatedOrders,
+        totalSharesAcquired: totalShares,
         error: null,
         contractId: data.id,
       });
@@ -141,10 +212,13 @@ export default function LimitOrderCalculator() {
     }
   };
 
-  const hasValidAmounts = calculationResult &&
-    !calculationResult.error &&
-    calculationResult.yesLimitOrderAmount! > 0 &&
-    calculationResult.noLimitOrderAmount! > 0;
+  const hasValidResults = calculationResult && !calculationResult.error &&
+    calculationResult.orders && calculationResult.orders.length > 0;
+
+  // Helper to format numbers: removes .00 if it's a whole number, otherwise keeps two decimals
+  const formatMana = (amount: number): string => {
+    return Number.isInteger(amount) ? amount.toString() : amount.toFixed(2);
+  };
 
   return (
     <div class="p-4 mx-auto max-w-screen-md text-gray-100">
@@ -179,6 +253,8 @@ export default function LimitOrderCalculator() {
         setApiKeyInput={setApiKeyInput}
         loading={loading}
         onSubmit={calculateLimitOrders}
+        isVolatilityBet={isVolatilityBet}
+        setIsVolatilityBet={setIsVolatilityBet}
       />
 
       {fetchError && <p class="text-red-400 mb-4">Error: {fetchError}</p>}
@@ -191,7 +267,7 @@ export default function LimitOrderCalculator() {
 
       {marketData && <MarketInfoDisplay marketData={marketData} />}
 
-      {hasValidAmounts && (
+      {hasValidResults && (
         <div class="bg-gray-800 shadow overflow-hidden sm:rounded-lg p-6 mb-6 border border-gray-700">
           <h2 class="text-xl font-semibold mb-3 text-white">
             Calculated Limit Orders
@@ -199,39 +275,47 @@ export default function LimitOrderCalculator() {
           <p>
             With a total budget of M
             <span class="font-bold text-white">
-              {totalBetAmountInput.toFixed(2)}
-            </span>, you will acquire approximately{" "}
+              {formatMana(totalBetAmountInput)}
+            </span>, you will acquire a total of approximately{" "}
             <span class="font-bold text-white">
-              {calculationResult.sharesAcquired!} shares
+              {formatMana(calculationResult.totalSharesAcquired!)} shares
             </span>{" "}
-            of each outcome (potential payout of M
-            <span class="font-bold text-white">
-              {calculationResult.sharesAcquired!}
-            </span>):
+            across all orders.
           </p>
-          <ul class="list-disc pl-5 mt-4 text-gray-200 text-lg">
-            <li>
-              Bet <span class="font-bold text-green-400">YES</span> at{" "}
-              {lowerProbabilityInput}%:{" "}
-              <span class="font-bold text-white">
-                M{calculationResult.yesLimitOrderAmount!}
-              </span>
-            </li>
-            <li>
-              Bet <span class="font-bold text-red-400">NO</span> at{" "}
-              {upperProbabilityInput}%:{" "}
-              <span class="font-bold text-white">
-                M{calculationResult.noLimitOrderAmount!}
-              </span>
-            </li>
+          <ul class="space-y-3 mt-4 text-gray-200 text-base">
+            {calculationResult.orders!.map((order, index) => (
+              <li
+                key={index}
+                class="p-3 bg-gray-900/50 rounded-md border border-gray-700"
+              >
+                <div class="font-semibold text-gray-300 mb-1">
+                  Order Pair #{index + 1} (Acquires ~
+                  {formatMana(order.shares)} shares)
+                </div>
+                <div class="flex justify-between flex-wrap gap-2">
+                  <span>
+                    Bet <span class="font-bold text-green-400">YES</span> at
+                    {" "}
+                    {(order.yesProb * 100).toFixed(1)}%:{" "}
+                    <span class="font-bold text-white">
+                      M{formatMana(order.yesAmount)}
+                    </span>
+                  </span>
+                  <span>
+                    Bet <span class="font-bold text-red-400">NO</span> at{" "}
+                    {(order.noProb * 100).toFixed(1)}%:{" "}
+                    <span class="font-bold text-white">
+                      M{formatMana(order.noAmount)}
+                    </span>
+                  </span>
+                </div>
+              </li>
+            ))}
           </ul>
 
           {apiKeyInput && calculationResult.contractId && marketData?.url && (
             <LimitOrderPlacementOptions
-              yesLimitOrderAmount={calculationResult.yesLimitOrderAmount!}
-              noLimitOrderAmount={calculationResult.noLimitOrderAmount!}
-              lowerProbability={lowerProbabilityInput}
-              upperProbability={upperProbabilityInput}
+              orders={calculationResult.orders!}
               apiKey={apiKeyInput}
               contractId={calculationResult.contractId}
               marketUrl={marketData.url}

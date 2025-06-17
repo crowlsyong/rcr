@@ -29,6 +29,7 @@ import * as $buttons_Button from "./islands/buttons/Button.tsx";
 import * as $buttons_ChartButton from "./islands/buttons/ChartButton.tsx";
 import * as $buttons_ShareButton from "./islands/buttons/ShareButton.tsx";
 import * as $buttons_ShareURL from "./islands/buttons/ShareURL.tsx";
+import * as $buttons_VolatilityToggle from "./islands/buttons/VolatilityToggle.tsx";
 import * as $tools_GameShowCreditScore from "./islands/tools/GameShowCreditScore.tsx";
 import * as $tools_InsuranceCalc from "./islands/tools/InsuranceCalc.tsx";
 import * as $tools_chart_Chart from "./islands/tools/chart/Chart.tsx";
@@ -78,6 +79,7 @@ const manifest = {
     "./islands/buttons/ChartButton.tsx": $buttons_ChartButton,
     "./islands/buttons/ShareButton.tsx": $buttons_ShareButton,
     "./islands/buttons/ShareURL.tsx": $buttons_ShareURL,
+    "./islands/buttons/VolatilityToggle.tsx": $buttons_VolatilityToggle,
     "./islands/tools/GameShowCreditScore.tsx": $tools_GameShowCreditScore,
     "./islands/tools/InsuranceCalc.tsx": $tools_InsuranceCalc,
     "./islands/tools/chart/Chart.tsx": $tools_chart_Chart,

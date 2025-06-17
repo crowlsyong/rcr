@@ -1,19 +1,15 @@
-// islands/tools/limits/LimitOrderPlacementOptions.tsx
 import { useEffect, useState } from "preact/hooks";
 import DirectExecution from "./DirectExecution.tsx";
 import ManualExecution from "./ManualExecution.tsx";
+import { Order } from "./LimitOrderCalculator.tsx";
 
-// Define and export the shared interface here
 export interface ExpirationSettings {
   type: "never" | "duration" | "date";
-  value: number | null; // value will be milliseconds for both duration and date
+  value: number | null;
 }
 
 interface PlacementOptionsProps {
-  yesLimitOrderAmount: number;
-  noLimitOrderAmount: number;
-  lowerProbability: number;
-  upperProbability: number;
+  orders: Order[];
   apiKey: string;
   contractId: string;
   marketUrl: string;
@@ -37,24 +33,20 @@ export default function LimitOrderPlacementOptions(
   const [durationUnit, setDurationUnit] = useState("hours");
   const [dateValue, setDateValue] = useState("");
 
-  // --- THIS IS THE NEW EFFECT HOOK FOR THE FIX ---
-  // When the user selects "date" mode, pre-populate the input if it's empty.
   useEffect(() => {
     if (expirationMode === "date" && !dateValue) {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(12, 0, 0, 0); // Set to noon
+      tomorrow.setHours(12, 0, 0, 0);
 
-      // Format to YYYY-MM-DDTHH:mm which is required by datetime-local
       const year = tomorrow.getFullYear();
       const month = String(tomorrow.getMonth() + 1).padStart(2, "0");
       const day = String(tomorrow.getDate()).padStart(2, "0");
       const defaultValue = `${year}-${month}-${day}T12:00`;
       setDateValue(defaultValue);
     }
-  }, [expirationMode]); // This runs whenever the radio button selection changes.
+  }, [expirationMode]);
 
-  // Effect to update the main expirationSettings state when UI changes
   useEffect(() => {
     if (expirationMode === "never") {
       setExpirationSettings({ type: "never", value: null });
