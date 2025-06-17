@@ -204,16 +204,35 @@ export default function MenuBar() {
               </div>
             </div>
           </div>
+
+          <div class="pt-2">
+            <a
+              href="https://manifold.markets/crowlsyong?tab=payments"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="relative flex items-center justify-center gap-2 border border-green-700/40 bg-green-600/10 text-white py-2 px-3 rounded-md hover:bg-green-600/30 transition-colors duration-200 text-sm"
+              tabIndex={isMenuOpen.value ? 0 : -1}
+            >
+              <span>❤️ Donate Mana</span>
+              {typeof window !== "undefined" && (
+                <ExternalLinkIcon class="absolute right-3 w-4 h-4 opacity-70" />
+              )}
+            </a>
+          </div>
         </div>
         <div class="pt-10 text-xs w-full text-center text-[10px] text-gray-500 mt-auto">
-          this is a 3rd party app | built by{" "}
-          <a
-            href="https://manifold.markets/crowlsyong"
-            class="underline hover:text-blue-500"
-            tabIndex={isMenuOpen.value ? 0 : -1}
-          >
-            crowlsyong
-          </a>
+          <p>this is a 3rd party app | v2.1.5</p>
+          <hr class="my-2 border-gray-800" />
+          <p>
+            built by{" "}
+            <a
+              href="https://manifold.markets/crowlsyong"
+              class="underline hover:text-blue-500"
+              tabIndex={isMenuOpen.value ? 0 : -1}
+            >
+              crowlsyong
+            </a>
+          </p>
         </div>
       </div>
     </div>
