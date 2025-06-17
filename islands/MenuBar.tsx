@@ -221,10 +221,10 @@ export default function MenuBar() {
           </div>
         </div>
         <div class="pt-10 text-xs w-full text-center text-[10px] text-gray-500 mt-auto">
-          <p>this is a 3rd party app | v2.1.5</p>
-          <hr class="my-2 border-gray-800" />
-          <p>
-            built by{" "}
+          <p>v2.1.5 | this is a 3rd party app</p>
+          <hr class="my-2 border-gray-600" />
+          <div class="flex items-center justify-center gap-1.5">
+            <span>built by</span>
             <a
               href="https://manifold.markets/crowlsyong"
               class="underline hover:text-blue-500"
@@ -232,7 +232,21 @@ export default function MenuBar() {
             >
               crowlsyong
             </a>
-          </p>
+            {" | "}
+            <a
+              href="https://github.com/crowlsyong/rcr/tree/main"
+              target="_blank"
+              rel="noopener noreferrer"
+              tabIndex={isMenuOpen.value ? 0 : -1}
+              aria-label="View source on GitHub"
+            >
+              <img
+                src="/github-mark-white.svg"
+                alt="GitHub logo"
+                class="h-3 w-3 opacity-70 hover:opacity-100 transition-opacity"
+              />
+            </a>
+          </div>
         </div>
       </div>
     </div>
