@@ -1,3 +1,5 @@
+// islands/tools/arbitrage/MarketInput.tsx
+
 import { MarketData } from "../../../utils/api/manifold_types.ts";
 
 interface MarketInputProps {

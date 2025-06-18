@@ -1,3 +1,5 @@
+// islands/tools/arbitrage/ArbitrageResults.tsx
+
 import { ArbitrageCalculation } from "../../../utils/arbitrage_calculator.ts";
 
 interface ArbitrageResultsProps {

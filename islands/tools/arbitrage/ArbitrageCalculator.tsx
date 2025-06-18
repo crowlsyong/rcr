@@ -1,3 +1,5 @@
+// islands/tools/arbitrage/ArbitrageCalculator.tsx
+
 import { useEffect, useState } from "preact/hooks";
 import { getMarketDataBySlug } from "../../../utils/api/manifold_api_service.ts";
 import { MarketData } from "../../../utils/api/manifold_types.ts";

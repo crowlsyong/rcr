@@ -1,3 +1,5 @@
+// islands/tools/arbitrage/BudgetSlider.tsx
+
 interface BudgetSliderProps {
   budgetPercentage: number;
   setBudgetPercentage: (value: number) => void;

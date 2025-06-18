@@ -1,3 +1,5 @@
+// islands/tools/arbitrage/CalculationModeToggle.tsx
+
 type Mode = "classic" | "equilibrium" | "average" | "horseRace";
 
 interface CalculationModeToggleProps {

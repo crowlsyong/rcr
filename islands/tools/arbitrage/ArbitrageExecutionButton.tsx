@@ -1,3 +1,5 @@
+// islands/tools/arbitrage/ArbitrageExecutionButton.tsx
+
 import { useEffect, useState } from "preact/hooks";
 import { ArbitrageCalculation } from "../../../utils/arbitrage_calculator.ts";
 
