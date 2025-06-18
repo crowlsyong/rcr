@@ -1,3 +1,5 @@
+// islands/tools/limits/AnswerSelector.tsx
+
 import { Answer } from "../../../utils/api/manifold_types.ts";
 
 interface AnswerSelectorProps {

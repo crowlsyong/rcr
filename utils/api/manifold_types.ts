@@ -1,3 +1,5 @@
+// utils/api/manifold_types.ts
+
 export interface ManaPaymentTransaction {
   id: string;
   amount: number;
