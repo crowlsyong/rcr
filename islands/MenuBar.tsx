@@ -29,7 +29,7 @@ const mainLinks = [
     targetBlank: false,
   },
   {
-    label: "🧮 Limit Orders",
+    label: "🧮 Limits",
     url: "/limits",
     targetBlank: false,
   },
