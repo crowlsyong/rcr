@@ -100,7 +100,7 @@ export default function ProbabilityInput(props: ProbabilityInputProps) {
   if (typeof marketProb !== "number") {
     const message = marketData?.outcomeType === "MULTIPLE_CHOICE"
       ? "Please select a multiple choice option to use the slider, or switch to Custom Range."
-      : "Market must be of type BINARY to use the relative slider. Please use Custom Range.";
+      : "Enter a URL to view slider.";
     return <p class="text-sm text-gray-400 mt-4">{message}</p>;
   }
 
