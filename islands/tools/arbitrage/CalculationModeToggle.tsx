@@ -1,35 +1,46 @@
-// islands/tools/arbitrage/CalculationModeToggle.tsx
-
-type Mode = "classic" | "equilibrium" | "average" | "horseRace";
+import { CalcMode } from "../../../utils/arbitrage_calculator.ts";
 
 interface CalculationModeToggleProps {
-  mode: Mode;
-  setMode: (mode: Mode) => void;
+  mode: CalcMode;
+  setMode: (mode: CalcMode) => void;
 }
 
 export default function CalculationModeToggle(
   { mode, setMode }: CalculationModeToggleProps,
 ) {
-  const modes: { id: Mode; label: string; description: string }[] = [
-    {
-      id: "equilibrium",
-      label: "Equilibrium",
-      description: "Maximizes profit",
-    },
+  const modes: {
+    id: CalcMode;
+    label: string;
+    description: string;
+    tooltip: string;
+  }[] = [
     {
       id: "average",
       label: "Average",
-      description: "Profitable version of Classic",
+      description: "Show cost to average", // Changed description for clarity
+      tooltip:
+        "For correlated markets (bet YES on A, NO on B). Bets to meet at the simple average of the two probabilities. Shows result even if not profitable.", // Updated tooltip
+    },
+    {
+      id: "balanced",
+      label: "Balanced",
+      description: "Optimal meet-in-the-middle",
+      tooltip:
+        "For correlated markets (bet YES on A, NO on B). Finds the optimal meeting point that maximizes profit from a fully hedged position. This is the recommended mode.",
+    },
+    {
+      id: "oneSided",
+      label: "One-Sided",
+      description: "Maximizes profit (one-sided)",
+      tooltip:
+        "For correlated markets (bet YES on A, NO on B). Finds the maximum number of shares you can extract, which often involves only betting on the cheaper market.",
     },
     {
       id: "horseRace",
       label: "Horse Race",
-      description: "For mutually exclusive markets (bet NO on both)",
-    },
-    {
-      id: "classic",
-      label: "Classic",
-      description: "Cost to meet at the average, ignores profit",
+      description: "For over-round books",
+      tooltip:
+        "For mutually exclusive markets where the combined YES probability is > 100%. Calculates the profit from betting NO on both markets.",
     },
   ];
 
@@ -42,6 +53,7 @@ export default function CalculationModeToggle(
   return (
     <div class="mt-6">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {/* Adjusted grid-cols to 4 */}
         {modes.map((m) => (
           <div key={m.id} class="text-center">
             <button
@@ -50,6 +62,7 @@ export default function CalculationModeToggle(
               class={`${baseButtonClass} ${
                 mode === m.id ? activeButtonClass : inactiveButtonClass
               }`}
+              title={m.tooltip}
             >
               {m.label}
             </button>

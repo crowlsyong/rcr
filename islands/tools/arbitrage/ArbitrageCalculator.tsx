@@ -1,10 +1,9 @@
-// islands/tools/arbitrage/ArbitrageCalculator.tsx
-
 import { useEffect, useState } from "preact/hooks";
 import { getMarketDataBySlug } from "../../../utils/api/manifold_api_service.ts";
 import { MarketData } from "../../../utils/api/manifold_types.ts";
 import {
   ArbitrageCalculation,
+  CalcMode,
   calculateArbitrage,
 } from "../../../utils/arbitrage_calculator.ts";
 import ArbitrageExecutionButton from "./ArbitrageExecutionButton.tsx";
@@ -13,16 +12,12 @@ import BudgetSlider from "./BudgetSlider.tsx";
 import CalculationModeToggle from "./CalculationModeToggle.tsx";
 import MarketInput from "./MarketInput.tsx";
 
-type CalcMode = "equilibrium" | "average" | "horseRace" | "classic";
-
 export default function ArbitrageCalculator() {
   const [marketAUrl, setMarketAUrl] = useState("");
   const [marketBUrl, setMarketBUrl] = useState("");
   const [apiKey, setApiKey] = useState("");
-  const [budgetPercentage, setBudgetPercentage] = useState(100);
-  const [calculationMode, setCalculationMode] = useState<CalcMode>(
-    "equilibrium",
-  );
+  const [budgetPercentage, setBudgetPercentage] = useState(25);
+  const [calculationMode, setCalculationMode] = useState<CalcMode>("average");
 
   const [marketA, setMarketA] = useState<MarketData | null>(null);
   const [marketB, setMarketB] = useState<MarketData | null>(null);
@@ -41,13 +36,17 @@ export default function ArbitrageCalculator() {
         const slug = marketAUrl.split("/").pop();
         if (slug) {
           setLoadingA(true);
-          getMarketDataBySlug(slug).then(({ data }) => {
+          getMarketDataBySlug(slug).then(({ data, error }) => {
+            if (error) {
+              setError(`Error fetching Market A: ${error}`);
+            }
             setMarketA(data);
             setLoadingA(false);
           });
         }
       } else {
         setMarketA(null);
+        setError(null);
       }
     }, 500);
     return () => clearTimeout(debounceTimeout);
@@ -59,13 +58,17 @@ export default function ArbitrageCalculator() {
         const slug = marketBUrl.split("/").pop();
         if (slug) {
           setLoadingB(true);
-          getMarketDataBySlug(slug).then(({ data }) => {
+          getMarketDataBySlug(slug).then(({ data, error }) => {
+            if (error) {
+              setError(`Error fetching Market B: ${error}`);
+            }
             setMarketB(data);
             setLoadingB(false);
           });
         }
       } else {
         setMarketB(null);
+        setError(null);
       }
     }, 500);
     return () => clearTimeout(debounceTimeout);
@@ -82,12 +85,14 @@ export default function ArbitrageCalculator() {
       setError(error);
     } else {
       setCalculation(null);
-      setError(null);
+      if (!marketAUrl && !marketBUrl) {
+        setError(null);
+      }
     }
   }, [marketA, marketB, calculationMode]);
 
   useEffect(() => {
-    setBudgetPercentage(100);
+    setBudgetPercentage(25);
   }, [calculation]);
 
   const totalBetAmount = calculation
@@ -95,10 +100,38 @@ export default function ArbitrageCalculator() {
       (budgetPercentage / 100)
     : 0;
 
-  const marketALabel = calculationMode === "horseRace"
-    ? "Market A (Bet NO)"
-    : "Market A (Buy YES)";
-  const marketBLabel = "Market B (Buy NO)";
+  const marketALabel = calculation?.betOutcomeA
+    ? `Market A (Bet ${calculation.betOutcomeA})`
+    : "Market A";
+  const marketBLabel = calculation?.betOutcomeB
+    ? `Market B (Bet ${calculation.betOutcomeB})`
+    : "Market B";
+
+  let placeholderA = "URL for first market";
+  let placeholderB = "URL for second market";
+
+  switch (calculationMode) {
+    case "balanced":
+      placeholderA = "URL for Market A (lower probability)";
+      placeholderB = "URL for Market B (higher probability)";
+      break;
+    case "oneSided":
+      placeholderA = "URL for Market A (lower probability)";
+      placeholderB = "URL for Market B (higher probability)";
+      break;
+    case "average":
+      placeholderA = "URL for Market A (lower probability)";
+      placeholderB = "URL for Market B (higher probability)";
+      break;
+    case "horseRace":
+      placeholderA = "URL for Market A";
+      placeholderB = "URL for Market B";
+      break;
+    default:
+      placeholderA = "URL for Market A";
+      placeholderB = "URL for Market B";
+      break;
+  }
 
   return (
     <div class="p-4 mx-auto max-w-screen-md text-gray-100">
@@ -113,7 +146,7 @@ export default function ArbitrageCalculator() {
           setMarketUrl={setMarketAUrl}
           marketData={marketA}
           sideLabel={marketALabel}
-          placeholder="URL for first market"
+          placeholder={placeholderA}
           isLoading={loadingA}
         />
         <MarketInput
@@ -121,7 +154,7 @@ export default function ArbitrageCalculator() {
           setMarketUrl={setMarketBUrl}
           marketData={marketB}
           sideLabel={marketBLabel}
-          placeholder="URL for second market"
+          placeholder={placeholderB}
           isLoading={loadingB}
         />
       </div>
@@ -178,7 +211,6 @@ export default function ArbitrageCalculator() {
               calculation={calculation}
               apiKey={apiKey}
               budgetPercentage={budgetPercentage}
-              mode={calculationMode}
             />
           </div>
         </>
