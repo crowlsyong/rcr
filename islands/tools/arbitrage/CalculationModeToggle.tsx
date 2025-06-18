@@ -31,7 +31,7 @@ export default function CalculationModeToggle(
     {
       id: "oneSided",
       label: "One-Sided",
-      description: "Maximizes profit (one-sided)",
+      description: "One sided",
       tooltip:
         "For correlated markets (bet YES on A, NO on B). Finds the maximum number of shares you can extract, which often involves only betting on the cheaper market.",
     },
