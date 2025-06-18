@@ -21,21 +21,24 @@ async function loadEnv() {
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
       // .env file not found, which is fine if env vars are set externally
-      console.log("No .env file found, relying on existing environment variables.");
+      console.log(
+        "No .env file found, relying on existing environment variables.",
+      );
     } else {
       console.warn(
         `Warning: Could not load .env file: ${
           typeof error === "object" && error !== null && "message" in error
             ? (error as { message: string }).message
             : String(error)
-        }`
+        }`,
       );
     }
   }
 }
 
 // You will need to hardcode your remote database URL here for this script.
-const REMOTE_KV_URL = "https://api.deno.com/databases/a452056e-540a-4299-8f8b-19bec18e3e3f/connect";
+const REMOTE_KV_URL =
+  "https://api.deno.com/databases/a452056e-540a-4299-8f8b-19bec18e3e3f/connect";
 
 async function backupDatabase() {
   let db: Deno.Kv;
@@ -55,18 +58,25 @@ async function backupDatabase() {
     // Open the remote KV database directly for this script
     // Deno.openKv() will implicitly use DENO_KV_ACCESS_TOKEN from Deno.env
     db = await Deno.openKv(REMOTE_KV_URL);
-    console.log("✅ Script connected directly to REMOTE Deno KV database for backup.");
+    console.log(
+      "✅ Script connected directly to REMOTE Deno KV database for backup.",
+    );
   } catch (error) {
-    console.error(`Critical Error: Failed to open Deno KV for backup: ${
-      typeof error === "object" && error !== null && "message" in error
-        ? (error as { message: string }).message
-        : String(error)
-    }`, error);
-    throw new Error(`Failed to initialize Deno KV for backup: ${
-      typeof error === "object" && error !== null && "message" in error
-        ? (error as { message: string }).message
-        : String(error)
-    }`);
+    console.error(
+      `Critical Error: Failed to open Deno KV for backup: ${
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : String(error)
+      }`,
+      error,
+    );
+    throw new Error(
+      `Failed to initialize Deno KV for backup: ${
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : String(error)
+      }`,
+    );
   }
 
   const backupData = [];
@@ -84,7 +94,9 @@ async function backupDatabase() {
   const filename = `deno-kv-backup-${timestamp}.json`;
 
   await Deno.writeTextFile(filename, JSON.stringify(backupData, null, 2));
-  console.log(`✅ Backup complete! ${backupData.length} entries saved to ${filename}`);
+  console.log(
+    `✅ Backup complete! ${backupData.length} entries saved to ${filename}`,
+  );
 
   db.close();
 }

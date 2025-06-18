@@ -17,21 +17,24 @@ async function loadEnv() {
     console.log("✅ .env file loaded successfully by script.");
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
-      console.log("No .env file found, relying on existing environment variables.");
+      console.log(
+        "No .env file found, relying on existing environment variables.",
+      );
     } else {
       console.warn(
         `Warning: Could not load .env file: ${
           typeof error === "object" && error !== null && "message" in error
             ? (error as { message: string }).message
             : String(error)
-        }`
+        }`,
       );
     }
   }
 }
 
 // IMPORTANT: Hardcode your remote database URL here for this script.
-const REMOTE_KV_URL = "https://api.deno.com/databases/a452056e-540a-4299-8f8b-19bec18e3e3f/connect";
+const REMOTE_KV_URL =
+  "https://api.deno.com/databases/a452056e-540a-4299-8f8b-19bec18e3e3f/connect";
 
 interface UserProfile {
   id: string;
@@ -48,13 +51,17 @@ async function migrateUserProfiles() {
 
   try {
     db = await Deno.openKv(REMOTE_KV_URL);
-    console.log("✅ Script connected directly to REMOTE Deno KV database for migration.");
+    console.log(
+      "✅ Script connected directly to REMOTE Deno KV database for migration.",
+    );
   } catch (error) {
-    console.error(`Critical Error: Failed to open Deno KV for migration: ${
-      typeof error === "object" && error !== null && "message" in error
-        ? (error as { message: string }).message
-        : String(error)
-    }`);
+    console.error(
+      `Critical Error: Failed to open Deno KV for migration: ${
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : String(error)
+      }`,
+    );
     throw new Error("Failed to initialize Deno KV for migration.");
   }
 
@@ -90,7 +97,10 @@ async function migrateUserProfiles() {
   const BATCH_SIZE = 450;
 
   for (const [userId, username] of uniqueUsers.entries()) {
-    atomicOp = atomicOp.set(["users", userId], { id: userId, username: username });
+    atomicOp = atomicOp.set(["users", userId], {
+      id: userId,
+      username: username,
+    });
     count++;
 
     if (count % BATCH_SIZE === 0) {

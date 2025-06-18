@@ -25,10 +25,14 @@ async function getAllUsers(): Promise<User[]> {
 }
 
 async function processUserScore(user: User): Promise<void> {
-  console.debug(`[${CRON_NAME}] Attempting to process user: ${user.username} (ID: ${user.id})`);
+  console.debug(
+    `[${CRON_NAME}] Attempting to process user: ${user.username} (ID: ${user.id})`,
+  );
   try {
     const mockRequest = new Request(
-      `http://localhost/api/score?username=${encodeURIComponent(user.username)}`,
+      `http://localhost/api/score?username=${
+        encodeURIComponent(user.username)
+      }`,
       { method: "GET" },
     );
 
@@ -41,7 +45,8 @@ async function processUserScore(user: User): Promise<void> {
         `[${CRON_NAME}] User '${user.username}' (ID: ${user.id}): Score processed. Historical data saved: ${historicalDataSaved}`,
       );
     } else {
-      const errorDetail = responseBody.error || response.statusText || "Unknown error";
+      const errorDetail = responseBody.error || response.statusText ||
+        "Unknown error";
       console.warn(
         `[${CRON_NAME}] User '${user.username}' (ID: ${user.id}): Failed to update score. Status: ${response.status}. Details: ${errorDetail}`,
       );
@@ -58,13 +63,17 @@ async function processUserScore(user: User): Promise<void> {
 }
 
 Deno.cron(CRON_NAME, DAILY_SCHEDULE, async () => {
-  console.info(`[${CRON_NAME}] Cron job triggered with schedule "${DAILY_SCHEDULE}"`);
+  console.info(
+    `[${CRON_NAME}] Cron job triggered with schedule "${DAILY_SCHEDULE}"`,
+  );
   try {
     const allUsers = await getAllUsers();
     const totalUserCount = allUsers.length;
 
     if (totalUserCount === 0) {
-      console.info(`[${CRON_NAME}] No users found in 'users' collection, skipping run`);
+      console.info(
+        `[${CRON_NAME}] No users found in 'users' collection, skipping run`,
+      );
       await db.set(CRON_PROGRESS_KEY, 0);
       return;
     }
@@ -95,7 +104,9 @@ Deno.cron(CRON_NAME, DAILY_SCHEDULE, async () => {
         await processUserScore(user);
         processedCount++;
         if (i < usersToProcessCount - 1) {
-          await new Promise((resolve) => setTimeout(resolve, DELAY_BETWEEN_USERS_MS));
+          await new Promise((resolve) =>
+            setTimeout(resolve, DELAY_BETWEEN_USERS_MS)
+          );
         }
       }
     }

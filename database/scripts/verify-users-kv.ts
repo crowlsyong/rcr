@@ -17,21 +17,24 @@ async function loadEnv() {
     console.log("✅ .env file loaded successfully by script.");
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
-      console.log("No .env file found, relying on existing environment variables.");
+      console.log(
+        "No .env file found, relying on existing environment variables.",
+      );
     } else {
       console.warn(
         `Warning: Could not load .env file: ${
           typeof error === "object" && error !== null && "message" in error
             ? (error as { message: string }).message
             : String(error)
-        }`
+        }`,
       );
     }
   }
 }
 
 // IMPORTANT: Hardcode your remote database URL here for this script.
-const REMOTE_KV_URL = "https://api.deno.com/databases/a452056e-540a-4299-8f8b-19bec18e3e3f/connect";
+const REMOTE_KV_URL =
+  "https://api.deno.com/databases/a452056e-540a-4299-8f8b-19bec18e3e3f/connect";
 
 async function verifyUserKvEntries(count: number): Promise<void> {
   let db: Deno.Kv;
@@ -43,17 +46,23 @@ async function verifyUserKvEntries(count: number): Promise<void> {
 
   try {
     db = await Deno.openKv(REMOTE_KV_URL);
-    console.log("✅ Script connected directly to REMOTE Deno KV database for verification.");
+    console.log(
+      "✅ Script connected directly to REMOTE Deno KV database for verification.",
+    );
   } catch (error) {
-    console.error(`Critical Error: Failed to open Deno KV for verification: ${
-      typeof error === "object" && error !== null && "message" in error
-        ? (error as { message: string }).message
-        : String(error)
-    }`);
+    console.error(
+      `Critical Error: Failed to open Deno KV for verification: ${
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : String(error)
+      }`,
+    );
     throw new Error("Failed to initialize Deno KV for verification.");
   }
 
-  console.log(`Attempting to list the first ${count} 'users' entries from Deno KV...`);
+  console.log(
+    `Attempting to list the first ${count} 'users' entries from Deno KV...`,
+  );
   let entriesListed = 0;
 
   try {
@@ -74,7 +83,9 @@ async function verifyUserKvEntries(count: number): Promise<void> {
     }
 
     if (entriesListed === 0) {
-      console.log("No 'users' entries found in the database. Migration might not have run or completed.");
+      console.log(
+        "No 'users' entries found in the database. Migration might not have run or completed.",
+      );
     } else {
       console.log(`Successfully listed ${entriesListed} 'users' entries.`);
     }
