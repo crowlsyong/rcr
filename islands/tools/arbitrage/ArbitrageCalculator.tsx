@@ -202,7 +202,7 @@ export default function ArbitrageCalculator() {
                 name="apiKey"
                 value={apiKey}
                 onInput={(e) => setApiKey(e.currentTarget.value)}
-                placeholder="Paste API key to enable betting"
+                placeholder="Paste API key to enable betting (we do not store it)"
                 class="block w-full border border-gray-600 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm bg-gray-800 text-gray-100"
               />
             </div>
