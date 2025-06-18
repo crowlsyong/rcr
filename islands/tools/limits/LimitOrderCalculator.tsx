@@ -208,6 +208,7 @@ export default function LimitOrderCalculator() {
         granularityInput={granularityInput}
         setGranularityInput={setGranularityInput}
         marketData={marketData}
+        selectedAnswerId={selectedAnswerId}
       />
 
       {fetchError && <p class="text-red-400 mb-4">Error: {fetchError}</p>}

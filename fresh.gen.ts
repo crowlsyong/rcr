@@ -57,6 +57,8 @@ import * as $tools_limits_LimitOrderPlacementOptions from "./islands/tools/limit
 import * as $tools_limits_LimitOrderValidation from "./islands/tools/limits/LimitOrderValidation.ts";
 import * as $tools_limits_ManualExecution from "./islands/tools/limits/ManualExecution.tsx";
 import * as $tools_limits_MarketInfoDisplay from "./islands/tools/limits/MarketInfoDisplay.tsx";
+import * as $tools_limits_ProbabilityInput from "./islands/tools/limits/ProbabilityInput.tsx";
+import * as $tools_limits_ProbabilityModeToggle from "./islands/tools/limits/ProbabilityModeToggle.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -135,6 +137,10 @@ const manifest = {
     "./islands/tools/limits/ManualExecution.tsx": $tools_limits_ManualExecution,
     "./islands/tools/limits/MarketInfoDisplay.tsx":
       $tools_limits_MarketInfoDisplay,
+    "./islands/tools/limits/ProbabilityInput.tsx":
+      $tools_limits_ProbabilityInput,
+    "./islands/tools/limits/ProbabilityModeToggle.tsx":
+      $tools_limits_ProbabilityModeToggle,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

@@ -2,6 +2,7 @@
 import { MarketData } from "../../../utils/api/manifold_types.ts";
 import VolatilityToggle from "../../buttons/VolatilityToggle.tsx";
 import MarketInfoDisplay from "./MarketInfoDisplay.tsx";
+import ProbabilityModeToggle from "./ProbabilityModeToggle.tsx";
 
 interface LimitOrderFormProps {
   marketUrlInput: string;
@@ -21,6 +22,7 @@ interface LimitOrderFormProps {
   granularityInput: number;
   setGranularityInput: (value: number) => void;
   marketData: MarketData | null;
+  selectedAnswerId: string | null;
 }
 
 export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
@@ -76,51 +78,14 @@ export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
         />
       </div>
 
-      <div>
-        <p class="block text-sm font-medium text-gray-300 mb-2">
-          Desired Probability Range:
-        </p>
-        <div class="flex space-x-4">
-          <div class="flex-1">
-            <label htmlFor="lower-probability" class="sr-only">
-              Lower Probability (0-100%) for YES bet:
-            </label>
-            <input
-              type="number"
-              id="lower-probability"
-              name="lowerProbability"
-              value={props.lowerProbabilityInput}
-              onInput={(e) =>
-                props.setLowerProbabilityInput(Number(e.currentTarget.value))}
-              min="0"
-              max="100"
-              step="0.01"
-              placeholder="Lower (%) for YES"
-              class="block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
-              required
-            />
-          </div>
-          <div class="flex-1">
-            <label htmlFor="upper-probability" class="sr-only">
-              Upper Probability (0-100%) for NO bet:
-            </label>
-            <input
-              type="number"
-              id="upper-probability"
-              name="upperProbability"
-              value={props.upperProbabilityInput}
-              onInput={(e) =>
-                props.setUpperProbabilityInput(Number(e.currentTarget.value))}
-              min="0"
-              max="100"
-              step="0.01"
-              placeholder="Upper (%) for NO"
-              class="block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
-              required
-            />
-          </div>
-        </div>
-      </div>
+      <ProbabilityModeToggle
+        marketData={props.marketData}
+        selectedAnswerId={props.selectedAnswerId}
+        lowerProbability={props.lowerProbabilityInput}
+        setLowerProbability={props.setLowerProbabilityInput}
+        upperProbability={props.upperProbabilityInput}
+        setUpperProbability={props.setUpperProbabilityInput}
+      />
 
       <div>
         <label
