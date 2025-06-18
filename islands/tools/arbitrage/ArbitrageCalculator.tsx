@@ -181,9 +181,14 @@ export default function ArbitrageCalculator() {
 
           <div class="mt-6 border-t border-gray-700 pt-4">
             <div class="flex justify-between items-center">
-              <h3 class="text-base font-semibold text-white">
-                Execute Arbitrage
-              </h3>
+              <div>
+                <h3 class="text-base font-semibold text-white">
+                  Execute Arbitrage
+                </h3>
+                <p class="text-xs text-gray-500 mt-1">
+                  Allows you to place a bet. We do not store this key
+                </p>
+              </div>
               <p class="text-sm text-gray-400">
                 Total Cost:{" "}
                 <span class="font-bold text-white">
@@ -202,8 +207,8 @@ export default function ArbitrageCalculator() {
                 name="apiKey"
                 value={apiKey}
                 onInput={(e) => setApiKey(e.currentTarget.value)}
-                placeholder="Paste API key to enable betting (we do not store it)"
-                class="block w-full border border-gray-600 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm bg-gray-800 text-gray-100"
+                placeholder="xxxxx-xxxx-xxxx-xxxxxxxxxxxxxxx"
+                class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
               />
             </div>
 
