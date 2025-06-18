@@ -26,7 +26,7 @@ export default function MarketInfoDisplay(props: MarketInfoDisplayProps) {
             <span>
               Prob:{" "}
               <span class="font-semibold text-white">
-                {(props.marketData.probability * 100).toFixed(2)}%
+                {Math.round(props.marketData.probability * 100)}%
               </span>
             </span>
             <span class="mx-2">|</span>
