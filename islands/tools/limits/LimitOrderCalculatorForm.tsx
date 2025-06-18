@@ -1,6 +1,6 @@
 // islands/tools/limits/LimitOrderCalculatorForm.tsx
 import { MarketData } from "../../../utils/api/manifold_types.ts";
-import VolatilityToggle from "../../buttons/VolatilityToggle.tsx";
+import VolatilityToggle from "./VolatilityToggle.tsx";
 import MarketInfoDisplay from "./MarketInfoDisplay.tsx";
 import ProbabilityModeToggle from "./ProbabilityModeToggle.tsx";
 

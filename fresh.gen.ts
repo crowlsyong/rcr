@@ -32,7 +32,6 @@ import * as $buttons_ChartButton from "./islands/buttons/ChartButton.tsx";
 import * as $buttons_ShareButton from "./islands/buttons/ShareButton.tsx";
 import * as $buttons_ShareURL from "./islands/buttons/ShareURL.tsx";
 import * as $buttons_VolatilityGranularitySelector from "./islands/buttons/VolatilityGranularitySelector.tsx";
-import * as $buttons_VolatilityToggle from "./islands/buttons/VolatilityToggle.tsx";
 import * as $tools_GameShowCreditScore from "./islands/tools/GameShowCreditScore.tsx";
 import * as $tools_InsuranceCalc from "./islands/tools/InsuranceCalc.tsx";
 import * as $tools_arbitrage_ArbitrageCalculator from "./islands/tools/arbitrage/ArbitrageCalculator.tsx";
@@ -59,6 +58,7 @@ import * as $tools_limits_ManualExecution from "./islands/tools/limits/ManualExe
 import * as $tools_limits_MarketInfoDisplay from "./islands/tools/limits/MarketInfoDisplay.tsx";
 import * as $tools_limits_ProbabilityInput from "./islands/tools/limits/ProbabilityInput.tsx";
 import * as $tools_limits_ProbabilityModeToggle from "./islands/tools/limits/ProbabilityModeToggle.tsx";
+import * as $tools_limits_VolatilityToggle from "./islands/tools/limits/VolatilityToggle.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -97,7 +97,6 @@ const manifest = {
     "./islands/buttons/ShareURL.tsx": $buttons_ShareURL,
     "./islands/buttons/VolatilityGranularitySelector.tsx":
       $buttons_VolatilityGranularitySelector,
-    "./islands/buttons/VolatilityToggle.tsx": $buttons_VolatilityToggle,
     "./islands/tools/GameShowCreditScore.tsx": $tools_GameShowCreditScore,
     "./islands/tools/InsuranceCalc.tsx": $tools_InsuranceCalc,
     "./islands/tools/arbitrage/ArbitrageCalculator.tsx":
@@ -141,6 +140,8 @@ const manifest = {
       $tools_limits_ProbabilityInput,
     "./islands/tools/limits/ProbabilityModeToggle.tsx":
       $tools_limits_ProbabilityModeToggle,
+    "./islands/tools/limits/VolatilityToggle.tsx":
+      $tools_limits_VolatilityToggle,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

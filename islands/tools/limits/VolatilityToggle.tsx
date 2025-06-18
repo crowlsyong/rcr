@@ -2,7 +2,7 @@ import { TbToggleLeftFilled, TbToggleRightFilled } from "@preact-icons/tb";
 import { useEffect, useState } from "preact/hooks";
 import type { ComponentType } from "preact";
 import type { JSX } from "preact/jsx-runtime";
-import VolatilityGranularitySelector from "../buttons/VolatilityGranularitySelector.tsx";
+import VolatilityGranularitySelector from "../../buttons/VolatilityGranularitySelector.tsx";
 
 const ToggleOnIcon = TbToggleRightFilled as ComponentType<
   JSX.IntrinsicElements["svg"]
