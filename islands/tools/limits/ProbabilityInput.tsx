@@ -47,8 +47,8 @@ export default function ProbabilityInput(props: ProbabilityInputProps) {
       const currentOffset = Math.min(offsetPercent, maxOffset);
       const lower = marketProb * 100 - currentOffset;
       const upper = marketProb * 100 + currentOffset;
-      setLowerProbability(lower);
-      setUpperProbability(upper);
+      setLowerProbability(Math.round(lower));
+      setUpperProbability(Math.round(upper));
     }
   }, [isCustom, marketProb, offsetPercent, maxOffset]);
 
@@ -100,7 +100,7 @@ export default function ProbabilityInput(props: ProbabilityInputProps) {
   if (typeof marketProb !== "number") {
     const message = marketData?.outcomeType === "MULTIPLE_CHOICE"
       ? "Please select a multiple choice option to use the slider, or switch to Custom Range."
-      : "Enter a URL to view slider.";
+      : "Market must be of type BINARY to use the relative slider. Please use Custom Range.";
     return <p class="text-sm text-gray-400 mt-4">{message}</p>;
   }
 
