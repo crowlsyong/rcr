@@ -22,7 +22,6 @@ export default function MarketInput(
   }: MarketInputProps,
 ) {
   return (
-    // ADDED: min-w-0 to the flex-1 container to prevent content overflow from stretching it
     <div class="flex-1 min-w-0">
       <label class="block text-xs font-medium text-gray-300 mb-1">
         {sideLabel}
