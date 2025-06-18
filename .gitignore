@@ -12,3 +12,6 @@ node_modules/
 
 # Exclude folders
 trash/
+
+# Exclude specific files
+deno-kv-backup-2025-06-18T08-50-45-197Z.json

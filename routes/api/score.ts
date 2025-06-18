@@ -1,5 +1,3 @@
-// routes/api/score.ts
-
 import {
   fetchLoanTransactions,
   fetchManaAndRecentRank,
@@ -19,6 +17,7 @@ import {
   updateLastScoreUpdateTime,
 } from "../../utils/api/kv_store_service.ts";
 import { ManifoldUser, UserPortfolio } from "../../utils/api/manifold_types.ts";
+import db from "../../database/db.ts"; // Make sure db is imported
 
 const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2";
 
@@ -35,33 +34,6 @@ export async function handler(req: Request): Promise<Response> {
       },
     );
   }
-
-  // // Hardcode credit score for 'Ziddletwix'
-  // if (username === "Ziddletwix") {
-  //   console.info("Handler: Returning hardcoded credit score for Ziddletwix.");
-  //   return new Response(
-  //     JSON.stringify({
-  //       username: "Ziddletwix",
-  //       creditScore: 1001,
-  //       riskMultiplier: 0.02, // Corresponds to a score of 1000
-  //       avatarUrl: null, // You might want to fetch this for Ziddletwix if needed
-  //       userExists: true,
-  //       fetchSuccess: true,
-  //       historicalDataSaved: false,
-  //       userDeleted: false,
-  //       latestRank: 1, // Placeholder
-  //       outstandingDebtImpact: 0, // Placeholder
-  //       calculatedProfit: 0, // Placeholder
-  //       balance: 0, // Placeholder
-  //       rawMMR: 0, // Placeholder
-  //       userId: "Ziddletwix-ID", // Placeholder ID
-  //     }),
-  //     {
-  //       headers: { "Content-Type": "application/json" },
-  //       status: 200,
-  //     },
-  //   );
-  // }
 
   const {
     userData: rawUserData,
@@ -93,6 +65,11 @@ export async function handler(req: Request): Promise<Response> {
 
   const userId = userData.id;
 
+  // --- THIS IS THE NEWLY ADDED BLOCK ---
+  // This ensures the user's profile is always up-to-date in our fast-lookup index.
+  await db.set(["users", userId], { id: userId, username: userData.username });
+  // ------------------------------------
+
   if (userData.username === "Manifold") {
     console.info(
       `Handler: Processing @Manifold user, mana payments will be filtered.`,
@@ -120,7 +97,6 @@ export async function handler(req: Request): Promise<Response> {
     const createdTime = userData.createdTime ?? Date.now();
     const ageDays = (Date.now() - createdTime) / 86_400_000;
 
-    // --- Parallel Fetching using Promise.all ---
     const [
       portfolioFetch,
       rankData,
@@ -132,9 +108,7 @@ export async function handler(req: Request): Promise<Response> {
       fetchTransactionCount(userData.username),
       fetchLoanTransactions(userData.id),
     ]);
-    // --- End Parallel Fetching ---
 
-    // Handle critical portfolio fetch failure
     if (!portfolioFetch.success || !portfolioFetch.portfolio) {
       console.error(
         `Handler: Failed to fetch portfolio for '${userData.username}' (ID: ${userId}) after retries.`,
@@ -156,7 +130,6 @@ export async function handler(req: Request): Promise<Response> {
     const calculatedProfit = userPortfolio.investmentValue +
       userPortfolio.balance - userPortfolio.totalDeposits;
 
-    // Check if auxiliary data fetches failed (optional, handled by defaults in calculation)
     if (!rankData.success || !transactionData.success || !loanData.success) {
       console.warn(
         `Handler: One or more auxiliary data fetches failed for '${userData.username}' (ID: ${userId}). Proceeding with available data or defaults.`,

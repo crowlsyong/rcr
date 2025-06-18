@@ -2,7 +2,7 @@
 
 // Use with caution: This script will delete historical credit score data for a specific user in a Deno KV database.
 
-import db from "./db.ts"; // Import database instance
+import db from "../db.ts"; // Import database instance
 
 const targetUserId: string = "p9Y7TzXx4NO1JQb9kjdbUYRUU3X2"; // Replace with the actual user ID you want to target
 const keyToKeep: Deno.KvKey = ["credit_scores", targetUserId, 1747938055213]; // Replace with the actual key you want to keep
