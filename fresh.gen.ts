@@ -50,10 +50,11 @@ import * as $tools_creditscore_CreditScoreChExt from "./islands/tools/creditscor
 import * as $tools_creditscore_ScoreResult from "./islands/tools/creditscore/ScoreResult.tsx";
 import * as $tools_limits_AnswerSelector from "./islands/tools/limits/AnswerSelector.tsx";
 import * as $tools_limits_DirectExecution from "./islands/tools/limits/DirectExecution.tsx";
+import * as $tools_limits_LimitOrderCalculation from "./islands/tools/limits/LimitOrderCalculation.ts";
 import * as $tools_limits_LimitOrderCalculator from "./islands/tools/limits/LimitOrderCalculator.tsx";
 import * as $tools_limits_LimitOrderCalculatorForm from "./islands/tools/limits/LimitOrderCalculatorForm.tsx";
 import * as $tools_limits_LimitOrderPlacementOptions from "./islands/tools/limits/LimitOrderPlacementOptions.tsx";
-import * as $tools_limits_LimitOrderResultsDisplay from "./islands/tools/limits/LimitOrderResultsDisplay.tsx";
+import * as $tools_limits_LimitOrderValidation from "./islands/tools/limits/LimitOrderValidation.ts";
 import * as $tools_limits_ManualExecution from "./islands/tools/limits/ManualExecution.tsx";
 import * as $tools_limits_MarketInfoDisplay from "./islands/tools/limits/MarketInfoDisplay.tsx";
 import type { Manifest } from "$fresh/server.ts";
@@ -121,14 +122,16 @@ const manifest = {
       $tools_creditscore_ScoreResult,
     "./islands/tools/limits/AnswerSelector.tsx": $tools_limits_AnswerSelector,
     "./islands/tools/limits/DirectExecution.tsx": $tools_limits_DirectExecution,
+    "./islands/tools/limits/LimitOrderCalculation.ts":
+      $tools_limits_LimitOrderCalculation,
     "./islands/tools/limits/LimitOrderCalculator.tsx":
       $tools_limits_LimitOrderCalculator,
     "./islands/tools/limits/LimitOrderCalculatorForm.tsx":
       $tools_limits_LimitOrderCalculatorForm,
     "./islands/tools/limits/LimitOrderPlacementOptions.tsx":
       $tools_limits_LimitOrderPlacementOptions,
-    "./islands/tools/limits/LimitOrderResultsDisplay.tsx":
-      $tools_limits_LimitOrderResultsDisplay,
+    "./islands/tools/limits/LimitOrderValidation.ts":
+      $tools_limits_LimitOrderValidation,
     "./islands/tools/limits/ManualExecution.tsx": $tools_limits_ManualExecution,
     "./islands/tools/limits/MarketInfoDisplay.tsx":
       $tools_limits_MarketInfoDisplay,

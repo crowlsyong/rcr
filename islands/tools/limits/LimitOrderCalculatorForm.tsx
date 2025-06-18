@@ -1,6 +1,7 @@
 // islands/tools/limits/LimitOrderCalculatorForm.tsx
-
+import { MarketData } from "../../../utils/api/manifold_types.ts";
 import VolatilityToggle from "../../buttons/VolatilityToggle.tsx";
+import MarketInfoDisplay from "./MarketInfoDisplay.tsx";
 
 interface LimitOrderFormProps {
   marketUrlInput: string;
@@ -19,6 +20,7 @@ interface LimitOrderFormProps {
   setIsVolatilityBet: (value: boolean) => void;
   granularityInput: number;
   setGranularityInput: (value: number) => void;
+  marketData: MarketData | null;
 }
 
 export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
@@ -43,6 +45,14 @@ export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
           class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
           required
         />
+        {props.loading && (
+          <p class="text-xs text-gray-400 mt-2">Loading market data...</p>
+        )}
+        {props.marketData && (
+          <MarketInfoDisplay
+            marketData={props.marketData}
+          />
+        )}
       </div>
 
       <div>
