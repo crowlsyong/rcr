@@ -135,9 +135,9 @@ export default function ArbitrageCalculator() {
 
   return (
     <div class="p-4 mx-auto max-w-screen-md text-gray-100">
-      <h1 class="text-xl font-bold mb-1">Arbitrage Calculator</h1>
+      <h1 class="text-xl font-bold mb-1">🦝 Arbitrage Calculator</h1>
       <p class="mb-4 text-sm text-gray-400">
-        Find risk-free profit between two markets.
+        Find profit between two markets.
       </p>
 
       <div class="flex flex-col md:flex-row gap-4">
