@@ -101,7 +101,8 @@ export default function ProbabilityInput(props: ProbabilityInputProps) {
     const message = marketData?.outcomeType === "MULTIPLE_CHOICE"
       ? "Please select a multiple choice option to use the slider, or switch to Custom Range."
       : "Market must be of type BINARY to use the relative slider. Please use Custom Range.";
-    return <p class="text-sm text-gray-400 mt-4">{message}</p>;
+    return <p class="text-xs sm:text-sm text-gray-400 mt-4">{message}</p>;
+    {/* Added text-xs sm:text-sm */}
   }
 
   return (
@@ -109,7 +110,7 @@ export default function ProbabilityInput(props: ProbabilityInputProps) {
       <div>
         <label
           htmlFor="range-slider"
-          class="flex justify-between text-sm font-medium text-gray-300"
+          class="flex justify-between text-xs sm:text-sm font-medium text-gray-300"
         >
           <span>Range around Market Probability</span>
           <span class="font-mono text-white">+/- {offsetPercent}%</span>
@@ -124,7 +125,7 @@ export default function ProbabilityInput(props: ProbabilityInputProps) {
           class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer mt-2"
         />
       </div>
-      <div class="text-center text-sm text-gray-400 bg-gray-900/50 p-2 rounded-md">
+      <div class="text-center text-xs sm:text-sm text-gray-400 bg-gray-900/50 p-2 rounded-md">
         Calculated Range:{" "}
         <span class="font-semibold text-white">
           {Math.round(lowerProbability)}%

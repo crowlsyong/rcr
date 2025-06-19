@@ -138,8 +138,8 @@ export default function LimitOrderCalculator() {
     // Use lower/upperProbabilityInput directly for validation as they now hold the correct values
     const validationError = validateInputs({
       marketUrlInput,
-      lowerProbabilityInput, // No longer conditional, state holds actual values
-      upperProbabilityInput, // No longer conditional, state holds actual values
+      lowerProbabilityInput,
+      upperProbabilityInput,
       totalBetAmountInput,
       isVolatilityBet,
       granularityInput,
@@ -234,7 +234,8 @@ export default function LimitOrderCalculator() {
   };
 
   return (
-    <div class="p-4 mx-auto max-w-screen-md text-gray-100">
+    <div class="p-4 mx-auto w-full sm:max-w-screen-md text-gray-100">
+      {/* Added w-full sm:max-w-screen-md */}
       <h1 class="text-2xl font-bold mb-4">
         🦝 Limit Order App
       </h1>
@@ -291,10 +292,10 @@ export default function LimitOrderCalculator() {
       {hasValidResults && (
         <div class="bg-gray-800 shadow overflow-hidden sm:rounded-lg p-6 mb-6 border border-gray-700">
           <h2 class="text-xl font-semibold mb-3 text-white">
-            Calculated Limit Orders
+            Calculate Limit Orders
           </h2>
 
-          <p class="mb-2">
+          <p class="mb-6">
             With a total budget of M
             <span class="font-bold text-white">
               {formatMana(totalBetAmountInput)}
@@ -307,11 +308,12 @@ export default function LimitOrderCalculator() {
 
           {/* Start of Combined Volatility Bet and Advanced Mode Box */}
           {apiKeyInput.length > 7 && (
-            <div class="mb-4 mt-4 p-4 border border-gray-700 rounded-lg bg-gray-800/50">
-              <div class="flex items-center justify-between mb-4">
+            <div class="mb-6 pt-4 p-4 border border-gray-700 rounded-lg bg-gray-800/50">
+              <div class="flex items-center justify-between mb-2">
                 {/* Volatility Bet Toggle */}
                 <div class="flex items-center">
-                  <label class="block text-sm font-medium text-gray-300 mr-4">
+                  <label class="block text-xs sm:text-sm font-medium text-gray-300 mr-4 sm:mr-2">
+                    {/* Added text-xs sm:text-sm */}
                     Volatility Bet
                   </label>
                   <button
@@ -335,7 +337,8 @@ export default function LimitOrderCalculator() {
                 {/* Advanced Mode Toggle (only shown if Volatility Bet is on) */}
                 {isVolatilityBet && (
                   <div class="flex items-center">
-                    <label class="text-sm font-medium text-gray-300 mr-3">
+                    <label class="text-xs sm:text-sm font-medium text-gray-300 mr-3">
+                      {/* Added text-xs sm:text-sm */}
                       Advanced Mode
                     </label>
                     <button
@@ -353,7 +356,7 @@ export default function LimitOrderCalculator() {
               </div>
 
               {/* Volatility Bet Description (always shown when its section is visible) */}
-              <p class="text-xs text-gray-500 mt-1 mb-4">
+              <p class="text-xs text-gray-500 mt-1 mb-2">
                 Distributes the budget across multiple orders within the range
                 to profit from smaller price movements.
               </p>
@@ -383,7 +386,8 @@ export default function LimitOrderCalculator() {
               setLowerProbability={setLowerProbabilityInput}
               upperProbability={upperProbabilityInput}
               setUpperProbability={setUpperProbabilityInput}
-              isAdvancedMode={isAdvancedMode}
+              // isAdvancedMode is redundant here as it's already conditional on !isAdvancedMode
+              // so removing it from props for this component call.
             />
           )}
 

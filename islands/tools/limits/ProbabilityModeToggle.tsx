@@ -20,7 +20,8 @@ interface ProbabilityModeToggleProps {
   setLowerProbability: (n: number) => void;
   upperProbability: number;
   setUpperProbability: (n: number) => void;
-  isAdvancedMode: boolean;
+  // Removed isAdvancedMode prop as this component is now conditionally rendered
+  // by the parent based on !isAdvancedMode.
 }
 
 export default function ProbabilityModeToggle(
@@ -41,41 +42,37 @@ export default function ProbabilityModeToggle(
   }, [isCustom]);
 
   return (
-    <div
-      class={`pt-4 p-4 border border-gray-700 rounded-lg bg-gray-800/50 transition-opacity ${
-        props.isAdvancedMode ? "opacity-50 cursor-not-allowed" : ""
-      }`}
-    >
-      <div class={props.isAdvancedMode ? "pointer-events-none" : ""}>
-        <div class="flex items-center justify-between">
-          <p class="block text-sm font-medium text-gray-300">
-            Desired Probability Range:
-          </p>
-          <div class="flex items-center">
-            <label class="text-sm font-medium text-gray-300 mr-3">
-              {isCustom ? "Slider" : "Custom Range"}
-            </label>
-            <button
-              type="button"
-              onClick={() => setIsCustom(!isCustom)}
-              class="flex items-center focus:outline-none"
-              aria-pressed={isCustom}
-            >
-              {isClient
-                ? (
-                  isCustom
-                    ? <ToggleOnIcon class="w-10 h-10 text-blue-500" />
-                    : <ToggleOffIcon class="w-10 h-10 text-gray-500" />
-                )
-                : (
-                  <div class="w-10 h-10 bg-gray-700 rounded-full animate-pulse">
-                  </div>
-                )}
-            </button>
-          </div>
+    <div class="pt-4 p-4 border border-gray-700 rounded-lg bg-gray-800/50">
+      <div class="flex items-center justify-between">
+        <p class="block text-xs sm:text-sm font-medium text-gray-300">
+          {/* Added text-xs sm:text-sm */}
+          Desired Probability Range:
+        </p>
+        <div class="flex items-center">
+          <label class="text-xs sm:text-sm font-medium text-gray-300 mr-3">
+            {/* Added text-xs sm:text-sm */}
+            {isCustom ? "Custom Range" : "Relative to Market"}
+          </label>
+          <button
+            type="button"
+            onClick={() => setIsCustom(!isCustom)}
+            class="flex items-center focus:outline-none"
+            aria-pressed={isCustom}
+          >
+            {isClient
+              ? (
+                isCustom
+                  ? <ToggleOnIcon class="w-10 h-10 text-blue-500" />
+                  : <ToggleOffIcon class="w-10 h-10 text-gray-500" />
+              )
+              : (
+                <div class="w-10 h-10 bg-gray-700 rounded-full animate-pulse">
+                </div>
+              )}
+          </button>
         </div>
-        <ProbabilityInput {...props} isCustom={isCustom} />
       </div>
+      <ProbabilityInput {...props} isCustom={isCustom} />
     </div>
   );
 }
