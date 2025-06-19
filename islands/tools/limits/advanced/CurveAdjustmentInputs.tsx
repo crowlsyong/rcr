@@ -17,7 +17,7 @@ export default function CurveAdjustmentInputs(
   }: CurveAdjustmentInputsProps,
 ) {
   return (
-    <div class="p-2 space-y-4 text-xs bg-gray-900 rounded-lg shadow-md">
+    <div class="p-2 space-y-4 text-xxs bg-gray-900 rounded-lg shadow-md">
       {/* Changed from bg-gray-700 */}
       <div>
         <label

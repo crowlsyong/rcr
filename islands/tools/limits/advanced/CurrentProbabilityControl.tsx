@@ -29,7 +29,7 @@ export default function CurrentProbabilityControl(
   };
 
   return (
-    <div class="p-2 space-y-2 text-xs bg-gray-900 rounded-lg shadow-md">
+    <div class="p-2 space-y-2 text-xxs bg-gray-900 rounded-lg shadow-md">
       {/* Changed from bg-gray-700 */}
       <div class="flex justify-between items-center">
         <label

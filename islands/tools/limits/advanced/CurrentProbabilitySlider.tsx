@@ -9,7 +9,7 @@ export default function CurrentProbabilitySlider(
   { currentProbability }: CurrentProbabilitySliderProps,
 ) {
   return (
-    <div class="p-2 space-y-2 text-xs bg-gray-700 rounded-lg shadow-md">
+    <div class="p-2 space-y-2 text-xxs bg-gray-700 rounded-lg shadow-md">
       <label
         for="current-probability"
         class="block text-gray-300 font-medium mb-1"

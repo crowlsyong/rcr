@@ -10,7 +10,7 @@ export default function DistributionTypeSelector(
   { distributionType }: DistributionTypeSelectorProps,
 ) {
   return (
-    <div class="p-2 text-xs bg-gray-900 rounded-lg shadow-md">
+    <div class="p-2 text-xxs bg-gray-900 rounded-lg shadow-md">
       {/* Changed from bg-gray-700 */}
       <label
         for="distribution-type"

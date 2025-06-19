@@ -11,7 +11,7 @@ export default function MinMaxProbabilityInputs(
     MinMaxProbabilityInputsProps,
 ) {
   return (
-    <div class="p-2 space-y-4 text-xs bg-gray-700 rounded-lg shadow-md">
+    <div class="p-2 space-y-4 text-xxs bg-gray-700 rounded-lg shadow-md">
       <div>
         <label
           for="min-distribution-percent"
