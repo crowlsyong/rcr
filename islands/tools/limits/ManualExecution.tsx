@@ -1,3 +1,4 @@
+// islands/tools/limits/ManualExecution.tsx
 import { useState } from "preact/hooks";
 import { ExpirationSettings } from "./LimitOrderPlacementOptions.tsx";
 import { Order } from "./LimitOrderCalculator.tsx";
@@ -57,21 +58,28 @@ export default function ManualExecution(props: ManualExecutionProps) {
 
   const generateBashCurlCommand = (): string => {
     const commands = props.orders.flatMap((order, i) => {
-      const yesPayload = JSON.stringify(
-        getBetPayload(order.yesAmount, "YES", order.yesProb),
-      );
-      const noPayload = JSON.stringify(
-        getBetPayload(order.noAmount, "NO", order.noProb),
-      );
-
-      const yesCmd = `echo "Placing YES bet for pair ${
-        i + 1
-      }..." && curl -s -X POST https://api.manifold.markets/v0/bet -H 'Authorization: Key ${props.apiKey}' -H 'Content-Type: application/json' -d '${yesPayload}'`;
-      const noCmd = `echo "Placing NO bet for pair ${
-        i + 1
-      }..." && curl -s -X POST https://api.manifold.markets/v0/bet -H 'Authorization: Key ${props.apiKey}' -H 'Content-Type: application/json' -d '${noPayload}'`;
-
-      return [yesCmd, noCmd];
+      const cmds = [];
+      if (order.yesAmount >= 1) {
+        const yesPayload = JSON.stringify(
+          getBetPayload(order.yesAmount, "YES", order.yesProb),
+        );
+        cmds.push(
+          `echo "Placing YES bet for order ${
+            i + 1
+          }..." && curl -s -X POST https://api.manifold.markets/v0/bet -H 'Authorization: Key ${props.apiKey}' -H 'Content-Type: application/json' -d '${yesPayload}'`,
+        );
+      }
+      if (order.noAmount >= 1) {
+        const noPayload = JSON.stringify(
+          getBetPayload(order.noAmount, "NO", order.noProb),
+        );
+        cmds.push(
+          `echo "Placing NO bet for order ${
+            i + 1
+          }..." && curl -s -X POST https://api.manifold.markets/v0/bet -H 'Authorization: Key ${props.apiKey}' -H 'Content-Type: application/json' -d '${noPayload}'`,
+        );
+      }
+      return cmds;
     }).join(" && \\\n");
 
     const errorMessage =
@@ -83,16 +91,20 @@ export default function ManualExecution(props: ManualExecutionProps) {
 
   const generatePowerShellCurlCommand = (): string => {
     const allPayloads = props.orders.flatMap((order, i) => {
-      const yesPayload = JSON.stringify(
-        getBetPayload(order.yesAmount, "YES", order.yesProb),
-      ).replace(/"/g, '\\"');
-      const noPayload = JSON.stringify(
-        getBetPayload(order.noAmount, "NO", order.noProb),
-      ).replace(/"/g, '\\"');
-      return [
-        `Place-Bet "YES (Pair ${i + 1})" '${yesPayload}'`,
-        `Place-Bet "NO (Pair ${i + 1})" '${noPayload}'`,
-      ];
+      const payloads = [];
+      if (order.yesAmount >= 1) {
+        const yesPayload = JSON.stringify(
+          getBetPayload(order.yesAmount, "YES", order.yesProb),
+        ).replace(/"/g, '\\"');
+        payloads.push(`Place-Bet "YES (Order ${i + 1})" '${yesPayload}'`);
+      }
+      if (order.noAmount >= 1) {
+        const noPayload = JSON.stringify(
+          getBetPayload(order.noAmount, "NO", order.noProb),
+        ).replace(/"/g, '\\"');
+        payloads.push(`Place-Bet "NO (Order ${i + 1})" '${noPayload}'`);
+      }
+      return payloads;
     }).join("\n    ");
 
     return `function Place-Bet($label, $json) {

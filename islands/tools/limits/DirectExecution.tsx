@@ -1,3 +1,4 @@
+// islands/tools/limits/DirectExecution.tsx
 import { useEffect, useState } from "preact/hooks";
 import { ExpirationSettings } from "./LimitOrderPlacementOptions.tsx";
 import { Order } from "./LimitOrderCalculator.tsx";
@@ -45,10 +46,24 @@ export default function DirectExecution(props: DirectExecutionProps) {
     setPlacementMessage(null);
     setPlacementError(null);
 
-    const apiOrders: ApiOrder[] = props.orders.flatMap((order) => [
-      { amount: order.yesAmount, outcome: "YES", limitProb: order.yesProb },
-      { amount: order.noAmount, outcome: "NO", limitProb: order.noProb },
-    ]);
+    const apiOrders: ApiOrder[] = props.orders.flatMap((order) => {
+      const bets: ApiOrder[] = [];
+      if (order.yesAmount >= 1) {
+        bets.push({
+          amount: order.yesAmount,
+          outcome: "YES",
+          limitProb: order.yesProb,
+        });
+      }
+      if (order.noAmount >= 1) {
+        bets.push({
+          amount: order.noAmount,
+          outcome: "NO",
+          limitProb: order.noProb,
+        });
+      }
+      return bets;
+    });
 
     const body: BetPlacementBody = {
       apiKey: props.apiKey,
@@ -107,9 +122,15 @@ export default function DirectExecution(props: DirectExecutionProps) {
     }
   };
 
+  const totalOrders = props.orders.reduce(
+    (acc, order) =>
+      acc + (order.yesAmount >= 1 ? 1 : 0) + (order.noAmount >= 1 ? 1 : 0),
+    0,
+  );
+
   const buttonText = isConfirming
     ? "Are you sure? Click to Confirm"
-    : `Place All ${props.orders.length * 2} Limit Orders`;
+    : `Place All ${totalOrders} Limit Orders`;
 
   return (
     <div class="mb-4">

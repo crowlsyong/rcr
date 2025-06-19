@@ -1,5 +1,5 @@
 // islands/tools/limits/advanced/AdvancedDistributionChart.tsx
-import { signal, useSignalEffect } from "@preact/signals";
+import { Signal, signal, useSignalEffect } from "@preact/signals";
 import { useEffect, useMemo } from "preact/hooks";
 import BasicChart from "./BasicChart.tsx";
 import ChartControls from "./ChartControls.tsx";
@@ -13,6 +13,7 @@ interface AdvancedDistributionChartProps {
   onDistributionChange: (points: CalculatedPoint[]) => void;
   onBetAmountChange: (amount: number) => void;
   marketProbability?: number;
+  currentProbability: Signal<number>;
 }
 
 export default function AdvancedDistributionChart(
@@ -23,33 +24,22 @@ export default function AdvancedDistributionChart(
     onDistributionChange,
     onBetAmountChange,
     marketProbability,
+    currentProbability,
   }: AdvancedDistributionChartProps,
 ) {
   const betAmount = useMemo(() => signal(totalBetAmount), []);
-  const percentageInterval = useMemo(() => signal(10), []);
+  const percentageInterval = useMemo(() => signal(12), []);
   const distributionType = useMemo(
-    () => signal(DistributionType.BellCurve), // Default to BellCurve
+    () => signal(DistributionType.BellCurve),
     [],
-  );
-  const currentProbability = useMemo(
-    () => signal(marketProbability ?? 50),
-    [marketProbability],
   );
   const minDistributionPercentage = useMemo(() => signal(lowerProbability), []);
   const maxDistributionPercentage = useMemo(() => signal(upperProbability), []);
   const centerShift = useMemo(() => signal(0), []);
-  const isShiftLockedToCurrentProb = useMemo(() => signal(true), []); // Default to true
+  const isShiftLockedToCurrentProb = useMemo(() => signal(true), []);
 
   useSignalEffect(() => {
     onBetAmountChange(betAmount.value);
-  });
-
-  useSignalEffect(() => {
-    if (
-      typeof marketProbability === "number" && !isShiftLockedToCurrentProb.value
-    ) {
-      currentProbability.value = Math.round(marketProbability);
-    }
   });
 
   useEffect(() => {

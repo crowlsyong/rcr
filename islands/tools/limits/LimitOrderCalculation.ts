@@ -1,5 +1,4 @@
 // islands/tools/limits/LimitOrderCalculation.ts
-
 interface AdvancedPoint {
   percentage: number;
   amount: number;
@@ -12,6 +11,7 @@ interface OrderCalculationParams {
   isVolatilityBet: boolean;
   granularity: number;
   advancedPoints?: AdvancedPoint[] | null;
+  currentProbabilityForAdvanced?: number;
 }
 
 interface CalculatedOrder {
@@ -37,6 +37,7 @@ export function calculateOrderDistribution(
     isVolatilityBet,
     granularity,
     advancedPoints,
+    currentProbabilityForAdvanced,
   } = params;
 
   const calculatedOrders: CalculatedOrder[] = [];
@@ -44,32 +45,44 @@ export function calculateOrderDistribution(
 
   if (isVolatilityBet) {
     if (advancedPoints && advancedPoints.length > 0) {
+      if (typeof currentProbabilityForAdvanced === "undefined") {
+        return { orders: [], totalShares: 0 };
+      }
+      const separatorProb = currentProbabilityForAdvanced / 100;
+
       for (const point of advancedPoints) {
-        if (point.amount <= 0) continue;
+        if (point.amount < 1) continue;
 
-        const budgetForPair = point.amount;
-        const yesProb = point.percentage / 100;
-        const noProb = 1 - yesProb;
+        const pointProb = point.percentage / 100;
+        if (pointProb === separatorProb) continue;
 
-        const denominator = yesProb + (1 - noProb);
-        if (denominator <= 0) continue;
-
-        const shares = budgetForPair / denominator;
-        const yesAmount = shares * yesProb;
-        const noAmount = shares * (1 - noProb);
-
-        if (Math.round(yesAmount) >= 1 && Math.round(noAmount) >= 1) {
+        if (pointProb < separatorProb) {
+          const yesAmount = point.amount;
+          const shares = yesAmount / pointProb;
           calculatedOrders.push({
             yesAmount: Math.round(yesAmount),
+            noAmount: 0,
+            yesProb: pointProb,
+            noProb: 0,
+            shares: Math.round(shares),
+          });
+          totalShares += Math.round(shares);
+        } else {
+          const noAmount = point.amount;
+          const shares = noAmount / (1 - pointProb);
+          calculatedOrders.push({
+            yesAmount: 0,
             noAmount: Math.round(noAmount),
-            yesProb: yesProb,
-            noProb: noProb,
+            yesProb: 0,
+            noProb: pointProb,
             shares: Math.round(shares),
           });
           totalShares += Math.round(shares);
         }
       }
-      calculatedOrders.sort((a, b) => (a.yesProb < b.yesProb ? 1 : -1));
+      calculatedOrders.sort((a, b) =>
+        (a.yesProb || a.noProb) - (b.yesProb || b.noProb)
+      );
     } else {
       const step = granularity / 100;
       const orderPairsData = [];

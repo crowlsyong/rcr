@@ -31,7 +31,6 @@ import * as $buttons_Button from "./islands/buttons/Button.tsx";
 import * as $buttons_ChartButton from "./islands/buttons/ChartButton.tsx";
 import * as $buttons_ShareButton from "./islands/buttons/ShareButton.tsx";
 import * as $buttons_ShareURL from "./islands/buttons/ShareURL.tsx";
-import * as $buttons_VolatilityGranularitySelector from "./islands/tools/limits/VolatilityGranularitySelector.tsx";
 import * as $tools_GameShowCreditScore from "./islands/tools/GameShowCreditScore.tsx";
 import * as $tools_InsuranceCalc from "./islands/tools/InsuranceCalc.tsx";
 import * as $tools_arbitrage_ArbitrageCalculator from "./islands/tools/arbitrage/ArbitrageCalculator.tsx";
@@ -58,6 +57,7 @@ import * as $tools_limits_ManualExecution from "./islands/tools/limits/ManualExe
 import * as $tools_limits_MarketInfoDisplay from "./islands/tools/limits/MarketInfoDisplay.tsx";
 import * as $tools_limits_ProbabilityInput from "./islands/tools/limits/ProbabilityInput.tsx";
 import * as $tools_limits_ProbabilityModeToggle from "./islands/tools/limits/ProbabilityModeToggle.tsx";
+import * as $tools_limits_VolatilityGranularitySelector from "./islands/tools/limits/VolatilityGranularitySelector.tsx";
 import * as $tools_limits_VolatilityToggle from "./islands/tools/limits/VolatilityToggle.tsx";
 import * as $tools_limits_advanced_AdvancedDistributionChart from "./islands/tools/limits/advanced/AdvancedDistributionChart.tsx";
 import * as $tools_limits_advanced_BasicChart from "./islands/tools/limits/advanced/BasicChart.tsx";
@@ -107,8 +107,6 @@ const manifest = {
     "./islands/buttons/ChartButton.tsx": $buttons_ChartButton,
     "./islands/buttons/ShareButton.tsx": $buttons_ShareButton,
     "./islands/buttons/ShareURL.tsx": $buttons_ShareURL,
-    "./islands/buttons/VolatilityGranularitySelector.tsx":
-      $buttons_VolatilityGranularitySelector,
     "./islands/tools/GameShowCreditScore.tsx": $tools_GameShowCreditScore,
     "./islands/tools/InsuranceCalc.tsx": $tools_InsuranceCalc,
     "./islands/tools/arbitrage/ArbitrageCalculator.tsx":
@@ -152,6 +150,8 @@ const manifest = {
       $tools_limits_ProbabilityInput,
     "./islands/tools/limits/ProbabilityModeToggle.tsx":
       $tools_limits_ProbabilityModeToggle,
+    "./islands/tools/limits/VolatilityGranularitySelector.tsx":
+      $tools_limits_VolatilityGranularitySelector,
     "./islands/tools/limits/VolatilityToggle.tsx":
       $tools_limits_VolatilityToggle,
     "./islands/tools/limits/advanced/AdvancedDistributionChart.tsx":

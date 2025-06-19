@@ -1,5 +1,6 @@
 // islands/tools/limits/LimitOrderCalculator.tsx
 import { useEffect, useState } from "preact/hooks";
+import { useSignal } from "@preact/signals";
 import { getMarketDataBySlug } from "../../../utils/api/manifold_api_service.ts";
 import { MarketData } from "../../../utils/api/manifold_types.ts";
 import { TbToggleLeftFilled, TbToggleRightFilled } from "@preact-icons/tb";
@@ -67,15 +68,37 @@ export default function LimitOrderCalculator() {
   const [lastNonAdvancedLowerProb, setLastNonAdvancedLowerProb] = useState(25);
   const [lastNonAdvancedUpperProb, setLastNonAdvancedUpperProb] = useState(75);
 
-  // Effect to manage Advanced Mode's impact on probability inputs
+  const currentProbability = useSignal(50);
+
+  const getActiveMarketProbability = (): number | undefined => {
+    if (!marketData) return undefined;
+    if (
+      marketData.outcomeType === "BINARY" &&
+      typeof marketData.probability === "number"
+    ) {
+      return marketData.probability * 100;
+    }
+    if (marketData.outcomeType === "MULTIPLE_CHOICE" && selectedAnswerId) {
+      const answer = marketData.answers?.find((a) => a.id === selectedAnswerId);
+      return answer ? answer.probability * 100 : undefined;
+    }
+    return undefined;
+  };
+
+  useEffect(() => {
+    const activeProb = getActiveMarketProbability();
+    if (typeof activeProb === "number") {
+      currentProbability.value = Math.round(activeProb);
+    }
+  }, [marketData, selectedAnswerId]);
+
   useEffect(() => {
     if (isAdvancedMode) {
-      setLastNonAdvancedLowerProb(lowerProbabilityInput); // Save current non-advanced values
+      setLastNonAdvancedLowerProb(lowerProbabilityInput);
       setLastNonAdvancedUpperProb(upperProbabilityInput);
-      setLowerProbabilityInput(1); // Set to 1 for advanced mode
-      setUpperProbabilityInput(99); // Set to 99 for advanced mode
+      setLowerProbabilityInput(1);
+      setUpperProbabilityInput(99);
     } else {
-      // Restore previous values when exiting advanced mode
       setLowerProbabilityInput(lastNonAdvancedLowerProb);
       setUpperProbabilityInput(lastNonAdvancedUpperProb);
     }
@@ -126,7 +149,6 @@ export default function LimitOrderCalculator() {
   useEffect(() => {
     setPromptMessage(null);
 
-    // Basic validation for core inputs
     if (
       !marketData || totalBetAmountInput <= 0 ||
       (marketData.outcomeType === "MULTIPLE_CHOICE" && !selectedAnswerId)
@@ -135,7 +157,6 @@ export default function LimitOrderCalculator() {
       return;
     }
 
-    // Use lower/upperProbabilityInput directly for validation as they now hold the correct values
     const validationError = validateInputs({
       marketUrlInput,
       lowerProbabilityInput,
@@ -173,6 +194,9 @@ export default function LimitOrderCalculator() {
       isVolatilityBet,
       granularity: granularityInput,
       advancedPoints: isAdvancedMode ? advancedPoints : null,
+      currentProbabilityForAdvanced: isAdvancedMode
+        ? currentProbability.value
+        : undefined,
     });
 
     if (
@@ -209,6 +233,7 @@ export default function LimitOrderCalculator() {
     advancedPoints,
     lastNonAdvancedLowerProb,
     lastNonAdvancedUpperProb,
+    currentProbability.value,
   ]);
 
   const hasValidResults = calculationResult && !calculationResult.error &&
@@ -218,24 +243,8 @@ export default function LimitOrderCalculator() {
     return Number.isInteger(amount) ? amount.toString() : amount.toFixed(2);
   };
 
-  const getActiveMarketProbability = (): number | undefined => {
-    if (!marketData) return undefined;
-    if (
-      marketData.outcomeType === "BINARY" &&
-      typeof marketData.probability === "number"
-    ) {
-      return marketData.probability * 100;
-    }
-    if (marketData.outcomeType === "MULTIPLE_CHOICE" && selectedAnswerId) {
-      const answer = marketData.answers?.find((a) => a.id === selectedAnswerId);
-      return answer ? answer.probability * 100 : undefined;
-    }
-    return undefined;
-  };
-
   return (
     <div class="p-4 mx-auto w-full sm:max-w-screen-md text-gray-100">
-      {/* Added w-full sm:max-w-screen-md */}
       <h1 class="text-2xl font-bold mb-4">
         🦝 Limit Order App
       </h1>
@@ -292,7 +301,7 @@ export default function LimitOrderCalculator() {
       {hasValidResults && (
         <div class="bg-gray-800 shadow overflow-hidden sm:rounded-lg p-6 mb-6 border border-gray-700">
           <h2 class="text-xl font-semibold mb-3 text-white">
-            Calculate Limit Orders
+            Calculated Limit Orders
           </h2>
 
           <p class="mb-6">
@@ -306,21 +315,17 @@ export default function LimitOrderCalculator() {
             across all orders.
           </p>
 
-          {/* Start of Combined Volatility Bet and Advanced Mode Box */}
           {apiKeyInput.length > 7 && (
             <div class="mb-6 pt-4 p-4 border border-gray-700 rounded-lg bg-gray-800/50">
               <div class="flex items-center justify-between mb-2">
-                {/* Volatility Bet Toggle */}
                 <div class="flex items-center">
                   <label class="block text-xs sm:text-sm font-medium text-gray-300 mr-4 sm:mr-2">
-                    {/* Added text-xs sm:text-sm */}
                     Volatility Bet
                   </label>
                   <button
                     type="button"
                     onClick={() => {
                       setIsVolatilityBet(!isVolatilityBet);
-                      // If turning off volatility, also turn off advanced mode
                       if (isVolatilityBet) {
                         setIsAdvancedMode(false);
                       }
@@ -334,11 +339,9 @@ export default function LimitOrderCalculator() {
                   </button>
                 </div>
 
-                {/* Advanced Mode Toggle (only shown if Volatility Bet is on) */}
                 {isVolatilityBet && (
                   <div class="flex items-center">
                     <label class="text-xs sm:text-sm font-medium text-gray-300 mr-3">
-                      {/* Added text-xs sm:text-sm */}
                       Advanced Mode
                     </label>
                     <button
@@ -355,17 +358,15 @@ export default function LimitOrderCalculator() {
                 )}
               </div>
 
-              {/* Volatility Bet Description (always shown when its section is visible) */}
               <p class="text-xs text-gray-500 mt-1 mb-2">
                 Distributes the budget across multiple orders within the range
                 to profit from smaller price movements.
               </p>
 
-              {/* Conditional rendering for granularity or advanced chart */}
               {isVolatilityBet && (
                 <>
                   {!isAdvancedMode && (
-                    <VolatilityToggle // This handles the granularity input
+                    <VolatilityToggle
                       granularity={granularityInput}
                       setGranularity={setGranularityInput}
                       isAdvancedMode={isAdvancedMode}
@@ -375,9 +376,7 @@ export default function LimitOrderCalculator() {
               )}
             </div>
           )}
-          {/* End of Combined Volatility Bet and Advanced Mode Box */}
 
-          {/* Moved Probability Range here - HIDDEN if advanced mode is on */}
           {!isAdvancedMode && (
             <ProbabilityModeToggle
               marketData={marketData}
@@ -386,52 +385,116 @@ export default function LimitOrderCalculator() {
               setLowerProbability={setLowerProbabilityInput}
               upperProbability={upperProbabilityInput}
               setUpperProbability={setUpperProbabilityInput}
-              // isAdvancedMode is redundant here as it's already conditional on !isAdvancedMode
-              // so removing it from props for this component call.
             />
           )}
 
           {isVolatilityBet && isAdvancedMode && (
             <AdvancedDistributionChart
               totalBetAmount={totalBetAmountInput}
-              lowerProbability={1} // Fixed to 1 in advanced mode
-              upperProbability={99} // Fixed to 99 in advanced mode
+              lowerProbability={1}
+              upperProbability={99}
               onDistributionChange={setAdvancedPoints}
               onBetAmountChange={setTotalBetAmountInput}
               marketProbability={getActiveMarketProbability()}
+              currentProbability={currentProbability}
             />
           )}
 
-          <ul class="space-y-3 mt-4 text-gray-200 text-base">
-            {calculationResult.orders!.map((order, index) => (
-              <li
-                key={index}
-                class="p-3 bg-gray-900/50 rounded-md border border-gray-700"
-              >
-                <div class="font-semibold text-gray-300 mb-1">
-                  Order Pair #{index + 1} (Acquires ~
-                  {formatMana(order.shares)} shares)
+          {isAdvancedMode
+            ? (
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-xxs">
+                <div class="space-y-2">
+                  <h3 class="font-semibold text-green-400 mb-2">YES Bets</h3>
+                  <ul class="space-y-2">
+                    {calculationResult.orders!.filter((o) => o.yesAmount > 0)
+                      .map((order, index) => (
+                        <li
+                          key={`yes-${index}`}
+                          class="p-2 bg-gray-900/50 rounded-md border border-gray-700"
+                        >
+                          <div class="font-semibold text-gray-300 mb-1">
+                            Order (Acquires ~{formatMana(order.shares)} shares)
+                          </div>
+                          <span>
+                            Bet{" "}
+                            <span class="font-bold text-green-400">YES</span> at
+                            {" "}
+                            {Math.round(order.yesProb * 100)}%:{" "}
+                            <span class="font-bold text-white">
+                              M{formatMana(order.yesAmount)}
+                            </span>
+                          </span>
+                        </li>
+                      ))}
+                    {calculationResult.orders!.filter((o) => o.yesAmount > 0)
+                          .length === 0 &&
+                      <p class="text-gray-500">No YES bets calculated.</p>}
+                  </ul>
                 </div>
-                <div class="flex justify-between flex-wrap gap-2">
-                  <span>
-                    Bet <span class="font-bold text-green-400">YES</span> at
-                    {" "}
-                    {Math.round(order.yesProb * 100)}%:{" "}
-                    <span class="font-bold text-white">
-                      M{formatMana(order.yesAmount)}
-                    </span>
-                  </span>
-                  <span>
-                    Bet <span class="font-bold text-red-400">NO</span> at{" "}
-                    {Math.round(order.noProb * 100)}%:{" "}
-                    <span class="font-bold text-white">
-                      M{formatMana(order.noAmount)}
-                    </span>
-                  </span>
+                <div class="space-y-2">
+                  <h3 class="font-semibold text-red-400 mb-2">NO Bets</h3>
+                  <ul class="space-y-2">
+                    {calculationResult.orders!.filter((o) => o.noAmount > 0)
+                      .map((order, index) => (
+                        <li
+                          key={`no-${index}`}
+                          class="p-2 bg-gray-900/50 rounded-md border border-gray-700"
+                        >
+                          <div class="font-semibold text-gray-300 mb-1">
+                            Order (Acquires ~{formatMana(order.shares)} shares)
+                          </div>
+                          <span>
+                            Bet <span class="font-bold text-red-400">NO</span>
+                            {" "}
+                            at {Math.round(order.noProb * 100)}%:{" "}
+                            <span class="font-bold text-white">
+                              M{formatMana(order.noAmount)}
+                            </span>
+                          </span>
+                        </li>
+                      ))}
+                    {calculationResult.orders!.filter((o) =>
+                          o.noAmount > 0
+                        )
+                          .length === 0 &&
+                      <p class="text-gray-500">No NO bets calculated.</p>}
+                  </ul>
                 </div>
-              </li>
-            ))}
-          </ul>
+              </div>
+            )
+            : (
+              <ul class="space-y-3 mt-4 text-gray-200 text-xs">
+                {calculationResult.orders!.map((order, index) => (
+                  <li
+                    key={index}
+                    class="p-2 bg-gray-900/50 rounded-md border border-gray-700"
+                  >
+                    <div class="font-semibold text-gray-300 mb-1">
+                      Order Pair #{index + 1} (Acquires ~
+                      {formatMana(order.shares)} shares)
+                    </div>
+                    <div class="flex justify-between flex-wrap gap-2">
+                      <span>
+                        Bet <span class="font-bold text-green-400">YES</span> at
+                        {" "}
+                        {Math.round(order.yesProb * 100)}%:{" "}
+                        <span class="font-bold text-white">
+                          M{formatMana(order.yesAmount)}
+                        </span>
+                      </span>
+                      <span>
+                        Bet <span class="font-bold text-red-400">NO</span> at
+                        {" "}
+                        {Math.round(order.noProb * 100)}%:{" "}
+                        <span class="font-bold text-white">
+                          M{formatMana(order.noAmount)}
+                        </span>
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
 
           {apiKeyInput && calculationResult.contractId && marketData?.url && (
             <LimitOrderPlacementOptions

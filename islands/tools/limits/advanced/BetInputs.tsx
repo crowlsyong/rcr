@@ -40,7 +40,6 @@ export default function BetInputs(
 
   return (
     <div class="p-2 space-y-2 text-xxs bg-gray-900 rounded-lg shadow-md">
-      {/* Changed from bg-gray-700 */}
       <div>
         <label for="bet-amount" class="block text-gray-300 font-medium mb-1">
           Bet Amount:
@@ -68,13 +67,17 @@ export default function BetInputs(
           id="percentage-interval"
           type="range"
           value={percentageInterval.value}
-          onInput={(e) =>
+          onInput={(e) => {
+            const val = parseInt(e.currentTarget.value);
+            // Ensure the value is always even and at least 12
             percentageInterval.value = Math.max(
-              2,
-              parseInt(e.currentTarget.value),
-            )}
-          min="2"
-          max="99"
+              12,
+              val % 2 === 0 ? val : val - 1,
+            );
+          }}
+          min="12" // Changed min to 12
+          max="98"
+          step="1"
           class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
