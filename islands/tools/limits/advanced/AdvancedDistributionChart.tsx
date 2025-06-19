@@ -31,14 +31,28 @@ export default function AdvancedDistributionChart(
     () => signal(DistributionType.Linear),
     [],
   );
-  const currentProbability = useMemo(() => signal(50), []);
+  // Default to the market probability or 50 if not available
+  const currentProbability = useMemo(
+    () => signal(marketProbability ?? 50),
+    [marketProbability],
+  );
   const minDistributionPercentage = useMemo(() => signal(lowerProbability), []);
   const maxDistributionPercentage = useMemo(() => signal(upperProbability), []);
   const centerShift = useMemo(() => signal(0), []);
-  const isShiftLockedToCurrentProb = useMemo(() => signal(false), []);
+  // Default to true as requested
+  const isShiftLockedToCurrentProb = useMemo(() => signal(true), []);
 
   useSignalEffect(() => {
     onBetAmountChange(betAmount.value);
+  });
+
+  // Update market probability in chart when it changes externally
+  useSignalEffect(() => {
+    if (
+      typeof marketProbability === "number" && !isShiftLockedToCurrentProb.value
+    ) {
+      currentProbability.value = Math.round(marketProbability);
+    }
   });
 
   useEffect(() => {

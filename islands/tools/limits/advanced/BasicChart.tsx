@@ -253,7 +253,7 @@ export default function BasicChart(
   ]);
 
   return (
-    <div class="bg-gray-800 p-6 rounded-lg shadow-lg relative h-[600px] w-full">
+    <div class="bg-gray-800 p-6 rounded-lg shadow-lg relative h-[450px] w-full">
       <canvas ref={chartRef}></canvas>
     </div>
   );
