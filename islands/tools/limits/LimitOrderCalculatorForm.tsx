@@ -34,7 +34,7 @@ export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
           name="marketUrl"
           value={props.marketUrlInput}
           onInput={(e) => props.setMarketUrlInput(e.currentTarget.value)}
-          placeholder="e.g. https://manifold.markets/Austin/will-carrick-flynn-win-the-general"
+          placeholder="e.g. https://manifold.markets/256/risk-at-500k-mana-market-cap-before"
           class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
           required
         />
