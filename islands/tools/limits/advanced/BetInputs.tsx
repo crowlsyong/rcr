@@ -68,15 +68,14 @@ export default function BetInputs(
           type="range"
           value={percentageInterval.value}
           onInput={(e) => {
-            const val = parseInt(e.currentTarget.value);
-            // Ensure the value is always even and at least 12
-            percentageInterval.value = Math.max(
-              12,
-              val % 2 === 0 ? val : val - 1,
-            );
+            let val = parseInt(e.currentTarget.value);
+            // Ensure the value is always even and within the new min/max
+            if (val < 4) val = 4;
+            if (val > 50) val = 50;
+            percentageInterval.value = val % 2 === 0 ? val : val - 1;
           }}
-          min="12" // Changed min to 12
-          max="98"
+          min="2" // Changed min to 2
+          max="50" // Changed max to 50
           step="1"
           class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
