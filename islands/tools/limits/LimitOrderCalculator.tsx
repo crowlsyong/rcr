@@ -434,7 +434,11 @@ export default function LimitOrderCalculator() {
                 <div class="space-y-2">
                   <h3 class="font-semibold text-red-400 mb-2">NO Bets</h3>
                   <ul class="space-y-2">
-                    {calculationResult.orders!.filter((o) => o.noAmount > 0)
+                    {calculationResult.orders!
+                      .filter((o) => o.noAmount > 0)
+                      .sort((a, b) =>
+                        b.noProb - a.noProb
+                      ) // Sort NO bets highest to lowest prob
                       .map((order, index) => (
                         <li
                           key={`no-${index}`}
@@ -453,9 +457,7 @@ export default function LimitOrderCalculator() {
                           </span>
                         </li>
                       ))}
-                    {calculationResult.orders!.filter((o) =>
-                          o.noAmount > 0
-                        )
+                    {calculationResult.orders!.filter((o) => o.noAmount > 0)
                           .length === 0 &&
                       <p class="text-gray-500">No NO bets calculated.</p>}
                   </ul>
