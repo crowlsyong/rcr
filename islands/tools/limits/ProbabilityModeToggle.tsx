@@ -53,7 +53,7 @@ export default function ProbabilityModeToggle(
           </p>
           <div class="flex items-center">
             <label class="text-sm font-medium text-gray-300 mr-3">
-              {isCustom ? "Custom Range" : "Relative to Market"}
+              {isCustom ? "Slider" : "Custom Range"}
             </label>
             <button
               type="button"

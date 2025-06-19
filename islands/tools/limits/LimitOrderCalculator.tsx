@@ -307,7 +307,7 @@ export default function LimitOrderCalculator() {
 
           {/* Start of Combined Volatility Bet and Advanced Mode Box */}
           {apiKeyInput.length > 7 && (
-            <div class="mb-6 pt-4 p-4 border border-gray-700 rounded-lg bg-gray-800/50">
+            <div class="mb-4 mt-4 p-4 border border-gray-700 rounded-lg bg-gray-800/50">
               <div class="flex items-center justify-between mb-4">
                 {/* Volatility Bet Toggle */}
                 <div class="flex items-center">
@@ -374,16 +374,18 @@ export default function LimitOrderCalculator() {
           )}
           {/* End of Combined Volatility Bet and Advanced Mode Box */}
 
-          {/* Moved Probability Range here */}
-          <ProbabilityModeToggle
-            marketData={marketData}
-            selectedAnswerId={selectedAnswerId}
-            lowerProbability={lowerProbabilityInput}
-            setLowerProbability={setLowerProbabilityInput}
-            upperProbability={upperProbabilityInput}
-            setUpperProbability={setUpperProbabilityInput}
-            isAdvancedMode={isAdvancedMode}
-          />
+          {/* Moved Probability Range here - HIDDEN if advanced mode is on */}
+          {!isAdvancedMode && (
+            <ProbabilityModeToggle
+              marketData={marketData}
+              selectedAnswerId={selectedAnswerId}
+              lowerProbability={lowerProbabilityInput}
+              setLowerProbability={setLowerProbabilityInput}
+              upperProbability={upperProbabilityInput}
+              setUpperProbability={setUpperProbabilityInput}
+              isAdvancedMode={isAdvancedMode}
+            />
+          )}
 
           {isVolatilityBet && isAdvancedMode && (
             <AdvancedDistributionChart
