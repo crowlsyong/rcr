@@ -62,7 +62,7 @@ export default function BetInputs(
           for="percentage-interval"
           class="block text-gray-300 font-medium mb-1"
         >
-          Number of Points: {percentageInterval.value}
+          Number of Points (bets): {percentageInterval.value}
         </label>
         <input
           id="percentage-interval"
