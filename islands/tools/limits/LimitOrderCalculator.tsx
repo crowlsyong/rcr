@@ -13,6 +13,8 @@ import { validateInputs } from "./LimitOrderValidation.ts";
 import { calculateOrderDistribution } from "./LimitOrderCalculation.ts";
 import AdvancedDistributionChart from "./advanced/AdvancedDistributionChart.tsx";
 import { CalculatedPoint } from "./advanced/utils/calculate-bet-data.ts";
+import VolatilityToggle from "./VolatilityToggle.tsx";
+import ProbabilityModeToggle from "./ProbabilityModeToggle.tsx";
 
 const ToggleOnIcon = TbToggleRightFilled as ComponentType<
   JSX.IntrinsicElements["svg"]
@@ -39,8 +41,9 @@ interface CalculationResult {
 
 export default function LimitOrderCalculator() {
   const [marketUrlInput, setMarketUrlInput] = useState("");
-  const [lowerProbabilityInput, setLowerProbabilityInput] = useState(0);
-  const [upperProbabilityInput, setUpperProbabilityInput] = useState(0);
+  const [lowerProbabilityInput, setLowerProbabilityInput] = useState(25);
+  const [upperProbabilityInput, setUpperProbabilityInput] = useState(75);
+
   const [totalBetAmountInput, setTotalBetAmountInput] = useState(1000);
   const [apiKeyInput, setApiKeyInput] = useState("");
   const [isVolatilityBet, setIsVolatilityBet] = useState(false);
@@ -60,6 +63,23 @@ export default function LimitOrderCalculator() {
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [promptMessage, setPromptMessage] = useState<string | null>(null);
+
+  const [lastNonAdvancedLowerProb, setLastNonAdvancedLowerProb] = useState(25);
+  const [lastNonAdvancedUpperProb, setLastNonAdvancedUpperProb] = useState(75);
+
+  // Effect to manage Advanced Mode's impact on probability inputs
+  useEffect(() => {
+    if (isAdvancedMode) {
+      setLastNonAdvancedLowerProb(lowerProbabilityInput); // Save current non-advanced values
+      setLastNonAdvancedUpperProb(upperProbabilityInput);
+      setLowerProbabilityInput(1); // Set to 1 for advanced mode
+      setUpperProbabilityInput(99); // Set to 99 for advanced mode
+    } else {
+      // Restore previous values when exiting advanced mode
+      setLowerProbabilityInput(lastNonAdvancedLowerProb);
+      setUpperProbabilityInput(lastNonAdvancedUpperProb);
+    }
+  }, [isAdvancedMode]);
 
   useEffect(() => {
     const handler = setTimeout(async () => {
@@ -106,6 +126,7 @@ export default function LimitOrderCalculator() {
   useEffect(() => {
     setPromptMessage(null);
 
+    // Basic validation for core inputs
     if (
       !marketData || totalBetAmountInput <= 0 ||
       (marketData.outcomeType === "MULTIPLE_CHOICE" && !selectedAnswerId)
@@ -114,10 +135,11 @@ export default function LimitOrderCalculator() {
       return;
     }
 
+    // Use lower/upperProbabilityInput directly for validation as they now hold the correct values
     const validationError = validateInputs({
       marketUrlInput,
-      lowerProbabilityInput,
-      upperProbabilityInput,
+      lowerProbabilityInput, // No longer conditional, state holds actual values
+      upperProbabilityInput, // No longer conditional, state holds actual values
       totalBetAmountInput,
       isVolatilityBet,
       granularityInput,
@@ -153,7 +175,10 @@ export default function LimitOrderCalculator() {
       advancedPoints: isAdvancedMode ? advancedPoints : null,
     });
 
-    if (orders.length === 0 && (isAdvancedMode ? advancedPoints : true)) {
+    if (
+      orders.length === 0 &&
+      (isAdvancedMode ? (advancedPoints && advancedPoints.length > 0) : true)
+    ) {
       setCalculationResult({
         orders: [],
         totalSharesAcquired: null,
@@ -182,6 +207,8 @@ export default function LimitOrderCalculator() {
     granularityInput,
     isAdvancedMode,
     advancedPoints,
+    lastNonAdvancedLowerProb,
+    lastNonAdvancedUpperProb,
   ]);
 
   const hasValidResults = calculationResult && !calculationResult.error &&
@@ -193,7 +220,10 @@ export default function LimitOrderCalculator() {
 
   const getActiveMarketProbability = (): number | undefined => {
     if (!marketData) return undefined;
-    if (marketData.outcomeType === "BINARY" && marketData.probability) {
+    if (
+      marketData.outcomeType === "BINARY" &&
+      typeof marketData.probability === "number"
+    ) {
       return marketData.probability * 100;
     }
     if (marketData.outcomeType === "MULTIPLE_CHOICE" && selectedAnswerId) {
@@ -226,23 +256,15 @@ export default function LimitOrderCalculator() {
       <LimitOrderCalculatorForm
         marketUrlInput={marketUrlInput}
         setMarketUrlInput={setMarketUrlInput}
-        lowerProbabilityInput={lowerProbabilityInput}
-        setLowerProbabilityInput={setLowerProbabilityInput}
-        upperProbabilityInput={upperProbabilityInput}
-        setUpperProbabilityInput={setUpperProbabilityInput}
         totalBetAmountInput={totalBetAmountInput}
         setTotalBetAmountInput={setTotalBetAmountInput}
         apiKeyInput={apiKeyInput}
         setApiKeyInput={setApiKeyInput}
         loading={loading}
         onSubmit={(e) => e.preventDefault()}
-        isVolatilityBet={isVolatilityBet}
-        setIsVolatilityBet={setIsVolatilityBet}
-        granularityInput={granularityInput}
-        setGranularityInput={setGranularityInput}
+        isAdvancedMode={isAdvancedMode}
         marketData={marketData}
         selectedAnswerId={selectedAnswerId}
-        isAdvancedMode={isAdvancedMode}
       />
 
       {fetchError && <p class="text-red-400 mb-4">Error: {fetchError}</p>}
@@ -268,30 +290,11 @@ export default function LimitOrderCalculator() {
 
       {hasValidResults && (
         <div class="bg-gray-800 shadow overflow-hidden sm:rounded-lg p-6 mb-6 border border-gray-700">
-          <div class="flex justify-between items-center mb-3">
-            <h2 class="text-xl font-semibold text-white">
-              Calculated Limit Orders
-            </h2>
-            {isVolatilityBet && (
-              <div class="flex items-center">
-                <label class="text-sm font-medium text-gray-300 mr-3">
-                  Advanced Mode
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setIsAdvancedMode(!isAdvancedMode)}
-                  class="flex items-center focus:outline-none"
-                  aria-pressed={isAdvancedMode}
-                >
-                  {isAdvancedMode
-                    ? <ToggleOnIcon class="w-10 h-10 text-blue-500" />
-                    : <ToggleOffIcon class="w-10 h-10 text-gray-500" />}
-                </button>
-              </div>
-            )}
-          </div>
+          <h2 class="text-xl font-semibold mb-3 text-white">
+            Calculated Limit Orders
+          </h2>
 
-          <p>
+          <p class="mb-2">
             With a total budget of M
             <span class="font-bold text-white">
               {formatMana(totalBetAmountInput)}
@@ -302,11 +305,91 @@ export default function LimitOrderCalculator() {
             across all orders.
           </p>
 
+          {/* Start of Combined Volatility Bet and Advanced Mode Box */}
+          {apiKeyInput.length > 7 && (
+            <div class="mb-6 pt-4 p-4 border border-gray-700 rounded-lg bg-gray-800/50">
+              <div class="flex items-center justify-between mb-4">
+                {/* Volatility Bet Toggle */}
+                <div class="flex items-center">
+                  <label class="block text-sm font-medium text-gray-300 mr-4">
+                    Volatility Bet
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsVolatilityBet(!isVolatilityBet);
+                      // If turning off volatility, also turn off advanced mode
+                      if (isVolatilityBet) {
+                        setIsAdvancedMode(false);
+                      }
+                    }}
+                    class="flex items-center focus:outline-none"
+                    aria-pressed={isVolatilityBet}
+                  >
+                    {isVolatilityBet
+                      ? <ToggleOnIcon class="w-10 h-10 text-blue-500" />
+                      : <ToggleOffIcon class="w-10 h-10 text-gray-500" />}
+                  </button>
+                </div>
+
+                {/* Advanced Mode Toggle (only shown if Volatility Bet is on) */}
+                {isVolatilityBet && (
+                  <div class="flex items-center">
+                    <label class="text-sm font-medium text-gray-300 mr-3">
+                      Advanced Mode
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsAdvancedMode(!isAdvancedMode)}
+                      class="flex items-center focus:outline-none"
+                      aria-pressed={isAdvancedMode}
+                    >
+                      {isAdvancedMode
+                        ? <ToggleOnIcon class="w-10 h-10 text-blue-500" />
+                        : <ToggleOffIcon class="w-10 h-10 text-gray-500" />}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Volatility Bet Description (always shown when its section is visible) */}
+              <p class="text-xs text-gray-500 mt-1 mb-4">
+                Distributes the budget across multiple orders within the range
+                to profit from smaller price movements.
+              </p>
+
+              {/* Conditional rendering for granularity or advanced chart */}
+              {isVolatilityBet && (
+                <>
+                  {!isAdvancedMode && (
+                    <VolatilityToggle // This handles the granularity input
+                      granularity={granularityInput}
+                      setGranularity={setGranularityInput}
+                      isAdvancedMode={isAdvancedMode}
+                    />
+                  )}
+                </>
+              )}
+            </div>
+          )}
+          {/* End of Combined Volatility Bet and Advanced Mode Box */}
+
+          {/* Moved Probability Range here */}
+          <ProbabilityModeToggle
+            marketData={marketData}
+            selectedAnswerId={selectedAnswerId}
+            lowerProbability={lowerProbabilityInput}
+            setLowerProbability={setLowerProbabilityInput}
+            upperProbability={upperProbabilityInput}
+            setUpperProbability={setUpperProbabilityInput}
+            isAdvancedMode={isAdvancedMode}
+          />
+
           {isVolatilityBet && isAdvancedMode && (
             <AdvancedDistributionChart
               totalBetAmount={totalBetAmountInput}
-              lowerProbability={lowerProbabilityInput}
-              upperProbability={upperProbabilityInput}
+              lowerProbability={1} // Fixed to 1 in advanced mode
+              upperProbability={99} // Fixed to 99 in advanced mode
               onDistributionChange={setAdvancedPoints}
               onBetAmountChange={setTotalBetAmountInput}
               marketProbability={getActiveMarketProbability()}

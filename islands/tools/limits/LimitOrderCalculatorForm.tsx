@@ -1,34 +1,24 @@
 // islands/tools/limits/LimitOrderCalculatorForm.tsx
 import { MarketData } from "../../../utils/api/manifold_types.ts";
-import VolatilityToggle from "./VolatilityToggle.tsx";
 import MarketInfoDisplay from "./MarketInfoDisplay.tsx";
-import ProbabilityModeToggle from "./ProbabilityModeToggle.tsx";
+// ProbabilityModeToggle is no longer a child of this component, so no import needed.
 
 interface LimitOrderFormProps {
   marketUrlInput: string;
   setMarketUrlInput: (value: string) => void;
-  lowerProbabilityInput: number;
-  setLowerProbabilityInput: (value: number) => void;
-  upperProbabilityInput: number;
-  setUpperProbabilityInput: (value: number) => void;
+  // Removed lowerProbabilityInput, setLowerProbabilityInput, upperProbabilityInput, setUpperProbabilityInput
   totalBetAmountInput: number;
   setTotalBetAmountInput: (value: number) => void;
   apiKeyInput: string;
   setApiKeyInput: (value: string) => void;
   loading: boolean;
   onSubmit: (e: Event) => void;
-  isVolatilityBet: boolean;
-  setIsVolatilityBet: (value: boolean) => void;
-  granularityInput: number;
-  setGranularityInput: (value: number) => void;
   marketData: MarketData | null;
   selectedAnswerId: string | null;
-  isAdvancedMode: boolean;
+  isAdvancedMode: boolean; // Still needed to disable total bet amount
 }
 
 export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
-  const showVolatilityToggle = props.apiKeyInput.length > 7;
-
   return (
     <form onSubmit={props.onSubmit} class="space-y-6 mb-8">
       <div>
@@ -84,15 +74,7 @@ export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
         />
       </div>
 
-      <ProbabilityModeToggle
-        marketData={props.marketData}
-        selectedAnswerId={props.selectedAnswerId}
-        lowerProbability={props.lowerProbabilityInput}
-        setLowerProbability={props.setLowerProbabilityInput}
-        upperProbability={props.upperProbabilityInput}
-        setUpperProbability={props.setUpperProbabilityInput}
-        isAdvancedMode={props.isAdvancedMode}
-      />
+      {/* ProbabilityModeToggle is now a sibling in LimitOrderCalculator */}
 
       <div>
         <label
@@ -119,16 +101,7 @@ export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
         </p>
       </div>
 
-      {showVolatilityToggle && (
-        <VolatilityToggle
-          label="Volatility Bet:"
-          isVolatilityBet={props.isVolatilityBet}
-          setIsVolatilityBet={props.setIsVolatilityBet}
-          granularity={props.granularityInput}
-          setGranularity={props.setGranularityInput}
-          isAdvancedMode={props.isAdvancedMode}
-        />
-      )}
+      {/* VolatilityToggle is now a sibling in LimitOrderCalculator */}
     </form>
   );
 }

@@ -10,31 +10,29 @@ interface BetInputsProps {
 export default function BetInputs(
   { betAmount, percentageInterval }: BetInputsProps,
 ) {
-  // Local state for the input field to allow immediate typing feedback
   const [localBetAmount, setLocalBetAmount] = useState(String(betAmount.value));
   const [betAmountError, setBetAmountError] = useState<string | null>(null);
 
-  // Sync local state when external betAmount signal changes (e.g., initial load)
   useEffect(() => {
     setLocalBetAmount(String(betAmount.value));
   }, [betAmount.value]);
 
-  // Debounce effect for betAmount input
   useEffect(() => {
-    const handler = setTimeout(() => {
-      const parsedValue = parseInt(localBetAmount, 10);
+    let handler: number;
+    const parsedValue = parseInt(localBetAmount, 10);
 
-      if (isNaN(parsedValue) || parsedValue <= 10) {
+    if (isNaN(parsedValue) || parsedValue <= 10) {
+      setBetAmountError(null); // Clear error immediately
+      handler = setTimeout(() => {
         setBetAmountError("Bet amount must be a number greater than 10");
-        // Do not update the signal if the value is invalid
-      } else {
-        setBetAmountError(null);
-        // Only update the signal if the parsed value is valid and different
-        if (parsedValue !== betAmount.value) {
-          betAmount.value = parsedValue;
-        }
+      }, 1000); // Debounce error message for 1 second
+    } else {
+      // If valid, clear any error and update immediately
+      setBetAmountError(null);
+      if (parsedValue !== betAmount.value) {
+        betAmount.value = parsedValue;
       }
-    }, 1000); // 1-second debounce
+    }
 
     return () => {
       clearTimeout(handler);
@@ -52,7 +50,7 @@ export default function BetInputs(
           type="number"
           value={localBetAmount}
           onInput={(e) => setLocalBetAmount(e.currentTarget.value)}
-          min="0" // Keep min as 0 to allow typing, validation handled by useEffect
+          min="0"
           class="w-full px-2 py-1 rounded bg-gray-800 text-gray-100 border border-gray-600 focus:outline-none focus:border-blue-500 text-left text-xs"
         />
         {betAmountError && (
