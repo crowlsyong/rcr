@@ -74,8 +74,13 @@ export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
             props.setTotalBetAmountInput(Number(e.currentTarget.value))}
           min="1"
           step="1"
-          class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
+          class={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+            props.isAdvancedMode
+              ? "bg-gray-700 text-gray-400 cursor-not-allowed border-gray-600"
+              : "bg-gray-800 text-gray-100 border-gray-600"
+          }`}
           required
+          disabled={props.isAdvancedMode}
         />
       </div>
 
@@ -86,6 +91,7 @@ export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
         setLowerProbability={props.setLowerProbabilityInput}
         upperProbability={props.upperProbabilityInput}
         setUpperProbability={props.setUpperProbabilityInput}
+        isAdvancedMode={props.isAdvancedMode}
       />
 
       <div>

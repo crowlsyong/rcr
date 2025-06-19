@@ -41,12 +41,14 @@ export default function LimitOrderCalculator() {
   const [marketUrlInput, setMarketUrlInput] = useState("");
   const [lowerProbabilityInput, setLowerProbabilityInput] = useState(0);
   const [upperProbabilityInput, setUpperProbabilityInput] = useState(0);
-  const [totalBetAmountInput, setTotalBetAmountInput] = useState(0);
+  const [totalBetAmountInput, setTotalBetAmountInput] = useState(1000);
   const [apiKeyInput, setApiKeyInput] = useState("");
   const [isVolatilityBet, setIsVolatilityBet] = useState(false);
   const [granularityInput, setGranularityInput] = useState(1);
   const [isAdvancedMode, setIsAdvancedMode] = useState(false);
-  const [advancedPoints, setAdvancedPoints] = useState<CalculatedPoint[] | null>(
+  const [advancedPoints, setAdvancedPoints] = useState<
+    CalculatedPoint[] | null
+  >(
     null,
   );
 
@@ -151,7 +153,7 @@ export default function LimitOrderCalculator() {
       advancedPoints: isAdvancedMode ? advancedPoints : null,
     });
 
-    if (orders.length === 0) {
+    if (orders.length === 0 && (isAdvancedMode ? advancedPoints : true)) {
       setCalculationResult({
         orders: [],
         totalSharesAcquired: null,
@@ -189,8 +191,20 @@ export default function LimitOrderCalculator() {
     return Number.isInteger(amount) ? amount.toString() : amount.toFixed(2);
   };
 
+  const getActiveMarketProbability = (): number | undefined => {
+    if (!marketData) return undefined;
+    if (marketData.outcomeType === "BINARY" && marketData.probability) {
+      return marketData.probability * 100;
+    }
+    if (marketData.outcomeType === "MULTIPLE_CHOICE" && selectedAnswerId) {
+      const answer = marketData.answers?.find((a) => a.id === selectedAnswerId);
+      return answer ? answer.probability * 100 : undefined;
+    }
+    return undefined;
+  };
+
   return (
-    <div class="p-4 mx-auto max-w-screen-xl text-gray-100">
+    <div class="p-4 mx-auto max-w-screen-md text-gray-100">
       <h1 class="text-2xl font-bold mb-4">
         🦝 Limit Order App
       </h1>
@@ -294,6 +308,8 @@ export default function LimitOrderCalculator() {
               lowerProbability={lowerProbabilityInput}
               upperProbability={upperProbabilityInput}
               onDistributionChange={setAdvancedPoints}
+              onBetAmountChange={setTotalBetAmountInput}
+              marketProbability={getActiveMarketProbability()}
             />
           )}
 

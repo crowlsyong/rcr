@@ -174,16 +174,20 @@ export function calculateBetChartData(
         const sigma = 15;
         const amplitude = 100;
         baseValue = amplitude *
-          Math.exp(-Math.pow(percentage - specificMidpoint, 2) /
-            (2 * Math.pow(sigma, 2)));
+          Math.exp(
+            -Math.pow(percentage - specificMidpoint, 2) /
+              (2 * Math.pow(sigma, 2)),
+          );
         break;
       }
       case DistributionType.NegativeBellCurve: {
         const sigma = 15;
         const amplitude = 100;
         const bellValue = amplitude *
-          Math.exp(-Math.pow(percentage - specificMidpoint, 2) /
-            (2 * Math.pow(sigma, 2)));
+          Math.exp(
+            -Math.pow(percentage - specificMidpoint, 2) /
+              (2 * Math.pow(sigma, 2)),
+          );
         baseValue = amplitude - bellValue;
         break;
       }

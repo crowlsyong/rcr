@@ -1,8 +1,8 @@
-// islands/charts/ChartControls.tsx
+// islands/tools/limits/advanced/ChartControls.tsx
 import { Signal } from "@preact/signals";
 import { DistributionType } from "./ChartTypes.ts";
 import BetInputs from "./BetInputs.tsx";
-import CurrentProbabilitySlider from "./CurrentProbabilitySlider.tsx";
+import CurrentProbabilityControl from "./CurrentProbabilityControl.tsx";
 import DistributionTypeSelector from "./DistributionTypeSelector.tsx";
 import CurveAdjustmentInputs from "./CurveAdjustmentInputs.tsx";
 
@@ -14,7 +14,8 @@ interface ChartControlsProps {
   minDistributionPercentage: Signal<number>;
   maxDistributionPercentage: Signal<number>;
   centerShift: Signal<number>;
-  isShiftLockedToCurrentProb: Signal<boolean>; // Added isShiftLockedToCurrentProb
+  isShiftLockedToCurrentProb: Signal<boolean>;
+  marketProbability?: number;
 }
 
 export default function ChartControls(
@@ -27,6 +28,7 @@ export default function ChartControls(
     maxDistributionPercentage,
     centerShift,
     isShiftLockedToCurrentProb,
+    marketProbability,
   }: ChartControlsProps,
 ) {
   return (
@@ -36,8 +38,9 @@ export default function ChartControls(
         betAmount={betAmount}
         percentageInterval={percentageInterval}
       />
-      <CurrentProbabilitySlider
+      <CurrentProbabilityControl
         currentProbability={currentProbability}
+        marketProbability={marketProbability}
       />
       <DistributionTypeSelector
         distributionType={distributionType}
@@ -46,7 +49,7 @@ export default function ChartControls(
         minDistributionPercentage={minDistributionPercentage}
         maxDistributionPercentage={maxDistributionPercentage}
         centerShift={centerShift}
-        isShiftLockedToCurrentProb={isShiftLockedToCurrentProb} // Pass it down
+        isShiftLockedToCurrentProb={isShiftLockedToCurrentProb}
       />
     </div>
   );

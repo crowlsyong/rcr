@@ -5,8 +5,8 @@ import type { Chart as ChartJsType, Scale, Tick } from "chart.js";
 
 import { DistributionType } from "./ChartTypes.ts";
 import {
-  CalculatedPoint,
   calculateBetChartData,
+  CalculatedPoint,
 } from "./utils/calculate-bet-data.ts";
 
 interface BasicChartProps {

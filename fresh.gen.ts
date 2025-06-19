@@ -65,6 +65,7 @@ import * as $tools_limits_advanced_BetInputs from "./islands/tools/limits/advanc
 import * as $tools_limits_advanced_ChartContainer from "./islands/tools/limits/advanced/ChartContainer.tsx";
 import * as $tools_limits_advanced_ChartControls from "./islands/tools/limits/advanced/ChartControls.tsx";
 import * as $tools_limits_advanced_ChartTypes from "./islands/tools/limits/advanced/ChartTypes.ts";
+import * as $tools_limits_advanced_CurrentProbabilityControl from "./islands/tools/limits/advanced/CurrentProbabilityControl.tsx";
 import * as $tools_limits_advanced_CurrentProbabilitySlider from "./islands/tools/limits/advanced/CurrentProbabilitySlider.tsx";
 import * as $tools_limits_advanced_CurveAdjustmentInputs from "./islands/tools/limits/advanced/CurveAdjustmentInputs.tsx";
 import * as $tools_limits_advanced_DistributionTypeSelector from "./islands/tools/limits/advanced/DistributionTypeSelector.tsx";
@@ -165,6 +166,8 @@ const manifest = {
       $tools_limits_advanced_ChartControls,
     "./islands/tools/limits/advanced/ChartTypes.ts":
       $tools_limits_advanced_ChartTypes,
+    "./islands/tools/limits/advanced/CurrentProbabilityControl.tsx":
+      $tools_limits_advanced_CurrentProbabilityControl,
     "./islands/tools/limits/advanced/CurrentProbabilitySlider.tsx":
       $tools_limits_advanced_CurrentProbabilitySlider,
     "./islands/tools/limits/advanced/CurveAdjustmentInputs.tsx":

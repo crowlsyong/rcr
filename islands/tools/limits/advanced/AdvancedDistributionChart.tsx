@@ -1,6 +1,6 @@
 // islands/tools/limits/advanced/AdvancedDistributionChart.tsx
-import { signal } from "@preact/signals";
-import { useEffect } from "preact/hooks";
+import { signal, useSignalEffect } from "@preact/signals";
+import { useEffect, useMemo } from "preact/hooks";
 import BasicChart from "./BasicChart.tsx";
 import ChartControls from "./ChartControls.tsx";
 import { DistributionType } from "./ChartTypes.ts";
@@ -11,6 +11,8 @@ interface AdvancedDistributionChartProps {
   lowerProbability: number;
   upperProbability: number;
   onDistributionChange: (points: CalculatedPoint[]) => void;
+  onBetAmountChange: (amount: number) => void;
+  marketProbability?: number;
 }
 
 export default function AdvancedDistributionChart(
@@ -19,16 +21,25 @@ export default function AdvancedDistributionChart(
     lowerProbability,
     upperProbability,
     onDistributionChange,
+    onBetAmountChange,
+    marketProbability,
   }: AdvancedDistributionChartProps,
 ) {
-  const betAmount = signal<number>(totalBetAmount);
-  const percentageInterval = signal<number>(10);
-  const distributionType = signal<DistributionType>(DistributionType.Linear);
-  const currentProbability = signal<number>(50);
-  const minDistributionPercentage = signal<number>(lowerProbability);
-  const maxDistributionPercentage = signal<number>(upperProbability);
-  const centerShift = signal<number>(0);
-  const isShiftLockedToCurrentProb = signal<boolean>(false);
+  const betAmount = useMemo(() => signal(totalBetAmount), []);
+  const percentageInterval = useMemo(() => signal(10), []);
+  const distributionType = useMemo(
+    () => signal(DistributionType.Linear),
+    [],
+  );
+  const currentProbability = useMemo(() => signal(50), []);
+  const minDistributionPercentage = useMemo(() => signal(lowerProbability), []);
+  const maxDistributionPercentage = useMemo(() => signal(upperProbability), []);
+  const centerShift = useMemo(() => signal(0), []);
+  const isShiftLockedToCurrentProb = useMemo(() => signal(false), []);
+
+  useSignalEffect(() => {
+    onBetAmountChange(betAmount.value);
+  });
 
   useEffect(() => {
     betAmount.value = totalBetAmount;
@@ -59,6 +70,7 @@ export default function AdvancedDistributionChart(
         maxDistributionPercentage={maxDistributionPercentage}
         centerShift={centerShift}
         isShiftLockedToCurrentProb={isShiftLockedToCurrentProb}
+        marketProbability={marketProbability}
       />
       <div class="flex-grow w-full md:w-2/3 max-w-4xl">
         <BasicChart
