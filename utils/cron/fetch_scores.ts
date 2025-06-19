@@ -38,10 +38,14 @@ async function getAllUsers(): Promise<User[]> {
  * Processes a single user's score by calling the API handler.
  */
 async function processUserScore(user: User): Promise<void> {
-  console.debug(`[${CRON_NAME}] Attempting to process user: ${user.username} (ID: ${user.id})`);
+  console.debug(
+    `[${CRON_NAME}] Attempting to process user: ${user.username} (ID: ${user.id})`,
+  );
   try {
     const mockRequest = new Request(
-      `http://localhost/api/score?username=${encodeURIComponent(user.username)}`,
+      `http://localhost/api/score?username=${
+        encodeURIComponent(user.username)
+      }`,
       { method: "GET" },
     );
 
@@ -54,7 +58,8 @@ async function processUserScore(user: User): Promise<void> {
         `[${CRON_NAME}] User '${user.username}' (ID: ${user.id}): Score processed. Historical data saved: ${historicalDataSaved}`,
       );
     } else {
-      const errorDetail = responseBody.error || response.statusText || "Unknown error";
+      const errorDetail = responseBody.error || response.statusText ||
+        "Unknown error";
       console.warn(
         `[${CRON_NAME}] User '${user.username}' (ID: ${user.id}): Failed to update score. Status: ${response.status}. Details: ${errorDetail}`,
       );
@@ -80,7 +85,9 @@ Deno.cron(CRON_NAME, FREQUENT_SCHEDULE, async () => {
     const totalUserCount = allUsers.length;
 
     if (totalUserCount === 0) {
-      console.info(`[${CRON_NAME}] No users found in 'users' collection, skipping run`);
+      console.info(
+        `[${CRON_NAME}] No users found in 'users' collection, skipping run`,
+      );
       await db.set(CRON_PROGRESS_KEY, 0); // Reset index if no users
       return;
     }
@@ -91,7 +98,9 @@ Deno.cron(CRON_NAME, FREQUENT_SCHEDULE, async () => {
 
     // Ensure lastProcessedIndex is within valid bounds (especially after user count changes)
     if (lastProcessedIndex >= totalUserCount) {
-      console.info(`[${CRON_NAME}] Previous index ${lastProcessedIndex} out of bounds for ${totalUserCount} users. Resetting index to 0.`);
+      console.info(
+        `[${CRON_NAME}] Previous index ${lastProcessedIndex} out of bounds for ${totalUserCount} users. Resetting index to 0.`,
+      );
       lastProcessedIndex = 0;
       await db.set(CRON_PROGRESS_KEY, 0); // Persist the reset immediately
     }
@@ -102,7 +111,9 @@ Deno.cron(CRON_NAME, FREQUENT_SCHEDULE, async () => {
     );
 
     if (usersToProcessCount === 0) {
-      console.info(`[${CRON_NAME}] No users left to process in this cycle. Next run will reset to index 0.`);
+      console.info(
+        `[${CRON_NAME}] No users left to process in this cycle. Next run will reset to index 0.`,
+      );
       await db.set(CRON_PROGRESS_KEY, 0); // Explicitly reset if nothing to process
       return;
     }
