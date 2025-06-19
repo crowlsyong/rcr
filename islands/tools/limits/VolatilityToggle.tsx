@@ -1,5 +1,5 @@
 // islands/tools/limits/VolatilityToggle.tsx
-import VolatilityGranularitySelector from "../../buttons/VolatilityGranularitySelector.tsx";
+import VolatilityGranularitySelector from "./VolatilityGranularitySelector.tsx";
 
 interface VolatilityToggleProps {
   granularity: number;

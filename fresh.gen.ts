@@ -31,7 +31,7 @@ import * as $buttons_Button from "./islands/buttons/Button.tsx";
 import * as $buttons_ChartButton from "./islands/buttons/ChartButton.tsx";
 import * as $buttons_ShareButton from "./islands/buttons/ShareButton.tsx";
 import * as $buttons_ShareURL from "./islands/buttons/ShareURL.tsx";
-import * as $buttons_VolatilityGranularitySelector from "./islands/buttons/VolatilityGranularitySelector.tsx";
+import * as $buttons_VolatilityGranularitySelector from "./islands/tools/limits/VolatilityGranularitySelector.tsx";
 import * as $tools_GameShowCreditScore from "./islands/tools/GameShowCreditScore.tsx";
 import * as $tools_InsuranceCalc from "./islands/tools/InsuranceCalc.tsx";
 import * as $tools_arbitrage_ArbitrageCalculator from "./islands/tools/arbitrage/ArbitrageCalculator.tsx";

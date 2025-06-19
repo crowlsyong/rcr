@@ -1,4 +1,4 @@
-// islands/tools/limits/advanced/calculate-bet-data.ts
+// islands/tools/limits/advanced/utils/calculate-bet-data.ts
 import { DistributionType } from "../ChartTypes.ts";
 
 interface CalculateBetDataParams {
