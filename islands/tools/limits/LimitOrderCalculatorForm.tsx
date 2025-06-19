@@ -23,6 +23,7 @@ interface LimitOrderFormProps {
   setGranularityInput: (value: number) => void;
   marketData: MarketData | null;
   selectedAnswerId: string | null;
+  isAdvancedMode: boolean;
 }
 
 export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
@@ -119,6 +120,7 @@ export default function LimitOrderCalculatorForm(props: LimitOrderFormProps) {
           setIsVolatilityBet={props.setIsVolatilityBet}
           granularity={props.granularityInput}
           setGranularity={props.setGranularityInput}
+          isAdvancedMode={props.isAdvancedMode}
         />
       )}
     </form>

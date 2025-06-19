@@ -1,6 +1,9 @@
+// islands/buttons/VolatilityGranularitySelector.tsx
+
 interface VolatilityGranularitySelectorProps {
   granularity: number;
   setGranularity: (value: number) => void;
+  disabled?: boolean; // Add the disabled prop
 }
 
 export default function VolatilityGranularitySelector(
@@ -21,7 +24,12 @@ export default function VolatilityGranularitySelector(
         id="bet-granularity"
         value={props.granularity}
         onChange={(e) => props.setGranularity(Number(e.currentTarget.value))}
-        class="block w-full max-w-xs border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
+        disabled={props.disabled} // Apply the disabled prop here
+        class={`block w-full max-w-xs border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+          props.disabled
+            ? "bg-gray-700 text-gray-400 cursor-not-allowed border-gray-600"
+            : "bg-gray-800 text-gray-100 border-gray-600"
+        }`}
       >
         {options.map((option) => (
           <option key={option} value={option}>

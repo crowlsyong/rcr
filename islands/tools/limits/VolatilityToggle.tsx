@@ -1,3 +1,4 @@
+// islands/tools/limits/VolatilityToggle.tsx
 import { TbToggleLeftFilled, TbToggleRightFilled } from "@preact-icons/tb";
 import { useEffect, useState } from "preact/hooks";
 import type { ComponentType } from "preact";
@@ -17,6 +18,7 @@ interface VolatilityToggleProps {
   label: string;
   granularity: number;
   setGranularity: (value: number) => void;
+  isAdvancedMode: boolean;
 }
 
 export default function VolatilityToggle({
@@ -25,6 +27,7 @@ export default function VolatilityToggle({
   label,
   granularity,
   setGranularity,
+  isAdvancedMode,
 }: VolatilityToggleProps) {
   const [isClient, setIsClient] = useState(false);
 
@@ -70,10 +73,13 @@ export default function VolatilityToggle({
       </p>
 
       {isVolatilityBet && (
-        <VolatilityGranularitySelector
-          granularity={granularity}
-          setGranularity={setGranularity}
-        />
+        <div class={isAdvancedMode ? "opacity-50" : ""}>
+          <VolatilityGranularitySelector
+            granularity={granularity}
+            setGranularity={setGranularity}
+            disabled={isAdvancedMode}
+          />
+        </div>
       )}
     </div>
   );

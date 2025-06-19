@@ -8,6 +8,7 @@
     "jsr:@std/encoding@^1.0.5": "1.0.10",
     "jsr:@std/path@^1.0.6": "1.0.9",
     "npm:autoprefixer@10.4.17": "10.4.17_postcss@8.4.35",
+    "npm:chart.js@^4.5.0": "4.5.0",
     "npm:cssnano@6.0.3": "6.0.3_postcss@8.4.35",
     "npm:postcss@8.4.35": "8.4.35",
     "npm:preact@^10.22.1": "10.26.7",
@@ -83,6 +84,9 @@
         "@jridgewell/resolve-uri",
         "@jridgewell/sourcemap-codec"
       ]
+    },
+    "@kurkle/color@0.3.4": {
+      "integrity": "sha512-M5UknZPHRu3DEDWoipU6sE8PdkZ6Z/S+v4dD+Ke8IaNlpdSQah50lz1KtcFBa2vsdOnwbbnxJwVM4wty6udA5w=="
     },
     "@nodelib/fs.scandir@2.1.5": {
       "integrity": "sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==",
@@ -193,6 +197,12 @@
     },
     "caniuse-lite@1.0.30001718": {
       "integrity": "sha512-AflseV1ahcSunK53NfEs9gFWgOEmzr0f+kaMFA4xiLZlr9Hzt7HxcSpIFcnNCUkz6R6dWKa54rUz3HUmI3nVcw=="
+    },
+    "chart.js@4.5.0": {
+      "integrity": "sha512-aYeC/jDgSEx8SHWZvANYMioYMZ2KX02W6f6uVfyteuCGcadDLcYVHdfdygsTQkQ4TKn5lghoojAsPj5pu0SnvQ==",
+      "dependencies": [
+        "@kurkle/color"
+      ]
     },
     "chokidar@3.6.0": {
       "integrity": "sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==",
@@ -1448,6 +1458,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@preact-icons/tb@^1.0.14",
+      "npm:chart.js@^4.5.0",
       "npm:tailwindcss@3.4.1"
     ]
   }

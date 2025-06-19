@@ -59,6 +59,17 @@ import * as $tools_limits_MarketInfoDisplay from "./islands/tools/limits/MarketI
 import * as $tools_limits_ProbabilityInput from "./islands/tools/limits/ProbabilityInput.tsx";
 import * as $tools_limits_ProbabilityModeToggle from "./islands/tools/limits/ProbabilityModeToggle.tsx";
 import * as $tools_limits_VolatilityToggle from "./islands/tools/limits/VolatilityToggle.tsx";
+import * as $tools_limits_advanced_AdvancedDistributionChart from "./islands/tools/limits/advanced/AdvancedDistributionChart.tsx";
+import * as $tools_limits_advanced_BasicChart from "./islands/tools/limits/advanced/BasicChart.tsx";
+import * as $tools_limits_advanced_BetInputs from "./islands/tools/limits/advanced/BetInputs.tsx";
+import * as $tools_limits_advanced_ChartContainer from "./islands/tools/limits/advanced/ChartContainer.tsx";
+import * as $tools_limits_advanced_ChartControls from "./islands/tools/limits/advanced/ChartControls.tsx";
+import * as $tools_limits_advanced_ChartTypes from "./islands/tools/limits/advanced/ChartTypes.ts";
+import * as $tools_limits_advanced_CurrentProbabilitySlider from "./islands/tools/limits/advanced/CurrentProbabilitySlider.tsx";
+import * as $tools_limits_advanced_CurveAdjustmentInputs from "./islands/tools/limits/advanced/CurveAdjustmentInputs.tsx";
+import * as $tools_limits_advanced_DistributionTypeSelector from "./islands/tools/limits/advanced/DistributionTypeSelector.tsx";
+import * as $tools_limits_advanced_MinMaxProbabilityInputs from "./islands/tools/limits/advanced/MinMaxProbabilityInputs.tsx";
+import * as $tools_limits_advanced_utils_calculate_bet_data from "./islands/tools/limits/advanced/utils/calculate-bet-data.ts";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -142,6 +153,28 @@ const manifest = {
       $tools_limits_ProbabilityModeToggle,
     "./islands/tools/limits/VolatilityToggle.tsx":
       $tools_limits_VolatilityToggle,
+    "./islands/tools/limits/advanced/AdvancedDistributionChart.tsx":
+      $tools_limits_advanced_AdvancedDistributionChart,
+    "./islands/tools/limits/advanced/BasicChart.tsx":
+      $tools_limits_advanced_BasicChart,
+    "./islands/tools/limits/advanced/BetInputs.tsx":
+      $tools_limits_advanced_BetInputs,
+    "./islands/tools/limits/advanced/ChartContainer.tsx":
+      $tools_limits_advanced_ChartContainer,
+    "./islands/tools/limits/advanced/ChartControls.tsx":
+      $tools_limits_advanced_ChartControls,
+    "./islands/tools/limits/advanced/ChartTypes.ts":
+      $tools_limits_advanced_ChartTypes,
+    "./islands/tools/limits/advanced/CurrentProbabilitySlider.tsx":
+      $tools_limits_advanced_CurrentProbabilitySlider,
+    "./islands/tools/limits/advanced/CurveAdjustmentInputs.tsx":
+      $tools_limits_advanced_CurveAdjustmentInputs,
+    "./islands/tools/limits/advanced/DistributionTypeSelector.tsx":
+      $tools_limits_advanced_DistributionTypeSelector,
+    "./islands/tools/limits/advanced/MinMaxProbabilityInputs.tsx":
+      $tools_limits_advanced_MinMaxProbabilityInputs,
+    "./islands/tools/limits/advanced/utils/calculate-bet-data.ts":
+      $tools_limits_advanced_utils_calculate_bet_data,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

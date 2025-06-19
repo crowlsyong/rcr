@@ -2,12 +2,24 @@
 import { useEffect, useState } from "preact/hooks";
 import { getMarketDataBySlug } from "../../../utils/api/manifold_api_service.ts";
 import { MarketData } from "../../../utils/api/manifold_types.ts";
+import { TbToggleLeftFilled, TbToggleRightFilled } from "@preact-icons/tb";
+import type { ComponentType } from "preact";
+import type { JSX } from "preact/jsx-runtime";
 
 import AnswerSelector from "./AnswerSelector.tsx";
 import LimitOrderCalculatorForm from "./LimitOrderCalculatorForm.tsx";
 import LimitOrderPlacementOptions from "./LimitOrderPlacementOptions.tsx";
 import { validateInputs } from "./LimitOrderValidation.ts";
 import { calculateOrderDistribution } from "./LimitOrderCalculation.ts";
+import AdvancedDistributionChart from "./advanced/AdvancedDistributionChart.tsx";
+import { CalculatedPoint } from "./advanced/utils/calculate-bet-data.ts";
+
+const ToggleOnIcon = TbToggleRightFilled as ComponentType<
+  JSX.IntrinsicElements["svg"]
+>;
+const ToggleOffIcon = TbToggleLeftFilled as ComponentType<
+  JSX.IntrinsicElements["svg"]
+>;
 
 export interface Order {
   yesAmount: number;
@@ -33,6 +45,10 @@ export default function LimitOrderCalculator() {
   const [apiKeyInput, setApiKeyInput] = useState("");
   const [isVolatilityBet, setIsVolatilityBet] = useState(false);
   const [granularityInput, setGranularityInput] = useState(1);
+  const [isAdvancedMode, setIsAdvancedMode] = useState(false);
+  const [advancedPoints, setAdvancedPoints] = useState<CalculatedPoint[] | null>(
+    null,
+  );
 
   const [marketData, setMarketData] = useState<MarketData | null>(null);
   const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null);
@@ -132,6 +148,7 @@ export default function LimitOrderCalculator() {
       totalBetAmount: totalBetAmountInput,
       isVolatilityBet,
       granularity: granularityInput,
+      advancedPoints: isAdvancedMode ? advancedPoints : null,
     });
 
     if (orders.length === 0) {
@@ -161,6 +178,8 @@ export default function LimitOrderCalculator() {
     totalBetAmountInput,
     isVolatilityBet,
     granularityInput,
+    isAdvancedMode,
+    advancedPoints,
   ]);
 
   const hasValidResults = calculationResult && !calculationResult.error &&
@@ -171,7 +190,7 @@ export default function LimitOrderCalculator() {
   };
 
   return (
-    <div class="p-4 mx-auto max-w-screen-md text-gray-100">
+    <div class="p-4 mx-auto max-w-screen-xl text-gray-100">
       <h1 class="text-2xl font-bold mb-4">
         🦝 Limit Order App
       </h1>
@@ -209,6 +228,7 @@ export default function LimitOrderCalculator() {
         setGranularityInput={setGranularityInput}
         marketData={marketData}
         selectedAnswerId={selectedAnswerId}
+        isAdvancedMode={isAdvancedMode}
       />
 
       {fetchError && <p class="text-red-400 mb-4">Error: {fetchError}</p>}
@@ -234,9 +254,29 @@ export default function LimitOrderCalculator() {
 
       {hasValidResults && (
         <div class="bg-gray-800 shadow overflow-hidden sm:rounded-lg p-6 mb-6 border border-gray-700">
-          <h2 class="text-xl font-semibold mb-3 text-white">
-            Calculated Limit Orders
-          </h2>
+          <div class="flex justify-between items-center mb-3">
+            <h2 class="text-xl font-semibold text-white">
+              Calculated Limit Orders
+            </h2>
+            {isVolatilityBet && (
+              <div class="flex items-center">
+                <label class="text-sm font-medium text-gray-300 mr-3">
+                  Advanced Mode
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsAdvancedMode(!isAdvancedMode)}
+                  class="flex items-center focus:outline-none"
+                  aria-pressed={isAdvancedMode}
+                >
+                  {isAdvancedMode
+                    ? <ToggleOnIcon class="w-10 h-10 text-blue-500" />
+                    : <ToggleOffIcon class="w-10 h-10 text-gray-500" />}
+                </button>
+              </div>
+            )}
+          </div>
+
           <p>
             With a total budget of M
             <span class="font-bold text-white">
@@ -247,6 +287,15 @@ export default function LimitOrderCalculator() {
             </span>{" "}
             across all orders.
           </p>
+
+          {isVolatilityBet && isAdvancedMode && (
+            <AdvancedDistributionChart
+              totalBetAmount={totalBetAmountInput}
+              lowerProbability={lowerProbabilityInput}
+              upperProbability={upperProbabilityInput}
+              onDistributionChange={setAdvancedPoints}
+            />
+          )}
 
           <ul class="space-y-3 mt-4 text-gray-200 text-base">
             {calculationResult.orders!.map((order, index) => (
