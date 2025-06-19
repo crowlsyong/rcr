@@ -35,6 +35,43 @@ export default function BasicChart(
   const chartRef = useRef<HTMLCanvasElement | null>(null);
   const chartInstance = useRef<ChartJsType<"line" | "bar"> | null>(null);
 
+  // Custom Chart.js plugin for background colors
+  const backgroundPlugin = {
+    id: "customBackground",
+    beforeDraw(chart: ChartJsType<"line" | "bar">) {
+      const { ctx, chartArea, scales } = chart;
+      const x = scales.x;
+      const y = scales.y;
+
+      if (!x || !y) return;
+
+      const markerProb = currentProbability;
+      const markerX = x.getPixelForValue(markerProb);
+
+      ctx.save();
+
+      // Green background for "YES" side (left of marker)
+      ctx.fillStyle = "rgba(0, 128, 0, 0.1)"; // Semi-transparent green
+      ctx.fillRect(
+        chartArea.left,
+        chartArea.top,
+        markerX - chartArea.left,
+        chartArea.bottom - chartArea.top,
+      );
+
+      // Red background for "NO" side (right of marker)
+      ctx.fillStyle = "rgba(255, 0, 0, 0.1)"; // Semi-transparent red
+      ctx.fillRect(
+        markerX,
+        chartArea.top,
+        chartArea.right - markerX,
+        chartArea.bottom - chartArea.top,
+      );
+
+      ctx.restore();
+    },
+  };
+
   const updateChartDataAndOptions = (
     chart: ChartJsType<"line" | "bar">,
     props: Omit<BasicChartProps, "onDistributionChange">,
@@ -101,7 +138,7 @@ export default function BasicChart(
         datasets: [
           {
             type: "line",
-            label: "Bet Distribution",
+            label: "Bet Amount",
             data: [],
             fill: false,
             borderColor: "rgb(75, 192, 192)",
@@ -207,7 +244,8 @@ export default function BasicChart(
           },
         },
       },
-      plugins: [],
+      // Register the custom plugin
+      plugins: [backgroundPlugin],
     });
 
     const chartRenderedCheck = setTimeout(() => {
@@ -228,7 +266,7 @@ export default function BasicChart(
       clearTimeout(chartRenderedCheck);
       chartInstance.current?.destroy();
     };
-  }, []);
+  }, [currentProbability]); // Added currentProbability to dependencies to re-render plugin
 
   useEffect(() => {
     if (chartInstance.current) {
