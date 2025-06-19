@@ -22,12 +22,11 @@ export default function BetInputs(
     const parsedValue = parseInt(localBetAmount, 10);
 
     if (isNaN(parsedValue) || parsedValue <= 10) {
-      setBetAmountError(null); // Clear error immediately
+      setBetAmountError(null);
       handler = setTimeout(() => {
         setBetAmountError("Bet amount must be a number greater than 10");
-      }, 1000); // Debounce error message for 1 second
+      }, 1000);
     } else {
-      // If valid, clear any error and update immediately
       setBetAmountError(null);
       if (parsedValue !== betAmount.value) {
         betAmount.value = parsedValue;
@@ -40,7 +39,8 @@ export default function BetInputs(
   }, [localBetAmount, betAmount]);
 
   return (
-    <div class="p-2 space-y-2 text-xs bg-gray-700 rounded-lg shadow-md">
+    <div class="p-2 space-y-2 text-xs bg-gray-900 rounded-lg shadow-md">
+      {/* Changed from bg-gray-700 */}
       <div>
         <label for="bet-amount" class="block text-gray-300 font-medium mb-1">
           Bet Amount:

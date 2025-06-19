@@ -1,11 +1,11 @@
-// islands/charts/CurveAdjustmentInputs.tsx
+// islands/tools/limits/advanced/CurveAdjustmentInputs.tsx
 import { Signal } from "@preact/signals";
 
 interface CurveAdjustmentInputsProps {
   minDistributionPercentage: Signal<number>;
   maxDistributionPercentage: Signal<number>;
   centerShift: Signal<number>;
-  isShiftLockedToCurrentProb: Signal<boolean>; // New prop
+  isShiftLockedToCurrentProb: Signal<boolean>;
 }
 
 export default function CurveAdjustmentInputs(
@@ -17,7 +17,8 @@ export default function CurveAdjustmentInputs(
   }: CurveAdjustmentInputsProps,
 ) {
   return (
-    <div class="p-2 space-y-4 text-xs bg-gray-700 rounded-lg shadow-md">
+    <div class="p-2 space-y-4 text-xs bg-gray-900 rounded-lg shadow-md">
+      {/* Changed from bg-gray-700 */}
       <div>
         <label
           for="min-distribution-percent"
@@ -81,10 +82,10 @@ export default function CurveAdjustmentInputs(
           value={centerShift.value}
           onInput={(e) =>
             centerShift.value = parseInt(e.currentTarget.value) || 0}
-          disabled={isShiftLockedToCurrentProb.value} // Disable when locked
+          disabled={isShiftLockedToCurrentProb.value}
           class={`w-full h-2 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 ${
             isShiftLockedToCurrentProb.value ? "bg-gray-700" : "bg-gray-600"
-          }`} // Change background when disabled
+          }`}
         />
       </div>
 

@@ -1,4 +1,4 @@
-// islands/charts/DistributionTypeSelector.tsx
+// islands/tools/limits/advanced/DistributionTypeSelector.tsx
 import { Signal } from "@preact/signals";
 import { DistributionType } from "./ChartTypes.ts";
 
@@ -10,7 +10,8 @@ export default function DistributionTypeSelector(
   { distributionType }: DistributionTypeSelectorProps,
 ) {
   return (
-    <div class="p-2 text-xs bg-gray-700 rounded-lg shadow-md">
+    <div class="p-2 text-xs bg-gray-900 rounded-lg shadow-md">
+      {/* Changed from bg-gray-700 */}
       <label
         for="distribution-type"
         class="block text-gray-300 font-medium mb-1"
