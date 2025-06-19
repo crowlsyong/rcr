@@ -63,7 +63,7 @@ export default function BasicChart(
 
     chart.data.labels = allXAxisLabels;
     chart.data.datasets[0].data = mainDatasetData;
-    chart.data.datasets[0].label = "Bet Distribution";
+    chart.data.datasets[0].label = "Bet Amount";
 
     if (chart.data.datasets[1]) {
       const currentProbabilityBarData: (number | null)[] = new Array(
