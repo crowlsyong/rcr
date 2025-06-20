@@ -163,7 +163,29 @@ export default function ArbitrageCalculator() {
         mode={calculationMode}
         setMode={setCalculationMode}
       />
+      <div class="mt-4 mb-2">
+        <h3 class="text-base font-semibold text-white">
+          API Key
+        </h3>
+        <p class="text-xs text-gray-500 mt-1">
+          Manifold API Key. We do not store this key
+        </p>
+      </div>
 
+      <div class="mt-2">
+        <label htmlFor="api-key" class="sr-only">
+          Manifold API Key
+        </label>
+        <input
+          type="password"
+          id="api-key"
+          name="apiKey"
+          value={apiKey}
+          onInput={(e) => setApiKey(e.currentTarget.value)}
+          placeholder="xxxxx-xxxx-xxxx-xxxxxxxxxxxxxxx"
+          class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
+        />
+      </div>
       <ArbitrageResults
         calculation={calculation}
         error={error}
@@ -186,7 +208,7 @@ export default function ArbitrageCalculator() {
                   Execute Arbitrage
                 </h3>
                 <p class="text-xs text-gray-500 mt-1">
-                  Allows you to place a bet. We do not store this key
+                  Allows you to place a bet using your API key.
                 </p>
               </div>
               <p class="text-sm text-gray-400">
@@ -195,21 +217,6 @@ export default function ArbitrageCalculator() {
                   M{Math.round(totalBetAmount)}
                 </span>
               </p>
-            </div>
-
-            <div class="mt-2">
-              <label htmlFor="api-key" class="sr-only">
-                Manifold API Key
-              </label>
-              <input
-                type="password"
-                id="api-key"
-                name="apiKey"
-                value={apiKey}
-                onInput={(e) => setApiKey(e.currentTarget.value)}
-                placeholder="xxxxx-xxxx-xxxx-xxxxxxxxxxxxxxx"
-                class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
-              />
             </div>
 
             <ArbitrageExecutionButton
