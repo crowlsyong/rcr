@@ -163,19 +163,17 @@ export default function ArbitrageCalculator() {
         mode={calculationMode}
         setMode={setCalculationMode}
       />
-      <div class="mt-4 mb-2">
-        <h3 class="text-base font-semibold text-white">
-          API Key
-        </h3>
-        <p class="text-xs text-gray-500 mt-1">
-          Manifold API Key. We do not store this key
-        </p>
-      </div>
 
-      <div class="mt-2">
-        <label htmlFor="api-key" class="sr-only">
-          Manifold API Key
+      <div class="mt-3">
+        <label
+          htmlFor="api-key"
+          class="block text-sm font-medium text-gray-300"
+        >
+          Manifold API Key (optional)
         </label>
+        <p class="text-xs text-gray-500 mt-1">
+          Generates additional options. We do not store this key
+        </p>
         <input
           type="password"
           id="api-key"
@@ -185,6 +183,10 @@ export default function ArbitrageCalculator() {
           placeholder="xxxxx-xxxx-xxxx-xxxxxxxxxxxxxxx"
           class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
         />
+        <p class="mt-1 text-xs text-gray-400 text-right">
+          Find your API key on your Manifold profile page by clicking the gear
+          icon and selecting Account Settings.
+        </p>
       </div>
       <ArbitrageResults
         calculation={calculation}
