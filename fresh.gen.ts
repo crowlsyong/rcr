@@ -16,6 +16,7 @@ import * as $auth_signin from "./routes/auth/signin.ts";
 import * as $auth_signout from "./routes/auth/signout.ts";
 import * as $chart_username_ from "./routes/chart/[username].tsx";
 import * as $ext_username_ from "./routes/ext/[username].tsx";
+import * as $extension from "./routes/extension.tsx";
 import * as $forbidden from "./routes/forbidden.tsx";
 import * as $gameshow_usernames_ from "./routes/gameshow/[usernames].tsx";
 import * as $iframe_credit_score from "./routes/iframe/credit-score.tsx";
@@ -89,6 +90,7 @@ const manifest = {
     "./routes/auth/signout.ts": $auth_signout,
     "./routes/chart/[username].tsx": $chart_username_,
     "./routes/ext/[username].tsx": $ext_username_,
+    "./routes/extension.tsx": $extension,
     "./routes/forbidden.tsx": $forbidden,
     "./routes/gameshow/[usernames].tsx": $gameshow_usernames_,
     "./routes/iframe/credit-score.tsx": $iframe_credit_score,
