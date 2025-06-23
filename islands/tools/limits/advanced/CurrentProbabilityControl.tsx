@@ -31,7 +31,6 @@ export default function CurrentProbabilityControl(
   const [localProbability, setLocalProbability] = useState(
     String(currentProbability.value),
   );
-  // State for the "Shift" input
   const [localCurveCenterProbability, setLocalCurveCenterProbability] =
     useState(
       String(50 + centerShift.value),
@@ -42,7 +41,6 @@ export default function CurrentProbabilityControl(
   }, [currentProbability.value]);
 
   useEffect(() => {
-    // Update local Shift when centerShift signal changes
     setLocalCurveCenterProbability(String(50 + centerShift.value));
   }, [centerShift.value]);
 
@@ -75,16 +73,16 @@ export default function CurrentProbabilityControl(
   const handleCurveCenterProbabilityInputChange = (value: string) => {
     const numValue = parseInt(value, 10);
     if (!isNaN(numValue) && numValue >= 0 && numValue <= 100) {
-      const newShift = numValue - 50; // Calculate new shift from center probability
+      const newShift = numValue - 50;
       setLocalCurveCenterProbability(String(numValue));
-      centerShift.value = Math.max(-50, Math.min(50, newShift)); // Clamp shift value
+      centerShift.value = Math.max(-50, Math.min(50, newShift));
     } else if (value === "") {
       setLocalCurveCenterProbability("");
     }
   };
 
   const isDisabledByMarket = typeof marketProbability !== "number";
-  const isProbabilitySliderDisabled = !useCustom; // Renamed for clarity
+  const isProbabilitySliderDisabled = !useCustom;
 
   const probabilitySliderTooltip =
     isProbabilitySliderDisabled && !isDisabledByMarket
@@ -95,10 +93,13 @@ export default function CurrentProbabilityControl(
     ? "Click the blue lock button to unlock"
     : "";
 
-  // Display value for curve shift (e.g., "-6%")
-  const displayCurveShiftValue = centerShift.value > 0
-    ? `+${centerShift.value}%`
-    : `${centerShift.value}%`;
+  // Calculate the displayed shift relative to the current market probability
+  const effectiveCurveCenter = 50 + centerShift.value;
+  const relativeShift = effectiveCurveCenter - currentProbability.value;
+
+  const displayRelativeShift = relativeShift > 0
+    ? `+${relativeShift}%`
+    : `${relativeShift}%`;
 
   return (
     <div class="p-2 space-y-4 text-xxs bg-gray-900 rounded-lg shadow-md">
@@ -176,7 +177,7 @@ export default function CurrentProbabilityControl(
             Shift:
           </label>
           <div class="flex items-center space-x-2">
-            <span class="text-gray-400 mr-1">{displayCurveShiftValue}</span>
+            <span class="text-gray-400 mr-1">{displayRelativeShift}</span>
             <input
               id="curve-center-probability-input"
               type="number"
@@ -205,7 +206,7 @@ export default function CurrentProbabilityControl(
             onInput={(e) => {
               const val = parseInt(e.currentTarget.value) || 0;
               centerShift.value = val;
-              setLocalCurveCenterProbability(String(50 + val)); // Update center probability
+              setLocalCurveCenterProbability(String(50 + val));
             }}
             disabled={isShiftLockedToCurrentProb.value}
             title={curveShiftTooltip}
