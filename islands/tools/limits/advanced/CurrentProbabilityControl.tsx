@@ -31,7 +31,7 @@ export default function CurrentProbabilityControl(
   const [localProbability, setLocalProbability] = useState(
     String(currentProbability.value),
   );
-  // State for the "Curve Center Probability" input
+  // State for the "Shift" input
   const [localCurveCenterProbability, setLocalCurveCenterProbability] =
     useState(
       String(50 + centerShift.value),
@@ -42,7 +42,7 @@ export default function CurrentProbabilityControl(
   }, [currentProbability.value]);
 
   useEffect(() => {
-    // Update local curve center probability when centerShift signal changes
+    // Update local Shift when centerShift signal changes
     setLocalCurveCenterProbability(String(50 + centerShift.value));
   }, [centerShift.value]);
 
@@ -166,14 +166,14 @@ export default function CurrentProbabilityControl(
         </div>
       </div>
 
-      {/* Curve Shift / Curve Center Probability */}
+      {/* Curve Shift / Shift */}
       <div>
         <div class="flex justify-between items-baseline mb-1">
           <label
             for="curve-center-probability-input"
             class="block text-gray-300 font-medium"
           >
-            Curve Center Probability:
+            Shift:
           </label>
           <div class="flex items-center space-x-2">
             <span class="text-gray-400 mr-1">{displayCurveShiftValue}</span>
