@@ -189,8 +189,10 @@ export default function CreditScore() {
         isEmptyInput={isEmptyInput}
         userDeleted={scoreData.value?.userDeleted}
       />
-      <div class="mt-4 relative">
-        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
+      <div class="mt-4 relative group">
+        <span
+          class="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400 group-focus-within:text-blue-400 transition-colors duration-200"
+        >
           @
         </span>
         <input
@@ -204,7 +206,6 @@ export default function CreditScore() {
           class="w-full pl-8 p-3 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
-
       <div class="text-center pt-4">
         {isEmptyInput
           ? <p class="text-gray-500">Enter a username to see the score.</p>

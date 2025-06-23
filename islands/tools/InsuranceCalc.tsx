@@ -122,13 +122,17 @@ export default function InsuranceCalc() {
         isWaiting={!scoreData.value}
       />
 
-      {/* Username Input */}
+{/* Username Input */}
       <div class="mt-4">
         <label htmlFor="username" class="text-gray-400 mb-1 block">
           Enter a username
         </label>
-        <div class="relative">
-          <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
+        {/* Add "group" to the div that wraps the @ symbol and the input */}
+        <div class="relative group">
+          <span
+            class="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400 group-focus-within:text-blue-400 transition-colors duration-200"
+            // Apply group-focus-within to the span
+          >
             @
           </span>
           <input
