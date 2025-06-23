@@ -14,8 +14,8 @@ export default function RiskExtensionPage() {
           </h1>
           <p class="text-lg sm:text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
             Enhance your Manifold Markets experience with the official RISK
-            Chrome Extension. Gain advanced insights and tools to help you
-            make more informed betting decisions directly in your browser.
+            Chrome Extension. Gain advanced insights and tools to help you make
+            more informed betting decisions directly in your browser.
           </p>
           <a
             href="https://github.com/crowlsyong/rcr-chrome-ext"
