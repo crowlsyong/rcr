@@ -190,9 +190,7 @@ export default function CreditScore() {
         userDeleted={scoreData.value?.userDeleted}
       />
       <div class="mt-4 relative group">
-        <span
-          class="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400 group-focus-within:text-blue-400 transition-colors duration-200"
-        >
+        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400 group-focus-within:text-blue-400 transition-colors duration-200">
           @
         </span>
         <input
