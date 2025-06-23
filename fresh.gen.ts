@@ -71,6 +71,7 @@ import * as $tools_limits_advanced_CurrentProbabilitySlider from "./islands/tool
 import * as $tools_limits_advanced_CurveAdjustmentInputs from "./islands/tools/limits/advanced/CurveAdjustmentInputs.tsx";
 import * as $tools_limits_advanced_DistributionTypeSelector from "./islands/tools/limits/advanced/DistributionTypeSelector.tsx";
 import * as $tools_limits_advanced_MinMaxProbabilityInputs from "./islands/tools/limits/advanced/MinMaxProbabilityInputs.tsx";
+import * as $tools_limits_advanced_PointsGranularityControl from "./islands/tools/limits/advanced/PointsGranularityControl.tsx";
 import * as $tools_limits_advanced_utils_calculate_bet_data from "./islands/tools/limits/advanced/utils/calculate-bet-data.ts";
 import type { Manifest } from "$fresh/server.ts";
 
@@ -178,6 +179,8 @@ const manifest = {
       $tools_limits_advanced_DistributionTypeSelector,
     "./islands/tools/limits/advanced/MinMaxProbabilityInputs.tsx":
       $tools_limits_advanced_MinMaxProbabilityInputs,
+    "./islands/tools/limits/advanced/PointsGranularityControl.tsx":
+      $tools_limits_advanced_PointsGranularityControl,
     "./islands/tools/limits/advanced/utils/calculate-bet-data.ts":
       $tools_limits_advanced_utils_calculate_bet_data,
   },

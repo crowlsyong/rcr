@@ -4,7 +4,7 @@ import { DistributionType } from "./ChartTypes.ts";
 import BetInputs from "./BetInputs.tsx";
 import CurrentProbabilityControl from "./CurrentProbabilityControl.tsx";
 import DistributionTypeSelector from "./DistributionTypeSelector.tsx";
-// Remove CurveAdjustmentInputs import since it's now part of CurrentProbabilityControl
+import PointsGranularityControl from "./PointsGranularityControl.tsx"; // Import the new component
 
 interface ChartControlsProps {
   betAmount: Signal<number>;
@@ -34,9 +34,11 @@ export default function ChartControls(
   return (
     <div class="flex flex-col gap-4 w-full md:w-1/3 max-w-xs">
       <h2 class="text-2xl font-bold text-center mb-2">Chart Controls</h2>
-      <BetInputs
-        betAmount={betAmount}
+      <BetInputs betAmount={betAmount} />
+      <PointsGranularityControl
         percentageInterval={percentageInterval}
+        minDistributionPercentage={minDistributionPercentage}
+        maxDistributionPercentage={maxDistributionPercentage}
       />
       <CurrentProbabilityControl
         currentProbability={currentProbability}
@@ -47,7 +49,6 @@ export default function ChartControls(
       <DistributionTypeSelector
         distributionType={distributionType}
       />
-      {/* Remove CurveAdjustmentInputs since it's now part of CurrentProbabilityControl */}
       <div class="p-2 space-y-4 text-xxs bg-gray-900 rounded-lg shadow-md">
         <div>
           <div class="flex justify-between items-baseline mb-1">
