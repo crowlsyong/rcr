@@ -1,7 +1,6 @@
 // islands/tools/limits/advanced/MinMaxProbabilityControl.tsx
-import { Signal, useSignal, useSignalEffect } from "@preact/signals";
-import { useState } from "preact/hooks";
-import { useEffect } from "preact/hooks";
+import { Signal, useSignal } from "@preact/signals";
+import { useState, useEffect } from "preact/hooks"; // Ensure useEffect is imported
 import { TbToggleLeftFilled, TbToggleRightFilled } from "@preact-icons/tb";
 import type { ComponentType } from "preact";
 import type { JSX } from "preact/jsx-runtime";
@@ -17,6 +16,7 @@ interface MinMaxProbabilityControlProps {
   minDistributionPercentage: Signal<number>;
   maxDistributionPercentage: Signal<number>;
   currentProbability: Signal<number>;
+  centerShift: Signal<number>;
 }
 
 export default function MinMaxProbabilityControl(
@@ -24,10 +24,12 @@ export default function MinMaxProbabilityControl(
     minDistributionPercentage,
     maxDistributionPercentage,
     currentProbability,
+    centerShift,
   }: MinMaxProbabilityControlProps,
 ) {
   const isRelativeMode = useSignal(false);
-  const offsetPercent = useSignal(10); // Default +/- 10%
+  const isRelativeToMarker = useSignal(true);
+  const offsetPercent = useSignal(10);
 
   const [localMinPercentage, setLocalMinPercentage] = useState(
     String(minDistributionPercentage.value),
@@ -39,20 +41,27 @@ export default function MinMaxProbabilityControl(
     String(offsetPercent.value),
   );
 
-  // This effect calculates the min/max when in relative mode
-  useSignalEffect(() => {
+  const centerPoint = isRelativeToMarker.value
+    ? currentProbability.value
+    : 50 + centerShift.value;
+
+  // Replaced useSignalEffect with a standard useEffect and an explicit dependency array
+  useEffect(() => {
     if (isRelativeMode.value) {
-      const center = currentProbability.value;
       const offset = offsetPercent.value;
-      const newMin = Math.max(1, Math.round(center - offset));
-      const newMax = Math.min(99, Math.round(center + offset));
+      const newMin = Math.max(1, Math.round(centerPoint - offset));
+      const newMax = Math.min(99, Math.round(centerPoint + offset));
 
       minDistributionPercentage.value = newMin;
       maxDistributionPercentage.value = newMax;
     }
-  });
+  }, [
+    isRelativeMode.value,
+    centerPoint, // This will change when the toggle or sliders change
+    offsetPercent.value,
+  ]);
 
-  // Sync local state with signals
+  // Sync local state with signals (no changes here)
   useEffect(() => {
     setLocalMinPercentage(String(minDistributionPercentage.value));
   }, [minDistributionPercentage.value]);
@@ -65,7 +74,7 @@ export default function MinMaxProbabilityControl(
     setLocalOffsetPercent(String(offsetPercent.value));
   }, [offsetPercent.value]);
 
-  // Handlers for custom mode inputs
+  // Input handlers (no changes here)
   const handleMinPercentageInputChange = (value: string) => {
     const numValue = parseInt(value, 10);
     if (!isNaN(numValue) && numValue >= 1 && numValue <= 98) {
@@ -94,20 +103,19 @@ export default function MinMaxProbabilityControl(
     }
   };
 
-  // The maximum allowed offset to prevent going out of the 1-99% bounds
   const maxOffset = Math.floor(
-    Math.min(currentProbability.value - 1, 99 - currentProbability.value),
+    Math.min(centerPoint - 1, 99 - centerPoint),
   );
 
   return (
     <div class="p-2 space-y-4 text-xxs bg-gray-900 rounded-lg shadow-md">
       <div class="flex justify-between items-center">
         <p class="block text-gray-300 font-medium">
-          Range Mode:
+          Prob. Mode:
         </p>
         <div class="flex items-center">
-          <label class="text-xxs font-medium text-gray-300 mr-1">
-            {isRelativeMode.value ? "Relative" : "Custom Range"}
+          <label class="text-xxs font-medium text-gray-300 mr-3">
+            {isRelativeMode.value ? "Relative" : "Custom"}
           </label>
           <button
             type="button"
@@ -126,14 +134,25 @@ export default function MinMaxProbabilityControl(
         ? (
           // Relative Mode UI
           <div>
-            <div class="flex justify-between items-baseline mb-1">
-              <label
-                for="offset-percent-input"
-                class="block text-gray-300 font-medium"
-              >
-                Range around Marker:
-              </label>
-              <div class="flex items-baseline space-x-1">
+            <div class="flex justify-between items-center mb-1">
+              <div class="flex items-center space-x-2">
+                <label
+                  for="offset-percent-input"
+                  class="block text-gray-300 font-medium"
+                >
+                  Range:
+                </label>
+                <button
+                  type="button"
+                  onClick={() =>
+                    isRelativeToMarker.value = !isRelativeToMarker.value}
+                  class="text-xxs bg-gray-700 px-2 py-0.5 rounded hover:bg-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  title="Toggle calculation anchor point"
+                >
+                  {isRelativeToMarker.value ? "Market" : "Shift"}
+                </button>
+              </div>
+              <div class="flex items-center space-x-1">
                 <span class="text-gray-300">+/-</span>
                 <input
                   id="offset-percent-input"
@@ -181,14 +200,14 @@ export default function MinMaxProbabilityControl(
           // Custom Range UI
           <>
             <div>
-              <div class="flex justify-between items-baseline mb-1">
+              <div class="flex justify-between items-center mb-1">
                 <label
                   for="min-distribution-input"
                   class="block text-gray-300 font-medium"
                 >
                   Min Probability (%):
                 </label>
-                <div class="flex items-baseline space-x-1">
+                <div class="flex items-center space-x-1">
                   <input
                     id="min-distribution-input"
                     type="number"
@@ -220,14 +239,14 @@ export default function MinMaxProbabilityControl(
               />
             </div>
             <div>
-              <div class="flex justify-between items-baseline mb-1">
+              <div class="flex justify-between items-center mb-1">
                 <label
                   for="max-distribution-input"
                   class="block text-gray-300 font-medium"
                 >
                   Max Probability (%):
                 </label>
-                <div class="flex items-baseline space-x-1">
+                <div class="flex items-center space-x-1">
                   <input
                     id="max-distribution-input"
                     type="number"

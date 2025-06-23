@@ -5,7 +5,7 @@ import BetInputs from "./BetInputs.tsx";
 import CurrentProbabilityControl from "./CurrentProbabilityControl.tsx";
 import DistributionTypeSelector from "./DistributionTypeSelector.tsx";
 import PointsGranularityControl from "./PointsGranularityControl.tsx";
-import MinMaxProbabilityControl from "./MinMaxProbabilityControl.tsx"; // Import the new component
+import MinMaxProbabilityControl from "./MinMaxProbabilityControl.tsx";
 
 interface ChartControlsProps {
   betAmount: Signal<number>;
@@ -54,6 +54,7 @@ export default function ChartControls(
         minDistributionPercentage={minDistributionPercentage}
         maxDistributionPercentage={maxDistributionPercentage}
         currentProbability={currentProbability}
+        centerShift={centerShift} // Pass the centerShift signal here
       />
     </div>
   );
