@@ -6,3 +6,16 @@
 html, body {
   background-color: #0f1729;
 }
+
+/* Remove spin buttons across modern browsers */
+input[type="number"] {
+  appearance: none; /* Standard property */
+  -webkit-appearance: none; /* Chrome, Safari, Edge */
+  -moz-appearance: textfield; /* Firefox */
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

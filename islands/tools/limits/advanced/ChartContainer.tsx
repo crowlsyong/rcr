@@ -1,9 +1,10 @@
-// islands/charts/ChartContainer.tsx
+// islands/tools/limits/ChartContainer.tsx
 import { signal } from "@preact/signals";
 import { useEffect } from "preact/hooks"; // Import useEffect
 import BasicChart from "./BasicChart.tsx";
 import ChartControls from "./ChartControls.tsx";
 import { DistributionType } from "./ChartTypes.ts";
+import { CalculatedPoint } from "../advanced/utils/calculate-bet-data.ts"; // Import for onDistributionChange
 
 const betAmount = signal<number>(1000);
 const percentageInterval = signal<number>(10);
@@ -24,6 +25,13 @@ export default function ChartContainer() {
       centerShift.value = currentProbability.value - 50;
     }
   }, [currentProbability.value, isShiftLockedToCurrentProb.value]);
+
+  // Dummy function for onDistributionChange, for ChartContainer only
+  const handleDistributionChange = (points: CalculatedPoint[]) => {
+    // In a real application, you might update a signal here or perform other actions
+    // For this demo, we'll just log them.
+    console.log("Chart distribution points changed:", points);
+  };
 
   return (
     <div class="p-4 flex flex-col md:flex-row gap-6 items-start md:items-center justify-center min-h-screen bg-gray-900 text-white">
@@ -49,6 +57,7 @@ export default function ChartContainer() {
           minDistributionPercentage={minDistributionPercentage.value}
           maxDistributionPercentage={maxDistributionPercentage.value}
           centerShift={centerShift.value}
+          onDistributionChange={handleDistributionChange} // <-- ADDED THIS PROP
         />
       </div>
     </div>

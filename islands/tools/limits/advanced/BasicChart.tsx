@@ -35,7 +35,7 @@ export default function BasicChart(
   const chartRef = useRef<HTMLCanvasElement | null>(null);
   const chartInstance = useRef<ChartJsType<"line" | "bar"> | null>(null);
 
-  // Custom Chart.js plugin for background colors
+  // Custom Chart.js plugin for background colors and vertical lines
   const backgroundPlugin = {
     id: "customBackground",
     beforeDraw(chart: ChartJsType<"line" | "bar">) {
@@ -47,6 +47,10 @@ export default function BasicChart(
 
       const markerProb = currentProbability;
       const markerX = x.getPixelForValue(markerProb);
+
+      // Calculate curve shift center position (50 + centerShift, clamped to 0-100)
+      const curveShiftCenter = Math.max(0, Math.min(100, 50 + centerShift));
+      const curveShiftX = x.getPixelForValue(curveShiftCenter);
 
       ctx.save();
 
@@ -67,6 +71,18 @@ export default function BasicChart(
         chartArea.right - markerX,
         chartArea.bottom - chartArea.top,
       );
+
+      // Blue vertical line for curve shift center
+      if (curveShiftCenter >= 0 && curveShiftCenter <= 100) {
+        ctx.strokeStyle = "rgba(59, 130, 246, 0.8)"; // Blue color
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]); // Dashed line
+        ctx.beginPath();
+        ctx.moveTo(curveShiftX, chartArea.top);
+        ctx.lineTo(curveShiftX, chartArea.bottom);
+        ctx.stroke();
+        ctx.setLineDash([]); // Reset line dash
+      }
 
       ctx.restore();
     },
@@ -155,8 +171,8 @@ export default function BasicChart(
             backgroundColor: "rgba(255, 255, 0, 0.4)",
             borderColor: "rgba(255, 255, 0, 0.6)",
             borderWidth: 1,
-            barPercentage: 0.8,
-            categoryPercentage: 0.8,
+            barPercentage: 1.5,
+            categoryPercentage: 1.5,
             order: 1,
           },
         ],
@@ -266,7 +282,7 @@ export default function BasicChart(
       clearTimeout(chartRenderedCheck);
       chartInstance.current?.destroy();
     };
-  }, [currentProbability]); // Added currentProbability to dependencies to re-render plugin
+  }, [currentProbability, centerShift]); // Added centerShift to dependencies
 
   useEffect(() => {
     if (chartInstance.current) {
