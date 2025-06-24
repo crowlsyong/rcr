@@ -12,15 +12,20 @@ const ChevronDownIcon = TbChevronDown as ComponentType<
   JSX.IntrinsicElements["svg"]
 >;
 
-const mainLinks = [
+const appsLinks = [
   {
-    label: "📰 Dashboard",
-    url: "https://manifold.markets/news/risk",
-    targetBlank: true,
+    label: "⚖️ Arbitrage",
+    url: "/arbitrage",
+    targetBlank: false,
   },
   {
     label: "📈 Credit Score",
     url: "/",
+    targetBlank: false,
+  },
+  {
+    label: "📦 Extension",
+    url: "/extension",
     targetBlank: false,
   },
   {
@@ -33,22 +38,12 @@ const mainLinks = [
     url: "/limits",
     targetBlank: false,
   },
-  {
-    label: "⚖️ Arbitrage",
-    url: "/arbitrage",
-    targetBlank: false,
-  },
-  {
-    label: "📦 Extension",
-    url: "/extension",
-    targetBlank: false,
-  },
 ];
 
-const servicesLinks = [
+const banksLinks = [
   {
-    label: "🏦 Payment Portal",
-    url: "https://manifold.markets/crowlsyong/risk-payment-portal",
+    label: "💵 BANK",
+    url: "https://manifold.markets/news/placeholder",
     targetBlank: true,
   },
   {
@@ -56,14 +51,50 @@ const servicesLinks = [
     url: "https://manifold.markets/GastonKessler/test-bounty-gtduUIZPQR",
     targetBlank: true,
   },
+];
+
+const globularConglomerateLinks = [
   {
-    label: "💵 BANK",
-    url: "https://manifold.markets/news/placeholder",
+    label: "⚖️ LAWS",
+    url: "https://manifold.markets/news/laws",
     targetBlank: true,
   },
   {
+    label: "⛑️ POOR",
+    url: "https://manifold.markets/news/poor",
+    targetBlank: true,
+  },
+  {
+    label: "📖 RIPE",
+    url: "https://manifold.markets/news/ripe",
+    targetBlank: true,
+  },
+  {
+    label: "🦝 RISK",
+    url: "https://manifold.markets/news/risk",
+    targetBlank: true,
+  },
+  {
+    label: "🦝 RISKBLOG",
+    url: "https://manifold.markets/news/risk",
+    targetBlank: true,
+  },
+];
+
+const servicesLinks = [
+  {
     label: "✉️ Contact",
     url: "https://manifold.markets/crowlsyong",
+    targetBlank: true,
+  },
+  {
+    label: "📝 Make a claim",
+    url: "https://manifold.markets/crowlsyong/risk-payment-portal",
+    targetBlank: true,
+  },
+  {
+    label: "🏦 Payment Portal",
+    url: "https://manifold.markets/crowlsyong/risk-payment-portal",
     targetBlank: true,
   },
 ];
@@ -71,14 +102,14 @@ const servicesLinks = [
 export default function MenuBar() {
   const isMenuOpen = useSignal(false);
   const isServicesOpen = useSignal(false);
+  const isAppsOpen = useSignal(false);
+  const isBanksOpen = useSignal(false);
+  const isGlobularConglomerateOpen = useSignal(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(e.target as Node)
-      ) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         isMenuOpen.value = false;
       }
     }
@@ -153,27 +184,135 @@ export default function MenuBar() {
         </div>
 
         <div class="space-y-2 mt-10">
-          {mainLinks.map((link) => (
-            <a
-              key={link.url}
-              href={link.url}
-              target={link.targetBlank ? "_blank" : "_self"}
-              rel={link.targetBlank ? "noopener noreferrer" : undefined}
-              class="relative flex items-center justify-center border border-[#334155] text-white py-2 px-3 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-sm"
+          <div>
+            <button
+              type="button"
+              onClick={() => (isAppsOpen.value = !isAppsOpen.value)}
+              class="w-full flex items-center justify-between border border-[#334155] text-white py-2 px-3 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-sm"
               tabIndex={isMenuOpen.value ? 0 : -1}
             >
-              <span>{link.label}</span>
-              {link.targetBlank && typeof window !== "undefined" && (
-                <ExternalLinkIcon class="absolute right-3 w-4 h-4 opacity-70" />
+              <span>✨ Apps</span>
+              {typeof window !== "undefined" && (
+                <ChevronDownIcon
+                  class={`w-4 h-4 opacity-70 transition-transform duration-300 ${
+                    isAppsOpen.value ? "rotate-180" : ""
+                  }`}
+                />
               )}
-            </a>
-          ))}
+            </button>
+            <div
+              class={`transition-all duration-300 ease-in-out overflow-hidden ${
+                isAppsOpen.value ? "max-h-96 mt-2" : "max-h-0"
+              }`}
+            >
+              <div class="space-y-2 pl-4 border-l-2 border-gray-700/50">
+                {appsLinks.map((link) => (
+                  <a
+                    key={link.url}
+                    href={link.url}
+                    target={link.targetBlank ? "_blank" : "_self"}
+                    rel={link.targetBlank ? "noopener noreferrer" : undefined}
+                    class="relative flex items-center justify-start border border-[#334155] text-white py-2 px-3 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-sm"
+                    tabIndex={isMenuOpen.value ? 0 : -1}
+                  >
+                    <span>{link.label}</span>
+                    {link.targetBlank && typeof window !== "undefined" && (
+                      <ExternalLinkIcon class="absolute right-3 w-4 h-4 opacity-70" />
+                    )}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
 
           <div>
             <button
               type="button"
-              onClick={() => isServicesOpen.value = !isServicesOpen.value}
-              class="w-full flex items-center justify-center gap-2 border border-[#334155] text-white py-2 px-3 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-sm"
+              onClick={() => (isBanksOpen.value = !isBanksOpen.value)}
+              class="w-full flex items-center justify-between border border-[#334155] text-white py-2 px-3 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-sm"
+              tabIndex={isMenuOpen.value ? 0 : -1}
+            >
+              <span>🏦 Banks</span>
+              {typeof window !== "undefined" && (
+                <ChevronDownIcon
+                  class={`w-4 h-4 opacity-70 transition-transform duration-300 ${
+                    isBanksOpen.value ? "rotate-180" : ""
+                  }`}
+                />
+              )}
+            </button>
+            <div
+              class={`transition-all duration-300 ease-in-out overflow-hidden ${
+                isBanksOpen.value ? "max-h-96 mt-2" : "max-h-0"
+              }`}
+            >
+              <div class="space-y-2 pl-4 border-l-2 border-gray-700/50">
+                {banksLinks.map((link) => (
+                  <a
+                    key={link.url}
+                    href={link.url}
+                    target={link.targetBlank ? "_blank" : "_self"}
+                    rel={link.targetBlank ? "noopener noreferrer" : undefined}
+                    class="relative flex items-center justify-start border border-[#334155] text-white py-2 px-3 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-sm"
+                    tabIndex={isMenuOpen.value ? 0 : -1}
+                  >
+                    <span>{link.label}</span>
+                    {link.targetBlank && typeof window !== "undefined" && (
+                      <ExternalLinkIcon class="absolute right-3 w-4 h-4 opacity-70" />
+                    )}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <button
+              type="button"
+              onClick={() => (isGlobularConglomerateOpen.value =
+                !isGlobularConglomerateOpen.value)}
+              class="w-full flex items-center justify-between border border-[#334155] text-white py-2 px-3 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-sm"
+              tabIndex={isMenuOpen.value ? 0 : -1}
+            >
+              <span>🌐 Globular Conglomerate</span>
+              {typeof window !== "undefined" && (
+                <ChevronDownIcon
+                  class={`w-4 h-4 opacity-70 transition-transform duration-300 ${
+                    isGlobularConglomerateOpen.value ? "rotate-180" : ""
+                  }`}
+                />
+              )}
+            </button>
+            <div
+              class={`transition-all duration-300 ease-in-out overflow-hidden ${
+                isGlobularConglomerateOpen.value ? "max-h-96 mt-2" : "max-h-0"
+              }`}
+            >
+              <div class="space-y-2 pl-4 border-l-2 border-gray-700/50">
+                {globularConglomerateLinks.map((link) => (
+                  <a
+                    key={link.url}
+                    href={link.url}
+                    target={link.targetBlank ? "_blank" : "_self"}
+                    rel={link.targetBlank ? "noopener noreferrer" : undefined}
+                    class="relative flex items-center justify-start border border-[#334155] text-white py-2 px-3 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-sm"
+                    tabIndex={isMenuOpen.value ? 0 : -1}
+                  >
+                    <span>{link.label}</span>
+                    {link.targetBlank && typeof window !== "undefined" && (
+                      <ExternalLinkIcon class="absolute right-3 w-4 h-4 opacity-70" />
+                    )}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <button
+              type="button"
+              onClick={() => (isServicesOpen.value = !isServicesOpen.value)}
+              class="w-full flex items-center justify-between border border-[#334155] text-white py-2 px-3 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-sm"
               tabIndex={isMenuOpen.value ? 0 : -1}
             >
               <span>🛠️ Services</span>
@@ -197,7 +336,7 @@ export default function MenuBar() {
                     href={link.url}
                     target={link.targetBlank ? "_blank" : "_self"}
                     rel={link.targetBlank ? "noopener noreferrer" : undefined}
-                    class="relative flex items-center justify-center border border-[#334155] text-white py-2 px-3 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-sm"
+                    class="relative flex items-center justify-start border border-[#334155] text-white py-2 px-3 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-sm"
                     tabIndex={isMenuOpen.value ? 0 : -1}
                   >
                     <span>{link.label}</span>
