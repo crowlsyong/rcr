@@ -17,19 +17,13 @@ const centerShift = signal<number>(0);
 const isShiftLockedToCurrentProb = signal<boolean>(false); // New signal for lock
 
 export default function ChartContainer() {
-  // Effect to lock curve shift to current probability
   useEffect(() => {
     if (isShiftLockedToCurrentProb.value) {
-      // Calculate the shift needed to center the curve at currentProbability
-      // Assuming a natural center/midpoint for many curves is 50%
       centerShift.value = currentProbability.value - 50;
     }
   }, [currentProbability.value, isShiftLockedToCurrentProb.value]);
 
-  // Dummy function for onDistributionChange, for ChartContainer only
   const handleDistributionChange = (points: CalculatedPoint[]) => {
-    // In a real application, you might update a signal here or perform other actions
-    // For this demo, we'll just log them.
     console.log("Chart distribution points changed:", points);
   };
 

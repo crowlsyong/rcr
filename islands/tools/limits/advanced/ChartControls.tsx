@@ -34,7 +34,7 @@ export default function ChartControls(
 ) {
   return (
     <div class="flex flex-col gap-4 w-full md:w-1/3 max-w-xs">
-      <h2 class="text-2xl font-bold text-center mb-2">Chart Controls</h2>
+      <h2 class="text-md font-bold text-center mb-2">Chart Controls</h2>
       <BetInputs betAmount={betAmount} />
       <PointsGranularityControl
         percentageInterval={percentageInterval}
