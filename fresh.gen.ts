@@ -26,12 +26,14 @@ import * as $limits from "./routes/limits.tsx";
 import * as $old_ext_username_ from "./routes/old-ext/[username].tsx";
 import * as $qr_string_ from "./routes/qr/[string].tsx";
 import * as $u_username_ from "./routes/u/[username].tsx";
-import * as $MenuBar from "./islands/MenuBar.tsx";
 import * as $PasswordGate from "./islands/PasswordGate.tsx";
 import * as $buttons_Button from "./islands/buttons/Button.tsx";
 import * as $buttons_ChartButton from "./islands/buttons/ChartButton.tsx";
 import * as $buttons_ShareButton from "./islands/buttons/ShareButton.tsx";
 import * as $buttons_ShareURL from "./islands/buttons/ShareURL.tsx";
+import * as $menu_LinkDataProvider from "./islands/menu/LinkDataProvider.tsx";
+import * as $menu_MenuBar from "./islands/menu/MenuBar.tsx";
+import * as $menu_MenuDropdown from "./islands/menu/MenuDropdown.tsx";
 import * as $tools_GameShowCreditScore from "./islands/tools/GameShowCreditScore.tsx";
 import * as $tools_InsuranceCalc from "./islands/tools/InsuranceCalc.tsx";
 import * as $tools_arbitrage_ArbitrageCalculator from "./islands/tools/arbitrage/ArbitrageCalculator.tsx";
@@ -106,12 +108,14 @@ const manifest = {
     "./routes/u/[username].tsx": $u_username_,
   },
   islands: {
-    "./islands/MenuBar.tsx": $MenuBar,
     "./islands/PasswordGate.tsx": $PasswordGate,
     "./islands/buttons/Button.tsx": $buttons_Button,
     "./islands/buttons/ChartButton.tsx": $buttons_ChartButton,
     "./islands/buttons/ShareButton.tsx": $buttons_ShareButton,
     "./islands/buttons/ShareURL.tsx": $buttons_ShareURL,
+    "./islands/menu/LinkDataProvider.tsx": $menu_LinkDataProvider,
+    "./islands/menu/MenuBar.tsx": $menu_MenuBar,
+    "./islands/menu/MenuDropdown.tsx": $menu_MenuDropdown,
     "./islands/tools/GameShowCreditScore.tsx": $tools_GameShowCreditScore,
     "./islands/tools/InsuranceCalc.tsx": $tools_InsuranceCalc,
     "./islands/tools/arbitrage/ArbitrageCalculator.tsx":
