@@ -15,7 +15,6 @@ import * as $auth_oauth2callback from "./routes/auth/oauth2callback.ts";
 import * as $auth_signin from "./routes/auth/signin.ts";
 import * as $auth_signout from "./routes/auth/signout.ts";
 import * as $chart_username_ from "./routes/chart/[username].tsx";
-import * as $ext_username_ from "./routes/ext/[username].tsx";
 import * as $extension from "./routes/extension.tsx";
 import * as $forbidden from "./routes/forbidden.tsx";
 import * as $gameshow_usernames_ from "./routes/gameshow/[usernames].tsx";
@@ -24,6 +23,7 @@ import * as $iframe_insurance_fee_calculator from "./routes/iframe/insurance-fee
 import * as $index from "./routes/index.tsx";
 import * as $insurance from "./routes/insurance.tsx";
 import * as $limits from "./routes/limits.tsx";
+import * as $old_ext_username_ from "./routes/old-ext/[username].tsx";
 import * as $qr_string_ from "./routes/qr/[string].tsx";
 import * as $u_username_ from "./routes/u/[username].tsx";
 import * as $MenuBar from "./islands/MenuBar.tsx";
@@ -92,7 +92,6 @@ const manifest = {
     "./routes/auth/signin.ts": $auth_signin,
     "./routes/auth/signout.ts": $auth_signout,
     "./routes/chart/[username].tsx": $chart_username_,
-    "./routes/ext/[username].tsx": $ext_username_,
     "./routes/extension.tsx": $extension,
     "./routes/forbidden.tsx": $forbidden,
     "./routes/gameshow/[usernames].tsx": $gameshow_usernames_,
@@ -102,6 +101,7 @@ const manifest = {
     "./routes/index.tsx": $index,
     "./routes/insurance.tsx": $insurance,
     "./routes/limits.tsx": $limits,
+    "./routes/old-ext/[username].tsx": $old_ext_username_,
     "./routes/qr/[string].tsx": $qr_string_,
     "./routes/u/[username].tsx": $u_username_,
   },
