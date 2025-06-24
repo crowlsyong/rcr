@@ -1,5 +1,5 @@
 import { type PageProps } from "$fresh/server.ts";
-import MenuBar from "../islands/menubar/MenuBar.tsx"; // Import the MenuBar
+import MenuBar from "../islands/MenuBar.tsx"; // Import the MenuBar
 
 //Conditionally show MenuBar based on the route
 export default function App({ Component, url }: PageProps) {
