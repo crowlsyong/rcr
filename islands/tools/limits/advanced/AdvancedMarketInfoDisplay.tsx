@@ -24,8 +24,6 @@ export default function AdvancedMarketInfoDisplay({
     return null;
   }
 
-  // selectedAnswer is no longer used for rendering, but keeping it for context if needed elsewhere
-  // in the future or for debugging. It no longer drives any UI in this component.
   const selectedAnswer = marketData.outcomeType === "MULTIPLE_CHOICE" &&
       selectedAnswerId && marketData.answers
     ? marketData.answers.find((a) => a.id === selectedAnswerId)
@@ -38,21 +36,6 @@ export default function AdvancedMarketInfoDisplay({
       return `M${(amount / 1000).toFixed(1)}k`;
     }
     return `M${Math.round(amount)}`;
-  };
-
-  const getOutcomeTypeLabel = (type: string): string => {
-    switch (type) {
-      case "BINARY":
-        return "Binary";
-      case "MULTIPLE_CHOICE":
-        return "Multiple Choice";
-      case "FREE_RESPONSE":
-        return "Free Response";
-      case "PSEUDO_NUMERIC":
-        return "Numeric";
-      default:
-        return type;
-    }
   };
 
   const copyToClipboard = (text: string) => {
@@ -81,13 +64,6 @@ export default function AdvancedMarketInfoDisplay({
           </div>
 
           <div>
-            <h4 class="text-xs font-medium text-gray-300 mb-1">Market Type</h4>
-            <p class="text-xs text-white font-mono">
-              {getOutcomeTypeLabel(marketData.outcomeType)}
-            </p>
-          </div>
-
-          <div>
             <h4 class="text-xs font-medium text-gray-300 mb-1">Market ID</h4>
             <div class="flex items-center space-x-2 bg-gray-900/50 p-2 rounded-md border border-gray-700">
               <span class="text-xs text-white font-mono break-all flex-grow">
@@ -110,7 +86,6 @@ export default function AdvancedMarketInfoDisplay({
               </button>
             </div>
           </div>
-          {/* Removed: Selected Answer section */}
         </div>
 
         {/* Right Column - Market Metrics */}
@@ -124,7 +99,7 @@ export default function AdvancedMarketInfoDisplay({
                 {marketData.outcomeType === "BINARY" &&
                     typeof marketData.probability === "number"
                   ? `${Math.round(marketData.probability * 100)}%`
-                  : selectedAnswer // Still need selectedAnswer here for MP markets' default prob.
+                  : selectedAnswer
                   ? `${Math.round(selectedAnswer.probability * 100)}%`
                   : "N/A"}
               </p>
@@ -153,7 +128,6 @@ export default function AdvancedMarketInfoDisplay({
               </p>
             </div>
           </div>
-          {/* Removed: Answer Pool section */}
         </div>
       </div>
     </div>

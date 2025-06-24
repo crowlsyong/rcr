@@ -28,7 +28,7 @@ export default function AdvancedDistributionChart({
   onBetAmountChange,
   marketProbability,
   currentProbability,
-  marketData,
+  marketData, // Destructure marketData
   selectedAnswerId,
 }: AdvancedDistributionChartProps) {
   const betAmount = useMemo(() => signal(totalBetAmount), []);
@@ -91,6 +91,7 @@ export default function AdvancedDistributionChart({
           maxDistributionPercentage={maxDistributionPercentage.value}
           centerShift={centerShift.value}
           onDistributionChange={onDistributionChange}
+          marketQuestion={marketData?.question || "Loading Market..."} // Pass the market question
         />
         <AdvancedMarketInfoDisplay
           marketData={marketData || null}

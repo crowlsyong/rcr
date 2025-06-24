@@ -18,6 +18,7 @@ interface BasicChartProps {
   maxDistributionPercentage: number;
   centerShift: number;
   onDistributionChange: (points: CalculatedPoint[]) => void;
+  marketQuestion: string; // Added marketQuestion prop
 }
 
 export default function BasicChart(
@@ -30,6 +31,7 @@ export default function BasicChart(
     maxDistributionPercentage,
     centerShift,
     onDistributionChange,
+    marketQuestion, // Destructure the new prop
   }: BasicChartProps,
 ) {
   const chartRef = useRef<HTMLCanvasElement | null>(null);
@@ -130,11 +132,8 @@ export default function BasicChart(
     }
 
     if (chart.options.plugins?.title) {
-      chart.options.plugins.title.text = `Distribution Preview: ${
-        props.distributionType.split("-").map((word) =>
-          word.charAt(0).toUpperCase() + word.slice(1)
-        ).join(" ")
-      }`;
+      // Update title text
+      chart.options.plugins.title.text = `${props.marketQuestion}`;
     }
 
     chart.update("none");
@@ -187,13 +186,10 @@ export default function BasicChart(
           },
           title: {
             display: true,
-            text: `Distribution Preview: ${
-              distributionType.split("-").map((word) =>
-                word.charAt(0).toUpperCase() + word.slice(1)
-              ).join(" ")
-            }`,
+            // Set initial title text here
+            text: `Market: ${marketQuestion}`,
             color: "#E5E7EB",
-            font: { size: 18 },
+            font: { size: 14 }, // Smaller font size
           },
           tooltip: {
             callbacks: {
@@ -274,6 +270,7 @@ export default function BasicChart(
           minDistributionPercentage,
           maxDistributionPercentage,
           centerShift,
+          marketQuestion, // Pass to update function
         });
       }
     }, 0);
@@ -282,7 +279,7 @@ export default function BasicChart(
       clearTimeout(chartRenderedCheck);
       chartInstance.current?.destroy();
     };
-  }, [currentProbability, centerShift]); // Added centerShift to dependencies
+  }, [currentProbability, centerShift, marketQuestion]); // Add marketQuestion to dependencies
 
   useEffect(() => {
     if (chartInstance.current) {
@@ -294,6 +291,7 @@ export default function BasicChart(
         minDistributionPercentage,
         maxDistributionPercentage,
         centerShift,
+        marketQuestion, // Pass to update function
       });
     }
   }, [
@@ -304,6 +302,7 @@ export default function BasicChart(
     minDistributionPercentage,
     maxDistributionPercentage,
     centerShift,
+    marketQuestion, // Add marketQuestion to dependencies
   ]);
 
   return (
