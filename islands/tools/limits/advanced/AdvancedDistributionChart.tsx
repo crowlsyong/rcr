@@ -1,5 +1,5 @@
 // islands/tools/limits/advanced/AdvancedDistributionChart.tsx
-import { Signal, signal, useSignalEffect } from "@preact/signals";
+import { Signal, signal } from "@preact/signals";
 import { useEffect, useMemo } from "preact/hooks";
 import BasicChart from "./BasicChart.tsx";
 import ChartControls from "./ChartControls.tsx";
@@ -38,9 +38,13 @@ export default function AdvancedDistributionChart(
   const centerShift = useMemo(() => signal(0), []);
   const isShiftLockedToCurrentProb = useMemo(() => signal(true), []);
 
-  useSignalEffect(() => {
-    onBetAmountChange(betAmount.value);
-  });
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      onBetAmountChange(betAmount.value);
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [betAmount.value]);
 
   useEffect(() => {
     betAmount.value = totalBetAmount;
