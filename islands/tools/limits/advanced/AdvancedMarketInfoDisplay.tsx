@@ -24,6 +24,8 @@ export default function AdvancedMarketInfoDisplay({
     return null;
   }
 
+  // selectedAnswer is no longer used for rendering, but keeping it for context if needed elsewhere
+  // in the future or for debugging. It no longer drives any UI in this component.
   const selectedAnswer = marketData.outcomeType === "MULTIPLE_CHOICE" &&
       selectedAnswerId && marketData.answers
     ? marketData.answers.find((a) => a.id === selectedAnswerId)
@@ -95,7 +97,7 @@ export default function AdvancedMarketInfoDisplay({
                 type="button"
                 onClick={() => copyToClipboard(marketData.id)}
                 class="ml-2 p-1 rounded-md bg-gray-700 hover:bg-gray-600 text-white flex items-center justify-center focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-100 ease-in-out
-                       min-w-[48px] h-6" // Added min-w and h for consistent sizing
+                       min-w-[48px] h-6"
                 title={copied ? "Copied!" : "Copy Market ID"}
               >
                 {copied
@@ -108,30 +110,7 @@ export default function AdvancedMarketInfoDisplay({
               </button>
             </div>
           </div>
-
-          {selectedAnswer && (
-            <div>
-              <h4 class="text-xs font-medium text-gray-300 mb-2">
-                Selected Answer
-              </h4>
-              <div class="bg-gray-900/50 p-3 rounded-md border border-gray-700">
-                <div class="flex justify-between items-center mb-2">
-                  <p class="text-xs text-white font-medium">
-                    {selectedAnswer.text}
-                  </p>
-                  <span class="text-xs font-mono text-blue-400">
-                    {(selectedAnswer.probability * 100).toFixed(1)}%
-                  </span>
-                </div>
-                <div class="w-full bg-gray-700 rounded-full h-2">
-                  <div
-                    class="bg-blue-500 h-2 rounded-full transition-all duration-300 ease-out"
-                    style={{ width: `${selectedAnswer.probability * 100}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Removed: Selected Answer section */}
         </div>
 
         {/* Right Column - Market Metrics */}
@@ -145,7 +124,7 @@ export default function AdvancedMarketInfoDisplay({
                 {marketData.outcomeType === "BINARY" &&
                     typeof marketData.probability === "number"
                   ? `${Math.round(marketData.probability * 100)}%`
-                  : selectedAnswer
+                  : selectedAnswer // Still need selectedAnswer here for MP markets' default prob.
                   ? `${Math.round(selectedAnswer.probability * 100)}%`
                   : "N/A"}
               </p>
@@ -174,28 +153,7 @@ export default function AdvancedMarketInfoDisplay({
               </p>
             </div>
           </div>
-
-          {selectedAnswer && (
-            <div>
-              <h4 class="text-xs font-medium text-gray-300 mb-2">
-                Answer Pool
-              </h4>
-              <div class="space-y-2">
-                <div class="flex justify-between items-center">
-                  <span class="text-xs text-green-400 font-medium">YES</span>
-                  <span class="text-xs font-mono text-white">
-                    {formatMana(selectedAnswer.pool.YES)}
-                  </span>
-                </div>
-                <div class="flex justify-between items-center">
-                  <span class="text-xs text-red-400 font-medium">NO</span>
-                  <span class="text-xs font-mono text-white">
-                    {formatMana(selectedAnswer.pool.NO)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Removed: Answer Pool section */}
         </div>
       </div>
     </div>
