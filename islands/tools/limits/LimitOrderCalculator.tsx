@@ -243,8 +243,12 @@ export default function LimitOrderCalculator() {
     return Number.isInteger(amount) ? amount.toString() : amount.toFixed(2);
   };
 
+  const mainContainerClasses = `p-4 mx-auto w-full text-gray-100 ${
+    isAdvancedMode ? "sm:max-w-screen-lg" : "sm:max-w-screen-md"
+  }`;
+
   return (
-    <div class="p-4 mx-auto w-full sm:max-w-screen-md text-gray-100">
+    <div class={mainContainerClasses}>
       <h1 class="text-2xl font-bold mb-4">
         🦝 Limit Order App
       </h1>
@@ -397,6 +401,8 @@ export default function LimitOrderCalculator() {
               onBetAmountChange={setTotalBetAmountInput}
               marketProbability={getActiveMarketProbability()}
               currentProbability={currentProbability}
+              marketData={marketData}
+              selectedAnswerId={selectedAnswerId}
             />
           )}
 

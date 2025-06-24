@@ -61,6 +61,7 @@ import * as $tools_limits_ProbabilityModeToggle from "./islands/tools/limits/Pro
 import * as $tools_limits_VolatilityGranularitySelector from "./islands/tools/limits/VolatilityGranularitySelector.tsx";
 import * as $tools_limits_VolatilityToggle from "./islands/tools/limits/VolatilityToggle.tsx";
 import * as $tools_limits_advanced_AdvancedDistributionChart from "./islands/tools/limits/advanced/AdvancedDistributionChart.tsx";
+import * as $tools_limits_advanced_AdvancedMarketInfoDisplay from "./islands/tools/limits/advanced/AdvancedMarketInfoDisplay.tsx";
 import * as $tools_limits_advanced_BasicChart from "./islands/tools/limits/advanced/BasicChart.tsx";
 import * as $tools_limits_advanced_BetInputs from "./islands/tools/limits/advanced/BetInputs.tsx";
 import * as $tools_limits_advanced_ChartContainer from "./islands/tools/limits/advanced/ChartContainer.tsx";
@@ -160,6 +161,8 @@ const manifest = {
       $tools_limits_VolatilityToggle,
     "./islands/tools/limits/advanced/AdvancedDistributionChart.tsx":
       $tools_limits_advanced_AdvancedDistributionChart,
+    "./islands/tools/limits/advanced/AdvancedMarketInfoDisplay.tsx":
+      $tools_limits_advanced_AdvancedMarketInfoDisplay,
     "./islands/tools/limits/advanced/BasicChart.tsx":
       $tools_limits_advanced_BasicChart,
     "./islands/tools/limits/advanced/BetInputs.tsx":

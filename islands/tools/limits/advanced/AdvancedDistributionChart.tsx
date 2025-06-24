@@ -5,6 +5,8 @@ import BasicChart from "./BasicChart.tsx";
 import ChartControls from "./ChartControls.tsx";
 import { DistributionType } from "./ChartTypes.ts";
 import { CalculatedPoint } from "./utils/calculate-bet-data.ts";
+import AdvancedMarketInfoDisplay from "./AdvancedMarketInfoDisplay.tsx";
+import { MarketData } from "../../../../utils/api/manifold_types.ts";
 
 interface AdvancedDistributionChartProps {
   totalBetAmount: number;
@@ -14,19 +16,21 @@ interface AdvancedDistributionChartProps {
   onBetAmountChange: (amount: number) => void;
   marketProbability?: number;
   currentProbability: Signal<number>;
+  marketData?: MarketData | null;
+  selectedAnswerId?: string | null;
 }
 
-export default function AdvancedDistributionChart(
-  {
-    totalBetAmount,
-    lowerProbability,
-    upperProbability,
-    onDistributionChange,
-    onBetAmountChange,
-    marketProbability,
-    currentProbability,
-  }: AdvancedDistributionChartProps,
-) {
+export default function AdvancedDistributionChart({
+  totalBetAmount,
+  lowerProbability,
+  upperProbability,
+  onDistributionChange,
+  onBetAmountChange,
+  marketProbability,
+  currentProbability,
+  marketData,
+  selectedAnswerId,
+}: AdvancedDistributionChartProps) {
   const betAmount = useMemo(() => signal(totalBetAmount), []);
   const percentageInterval = useMemo(() => signal(12), []);
   const distributionType = useMemo(
@@ -87,6 +91,11 @@ export default function AdvancedDistributionChart(
           maxDistributionPercentage={maxDistributionPercentage.value}
           centerShift={centerShift.value}
           onDistributionChange={onDistributionChange}
+        />
+        <AdvancedMarketInfoDisplay
+          marketData={marketData || null}
+          selectedAnswerId={selectedAnswerId || null}
+          currentProbability={currentProbability.value}
         />
       </div>
     </div>
