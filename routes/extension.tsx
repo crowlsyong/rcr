@@ -9,7 +9,8 @@ export default function RiskExtensionPage() {
       </Head>
       <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white min-h-screen flex items-center justify-center p-4">
         <section className="max-w-3xl mx-auto text-center py-10 px-6 bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg shadow-2xl border border-gray-700 relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400"></div>
+          <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400">
+          </div>
           <p className="text-xl sm:text-2xl text-gray-400 mb-2">
             Introducing the
           </p>
@@ -21,7 +22,7 @@ export default function RiskExtensionPage() {
             Chrome Extension. Gain advanced insights and tools to help you make
             more informed betting decisions directly in your browser.
           </p>
-          
+
           <div className="text-center mb-8">
             <a
               href="https://chromewebstore.google.com/detail/risk-credit-score/oemipgilahmncafhojjdiecpibhohdoa?authuser=0&hl=en"
@@ -32,7 +33,7 @@ export default function RiskExtensionPage() {
               Add extension
             </a>
           </div>
-          
+
           <div className="flex justify-end">
             <a
               href="https://github.com/crowlsyong/rcr-chrome-ext"
