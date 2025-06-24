@@ -38,6 +38,11 @@ const mainLinks = [
     url: "/arbitrage",
     targetBlank: false,
   },
+  {
+    label: "📦 Extension",
+    url: "/extension",
+    targetBlank: false,
+  },
 ];
 
 const servicesLinks = [
