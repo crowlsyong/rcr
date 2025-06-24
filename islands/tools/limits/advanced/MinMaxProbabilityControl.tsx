@@ -1,6 +1,6 @@
 // islands/tools/limits/advanced/MinMaxProbabilityControl.tsx
 import { Signal, useSignal } from "@preact/signals";
-import { useState, useEffect } from "preact/hooks"; // Ensure useEffect is imported
+import { useEffect, useState } from "preact/hooks"; // Ensure useEffect is imported
 import { TbToggleLeftFilled, TbToggleRightFilled } from "@preact-icons/tb";
 import type { ComponentType } from "preact";
 import type { JSX } from "preact/jsx-runtime";
