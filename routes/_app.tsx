@@ -4,8 +4,8 @@ import MenuBar from "../islands/MenuBar.tsx"; // Import the MenuBar
 //Conditionally show MenuBar based on the route
 export default function App({ Component, url }: PageProps) {
   const showMenuBar = !url.pathname.startsWith("/iframe") &&
-    !url.pathname.startsWith("/ext") &&
-    !url.pathname.startsWith("/gameshow"); // Added the new gameshow route
+    !url.pathname.startsWith("/old-ext") &&
+    !url.pathname.startsWith("/gameshow");
 
   return (
     <html lang="en">
