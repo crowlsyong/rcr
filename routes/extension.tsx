@@ -15,7 +15,7 @@ export default function RiskExtensionPage() {
           </p>
           {/* Larger "RISK Chrome Extension" text */}
           <h1 class="text-5xl sm:text-6xl lg:text-4xl font-bold mb-6 leading-tight text-blue-400">
-            🦝 RISK Chrome Extension
+            🦝RISK Chrome Extension
           </h1>
           <p class="text-lg sm:text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
             Enhance your Manifold Markets experience with the official RISK
