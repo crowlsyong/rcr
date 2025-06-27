@@ -19,10 +19,10 @@ interface FinancialSummaryProps {
   netLenderGain: number;
   apiKeyLength: number;
   durationFee: number;
-  selectedCoverage: Signal<number | null>; // Prop for Coverage Chart
+  selectedCoverage: Signal<number | null>;
   riskBaseFee: number;
   loanDueDate: Signal<string>;
-  borrowerCreditScore: number; // Prop for Risk Chart
+  borrowerCreditScore: number;
 }
 
 const coverageFeesStatic: { [key: number]: number } = {
@@ -45,12 +45,6 @@ const calculateDaysBetweenForDisplay = (
   return diffDays;
 };
 
-const calculatePowerFeePercentageForDisplay = (days: number): number => {
-  const a = 0.0000207;
-  const b = 1.5;
-  return parseFloat(Math.min(a * Math.pow(days, b), 0.75).toFixed(4));
-};
-
 export default function FinancialSummary(
   props: FinancialSummaryProps,
 ): JSX.Element {
@@ -65,7 +59,7 @@ export default function FinancialSummary(
     netLenderGain,
     apiKeyLength,
     durationFee,
-    selectedCoverage, // Destructure selectedCoverage
+    selectedCoverage,
     riskBaseFee,
     loanDueDate,
     borrowerCreditScore,
@@ -76,16 +70,12 @@ export default function FinancialSummary(
     : 0;
   const totalOutOfPocket = currentLoanAmount + currentInsuranceFee;
 
-  // --- Derived values for detailed display ---
-
-  // Lender Fee display
   const lenderFeePercentageDisplay = lenderFeePercentage.value !== null
     ? `${lenderFeePercentage.value}%`
     : "N/A";
   const lenderFeeDisplay =
     `(${lenderFeePercentageDisplay} | M${currentLenderFee})`;
 
-  // Coverage display
   const coveragePrefix = selectedCoverage.value !== null
     ? `C${selectedCoverage.value}`
     : "N/A";
@@ -102,17 +92,23 @@ export default function FinancialSummary(
     ? `(${coveragePercentage}% | M${coverageManaAmount})`
     : "(N/A)";
 
-  // Risk Multiplier display
   const riskMultiplierDisplay = (riskBaseFee * 100).toFixed(0);
   const riskManaAmount = Math.round(riskBaseFee * currentLoanAmount);
   const riskFullDisplay = `(${riskMultiplierDisplay}% | M${riskManaAmount})`;
 
-  // Duration Fee display
   const today = new Date().toISOString().split("T")[0];
   const daysOfLoan = calculateDaysBetweenForDisplay(today, loanDueDate.value);
+
+  // Recalculate duration percentage for display using the CORRECT formula (same as InputDetails)
+  const calculateDurationPercentageForDisplay = (days: number): number => {
+    const a = 0.00001379; // FIXED: Changed 'a' constant for 50% cap at ~3 years
+    const b = 1.5;
+    return parseFloat(Math.min(a * Math.pow(days, b), 0.50).toFixed(4)); // FIXED: Changed cap to 0.50 (50%)
+  };
   const durationFeePercentageForDisplay = daysOfLoan > 0
-    ? (calculatePowerFeePercentageForDisplay(daysOfLoan) * 100).toFixed(2)
+    ? (calculateDurationPercentageForDisplay(daysOfLoan) * 100).toFixed(2)
     : "0.00";
+
   const durationDaysInfo = daysOfLoan > 0 ? `(${daysOfLoan} days)` : "";
   const durationValueDisplay = durationFee > 0
     ? `(${durationFeePercentageForDisplay}% | M${durationFee})`
@@ -148,7 +144,7 @@ export default function FinancialSummary(
           <InfoHover
             content={
               <CoverageFeeChart highlightCoverage={selectedCoverage.value} />
-            } // Pass highlightCoverage
+            }
             width="w-96"
           >
             <InfoIcon />
@@ -174,7 +170,7 @@ export default function FinancialSummary(
         <p class="text-sm text-gray-400 flex items-center justify-end">
           Duration Fee: {durationDaysInfo} {durationValueDisplay}
           <InfoHover
-            content={<DurationFeeChart highlightDays={daysOfLoan} />} // Pass highlightDays
+            content={<DurationFeeChart highlightDays={daysOfLoan} />}
             width="w-96"
           >
             <InfoIcon />

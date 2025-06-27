@@ -48,17 +48,17 @@ const INSTITUTION_MARKETS: {
 } = {
   IMF: {
     id: IMF_BOUNTY_MARKET_ID,
-    name: "IMF (International Mana Fund)",
+    name: "IMF",
     description: "Awards loan as bounty on the IMF market.",
   },
   BANK: {
     id: BANK_BOUNTY_MARKET_ID,
-    name: "BANK (Bureau of Analogous Net-worth Kollection)",
+    name: "BANK",
     description: "Awards loan as bounty on the BANK market.",
   },
   RISK: {
     id: RISK_BOUNTY_MARKET_ID,
-    name: "RISK (Recovery Loan Insurance Kiosk)",
+    name: "RISK",
     description: "Awards loan as bounty on the RISK Payment Portal.",
   },
 };

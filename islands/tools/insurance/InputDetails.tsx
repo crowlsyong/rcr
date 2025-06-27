@@ -99,14 +99,13 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
     const foundLevel = RISK_LEVEL_DATA.find(
       (level) => score >= level.scoreMin && score <= level.scoreMax,
     );
-    // FIXED: Directly return feeMultiplier from foundLevel
     return foundLevel ? foundLevel.feeMultiplier : 0;
   };
 
   const calculateDurationFeePercentage = (days: number): number => {
-    const a = 0.0000207;
+    const a = 0.00001379; // FIXED: Changed 'a' constant for 50% cap at ~3 years
     const b = 1.5;
-    return parseFloat(Math.min(a * Math.pow(days, b), 0.75).toFixed(4));
+    return parseFloat(Math.min(a * Math.pow(days, b), 0.50).toFixed(4)); // FIXED: Changed cap to 0.50 (50%)
   };
 
   const calculateDaysBetween = (startDate: Date, endDate: Date): number => {
@@ -426,10 +425,11 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
     ? Math.round(insuranceFee)
     : 0;
 
-  const displayDurationFee = loanAmount.value > 0 && insuranceFee !== null &&
-      durationFeePercentage.value > 0
-    ? Math.ceil(currentLoanAmount * durationFeePercentage.value)
-    : 0;
+  const displayDurationFee =
+    loanAmount.value > 0 && insuranceFee !== null && durationFeePercentage.value > 0
+      ? Math.ceil(currentLoanAmount * durationFeePercentage.value)
+      : 0;
+
 
   return (
     <>
