@@ -53,6 +53,7 @@ import * as $tools_creditscore_CreditScoreChExt from "./islands/tools/creditscor
 import * as $tools_creditscore_ScoreResult from "./islands/tools/creditscore/ScoreResult.tsx";
 import * as $tools_insurance_FinancialSummary from "./islands/tools/insurance/FinancialSummary.tsx";
 import * as $tools_insurance_InputDetails from "./islands/tools/insurance/InputDetails.tsx";
+import * as $tools_insurance_Institutions from "./islands/tools/insurance/Institutions.tsx";
 import * as $tools_insurance_InsuranceCalc from "./islands/tools/insurance/InsuranceCalc.tsx";
 import * as $tools_insurance_LoanInputSection from "./islands/tools/insurance/LoanInputSection.tsx";
 import * as $tools_insurance_OptionalFeatures from "./islands/tools/insurance/OptionalFeatures.tsx";
@@ -157,6 +158,7 @@ const manifest = {
     "./islands/tools/insurance/FinancialSummary.tsx":
       $tools_insurance_FinancialSummary,
     "./islands/tools/insurance/InputDetails.tsx": $tools_insurance_InputDetails,
+    "./islands/tools/insurance/Institutions.tsx": $tools_insurance_Institutions,
     "./islands/tools/insurance/InsuranceCalc.tsx":
       $tools_insurance_InsuranceCalc,
     "./islands/tools/insurance/LoanInputSection.tsx":

@@ -100,13 +100,38 @@ export interface ManifoldBetResponse {
   isCancelled: boolean;
 }
 
-// New interface for Manifold Comment response
+// Defining the nested content structure for Manifold Comments (BlockJSON / TipTap)
+export interface TipTapContentBlock {
+  type: string;
+  text?: string; // For paragraph, heading etc.
+  content?: TipTapContentBlock[]; // For nested structures like doc, paragraph, mention
+  attrs?: { // For attributes like mention, link. More specific attrs can be added if needed.
+    id?: string;
+    label?: string;
+    href?: string;
+    // Add other TipTap attrs here as needed, e.g., 'level' for headings
+  };
+}
+
+// Updated interface for Manifold Comment response
 export interface ManifoldComment {
   id: string;
-  contractId: string;
+  isApi?: boolean; // Added based on your provided API response
   userId: string;
-  content: Array<{ type: string; content?: string }>; // Manifold's BlockJSON
+  // This is the crucial change: 'content' is an object with a 'type' and a 'content' array
+  content: {
+    type: "doc";
+    content: TipTapContentBlock[];
+  };
+  userName?: string; // Added from API response
+  contractId: string;
+  visibility?: "public" | string; // Added from API response
+  commentType?: "contract" | string; // Added from API response
   createdTime: number;
-  parentCommentId?: string;
+  contractSlug?: string; // Added from API response
+  userUsername?: string; // Added from API response
+  userAvatarUrl?: string; // Added from API response
+  contractQuestion?: string; // Added from API response
   replyToCommentId?: string;
+  likes?: number; // Added from API response
 }

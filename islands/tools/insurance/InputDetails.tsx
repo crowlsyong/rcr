@@ -14,13 +14,13 @@ interface CreditScoreData {
   username: string;
   creditScore: number;
   riskBaseFee: number;
-  avatarUrl: string | null; // RE-ADDED: LoanInputSection needs this
+  avatarUrl: string | null;
 }
 
 interface InputDetailsProps {
   username: Signal<string>;
   lenderUsername: Signal<string>;
-  loanAmount: Signal<number>; // Pass this down
+  loanAmount: Signal<number>;
   selectedCoverage: Signal<number | null>;
   loanDueDate: Signal<string>;
   managramMessage: Signal<string>;
@@ -44,6 +44,7 @@ interface InputDetailsProps {
   isBorrowerUsernameValid: Signal<boolean>;
   sameUserError: Signal<string>;
   loanDueDateError: Signal<string>;
+  setDurationFee: (value: number) => void;
 }
 
 const coverageFees: { [key: number]: number } = {
@@ -81,6 +82,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
     isBorrowerUsernameValid,
     sameUserError,
     loanDueDateError,
+    setDurationFee,
   } = props;
 
   const [debouncedBorrowerUsername, setDebouncedBorrowerUsername] = useState(
@@ -97,6 +99,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
     const foundLevel = RISK_LEVEL_DATA.find(
       (level) => score >= level.scoreMin && score <= level.scoreMax,
     );
+    // FIXED: Directly return feeMultiplier from foundLevel
     return foundLevel ? foundLevel.feeMultiplier : 0;
   };
 
@@ -168,12 +171,11 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
         setInsuranceFee(null);
         setInitialInsuranceFeeBeforeDiscount(null);
       } else {
-        // Correctly set all properties including avatarUrl from the fetched data
         scoreData.value = {
           username: data.username,
           creditScore: data.creditScore,
           riskBaseFee: getriskBaseFeeFromScore(data.creditScore),
-          avatarUrl: data.avatarUrl, // Ensure avatarUrl is passed from fetch result
+          avatarUrl: data.avatarUrl,
         };
         const derivedriskBaseFee = getriskBaseFeeFromScore(
           data.creditScore,
@@ -292,27 +294,28 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
       setInsuranceFee(null);
       setInitialInsuranceFeeBeforeDiscount(null);
       durationFeePercentage.value = 0;
+      setDurationFee(0);
       return;
     }
 
     const coverageFee = coverageFees[selectedCoverage.value];
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize to start of today for calculation
+    today.setHours(0, 0, 0, 0);
     const dueDate = new Date(loanDueDate.value + "T00:00:00");
     const days = calculateDaysBetween(today, dueDate);
 
     const calculatedDurationFeePercentage = calculateDurationFeePercentage(
       days,
     );
-    durationFeePercentage.value = calculatedDurationFeePercentage; // Update signal
+    durationFeePercentage.value = calculatedDurationFeePercentage;
 
-    // Calculate duration fee in mana and round up
-    const durationFee = Math.ceil(
+    const calculatedDurationFee = Math.ceil(
       loanAmount.value * calculatedDurationFeePercentage,
     );
+    setDurationFee(calculatedDurationFee);
 
     let currentFee = (riskBaseFee * loanAmount.value) +
-      (loanAmount.value * coverageFee) + durationFee; // Add duration fee here
+      (loanAmount.value * coverageFee) + calculatedDurationFee;
 
     setInitialInsuranceFeeBeforeDiscount(currentFee);
 
@@ -328,7 +331,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
   }, [
     loanAmount.value,
     selectedCoverage.value,
-    riskBaseFee, // riskBaseFee now changes based on credit score
+    riskBaseFee,
     partnerCodeValid.value,
     loanDueDate.value,
     loanDueDateError.value,
@@ -362,44 +365,35 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
 
   const handleCoverageClick = (percentage: number | null) => {
     if (selectedCoverage.value === percentage) {
-      selectedCoverage.value = null; // Deselect if already selected
+      selectedCoverage.value = null;
     } else {
       selectedCoverage.value = percentage;
     }
   };
 
-  // Set the username when typed in
   const handleUsernameInput = (e: Event) => {
     username.value = (e.target as HTMLInputElement).value;
-    // selectedCoverage.value = null; // Deselect coverage on username input
-    setInsuranceFee(null); // Optional: reset fee to avoid showing stale results
+    setInsuranceFee(null);
   };
 
-  // Handle lender username input
   const handleLenderUsernameInput = (e: Event) => {
     lenderUsername.value = (e.target as HTMLInputElement).value;
   };
 
-  // Handle loan amount input (text field with integer validation)
   const handleLoanInput = (e: Event) => {
     const inputValue = (e.target as HTMLInputElement).value;
-
-    // Regex to allow only numbers (integer) and prevent any non-integer input
     const validValue = inputValue.replace(/[^0-9]/g, "");
-
-    // Update loanAmount with the valid value (convert to number, or 0 if empty)
     loanAmount.value = validValue ? parseInt(validValue) : 0;
   };
 
-  // Handle loan due date input with validation
   const handleLoanDueDateInput = (e: Event) => {
     const inputValue = (e.target as HTMLInputElement).value;
     loanDueDate.value = inputValue;
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize to start of today
+    today.setHours(0, 0, 0, 0);
 
-    const selectedDate = new Date(inputValue + "T00:00:00"); // Parse as local date
+    const selectedDate = new Date(inputValue + "T00:00:00");
     if (isNaN(selectedDate.getTime())) {
       loanDueDateError.value = "Please select a valid date.";
     } else if (selectedDate <= today) {
@@ -432,8 +426,8 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
     ? Math.round(insuranceFee)
     : 0;
 
-  // Calculate actual duration fee in Mana for display
-  const displayDurationFee = insuranceFee !== null
+  const displayDurationFee = loanAmount.value > 0 && insuranceFee !== null &&
+      durationFeePercentage.value > 0
     ? Math.ceil(currentLoanAmount * durationFeePercentage.value)
     : 0;
 
@@ -446,7 +440,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
           inputRef={inputRef}
           handleUsernameInput={handleUsernameInput}
           error={borrowerUsernameError}
-          scoreData={scoreData} // Passing scoreData which now contains avatarUrl
+          scoreData={scoreData}
           riskBaseFee={riskBaseFee}
           lenderUsername={lenderUsername}
           handleLenderUsernameInput={handleLenderUsernameInput}
@@ -481,7 +475,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
           partnerCodeValid={partnerCodeValid}
           lenderFeePercentage={lenderFeePercentage}
           handleLenderFeePercentageInput={handleLenderFeePercentageInput}
-          loanAmount={loanAmount} // Pass loanAmount here for lender fee calculation
+          loanAmount={loanAmount}
         />
       )}
 

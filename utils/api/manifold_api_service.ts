@@ -1,5 +1,4 @@
 // utils/api/manifold_api_service.ts
-
 import { fetchWithRetries } from "./fetch_utilities.ts";
 import {
   ManaPaymentTransaction,
@@ -117,13 +116,22 @@ export async function sendManagram(
 export async function addBounty(
   marketId: string,
   amount: number,
+  commentId: string | null,
   apiKey: string,
 ): Promise<PostResponse<ManaPaymentTransaction>> {
-  return await postDataToManifoldApi<ManaPaymentTransaction>(
-    `/market/${marketId}/add-bounty`,
-    { amount },
-    apiKey,
-  );
+  if (commentId) {
+    return await postDataToManifoldApi<ManaPaymentTransaction>(
+      `/market/${marketId}/award-bounty`,
+      { amount, commentId },
+      apiKey,
+    );
+  } else {
+    return await postDataToManifoldApi<ManaPaymentTransaction>(
+      `/market/${marketId}/add-bounty`,
+      { amount },
+      apiKey,
+    );
+  }
 }
 
 export async function postComment(
@@ -131,10 +139,9 @@ export async function postComment(
   text: string,
   apiKey: string,
 ): Promise<PostResponse<ManifoldComment>> {
-  // Switched from 'content' (TipTap JSON) to 'markdown'
   return await postDataToManifoldApi<ManifoldComment>(
     "/comment",
-    { contractId, markdown: text }, // Pass the text directly as markdown
+    { contractId, markdown: text },
     apiKey,
   );
 }
@@ -408,5 +415,62 @@ export async function getMarketDataBySlug(
       data: null,
       error: `Error parsing market data for slug '${slug}'.`,
     };
+  }
+}
+
+export async function getCommentsForContract(
+  contractId: string,
+  userId?: string, // Added optional userId parameter
+): Promise<
+  { success: boolean; data: ManifoldComment[] | null; error: string | null }
+> {
+  let url = `${MANIFOLD_API_BASE_URL}/comments?contractId=${contractId}`;
+  if (userId) {
+    url += `&userId=${userId}`; // Add userId to URL if provided
+  }
+  url += `&order=newest`; // Order by newest by default for relevance
+  url += `&limit=1000`; // Ensure we get enough comments
+
+  const { response, success, error } = await fetchWithRetries(url);
+
+  if (!success || !response) {
+    return {
+      success: false,
+      data: null,
+      error: `Network or fetch error: ${
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : String(error)
+      }`,
+    };
+  }
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(
+      `Manifold API GET comments error: ${response.status} ${response.statusText} - ${errorText}`,
+    );
+    return {
+      success: false,
+      data: null,
+      error: `Failed to fetch comments (${response.status}): ${
+        errorText || response.statusText
+      }`,
+    };
+  }
+
+  try {
+    const comments: ManifoldComment[] = await response.json();
+    return { success: true, data: comments, error: null };
+  } catch (jsonError) {
+    console.error(
+      `Error parsing JSON for comments: ${
+        typeof jsonError === "object" && jsonError !== null &&
+          "message" in jsonError
+          ? (jsonError as { message: string }).message
+          : String(jsonError)
+      }`,
+    );
+    return { success: false, data: null, error: "Error parsing comments data" };
   }
 }
