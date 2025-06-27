@@ -92,7 +92,6 @@ export default function Institutions(props: InstitutionsProps): JSX.Element {
     loanAmount,
     username, // Borrower username
     lenderUsername,
-    managramMessage,
     insuranceFee,
     getPolicyEndDate,
     loanDueDate,
