@@ -1,4 +1,4 @@
-// score-utils.ts
+// utils/score_utils.ts
 
 // Color interpolation helper
 export function lerpColor(
