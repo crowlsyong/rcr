@@ -6,7 +6,9 @@ import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $_middleware from "./routes/_middleware.ts";
 import * as $admin_index from "./routes/admin/index.tsx";
+import * as $api_middleware from "./routes/api/_middleware.ts";
 import * as $api_history from "./routes/api/history.ts";
+import * as $api_insurance from "./routes/api/insurance.ts";
 import * as $api_place_arbitrage_bets from "./routes/api/place-arbitrage-bets.ts";
 import * as $api_place_limit_orders from "./routes/api/place-limit-orders.ts";
 import * as $api_score from "./routes/api/score.ts";
@@ -98,7 +100,9 @@ const manifest = {
     "./routes/_app.tsx": $_app,
     "./routes/_middleware.ts": $_middleware,
     "./routes/admin/index.tsx": $admin_index,
+    "./routes/api/_middleware.ts": $api_middleware,
     "./routes/api/history.ts": $api_history,
+    "./routes/api/insurance.ts": $api_insurance,
     "./routes/api/place-arbitrage-bets.ts": $api_place_arbitrage_bets,
     "./routes/api/place-limit-orders.ts": $api_place_limit_orders,
     "./routes/api/score.ts": $api_score,
