@@ -18,9 +18,7 @@ interface CreditScoreData {
 }
 
 const INSURANCE_MARKET_ID = "QEytQ5ch0P";
-const INSURANCE_MARKET_URL =
-  "https://manifold.markets/crowlsyong/risk-payment-portal";
-const LENDER_ACCOUNT_AT_MANIFOLD = "100Anonymous";
+const INSURANCE_MARKET_URL = "https://manifold.markets/crowlsyong/risk-payment-portal";
 const CONTACT_USERNAME = "crowlsyong";
 
 export default function InsuranceCalc() {
@@ -31,10 +29,7 @@ export default function InsuranceCalc() {
   const [debouncedUsername, setDebouncedUsername] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const [insuranceFee, setInsuranceFee] = useState<number | null>(null);
-  const [
-    initialInsuranceFeeBeforeDiscount,
-    setInitialInsuranceFeeBeforeDiscount,
-  ] = useState<number | null>(null);
+  const [initialInsuranceFeeBeforeDiscount, setInitialInsuranceFeeBeforeDiscount] = useState<number | null>(null);
   const [riskMultiplier, setRiskMultiplier] = useState(0);
   const scoreData = useSignal<CreditScoreData | null>(null);
   const error = useSignal<string>("");
@@ -56,6 +51,9 @@ export default function InsuranceCalc() {
   const cooldownActive = useSignal(false);
   const cooldownMessage = useSignal("");
 
+  const managramMessage = useSignal("");
+  const lenderFeePercentage = useSignal<number | null>(null);
+
   const coverageFees: { [key: number]: number } = {
     25: 0.02,
     50: 0.05,
@@ -74,8 +72,7 @@ export default function InsuranceCalc() {
   useEffect(() => {
     let cooldownTimeout: number;
     if (cooldownActive.value) {
-      cooldownMessage.value =
-        "Woah! You just did that. Wait a sec before trying again.";
+      cooldownMessage.value = "Woah! You just did that. Wait a sec before trying again.";
       cooldownTimeout = setTimeout(() => {
         cooldownActive.value = false;
         cooldownMessage.value = "";
@@ -141,6 +138,15 @@ export default function InsuranceCalc() {
     if (debouncedUsername) fetchScoreData(debouncedUsername);
     else resetState();
   }, [debouncedUsername]);
+
+  // Set default managram message
+  useEffect(() => {
+    const currentLenderFee = (lenderFeePercentage.value !== null && loanAmount.value > 0)
+      ? Math.round(loanAmount.value * (lenderFeePercentage.value / 100))
+      : 0;
+    managramMessage.value =
+      `Loan M${loanAmount.value}. M${currentLenderFee} due back ${loanDueDate.value}.`;
+  }, [loanAmount.value, lenderFeePercentage.value, loanDueDate.value]);
 
   async function fetchScoreData(user: string) {
     try {
@@ -234,6 +240,16 @@ export default function InsuranceCalc() {
     partnerCodeInput.value = (e.target as HTMLInputElement).value;
   };
 
+  const handleManagramMessageInput = (e: Event) => {
+    managramMessage.value = (e.target as HTMLTextAreaElement).value;
+  };
+
+  const handleLenderFeePercentageInput = (e: Event) => {
+    const inputValue = (e.target as HTMLInputElement).value;
+    const validValue = inputValue.replace(/[^0-9]/g, "");
+    lenderFeePercentage.value = validValue ? parseInt(validValue) : null;
+  };
+
   const getPolicyEndDate = (loanDueDateStr: string): string => {
     if (!loanDueDateStr) return "";
     const loanDate = new Date(loanDueDateStr + "T00:00:00");
@@ -293,15 +309,13 @@ export default function InsuranceCalc() {
       const sendManaResult = await sendManagram(
         [borrowerId],
         loanAmount.value,
-        `Loan disbursement for insurance policy from @${LENDER_ACCOUNT_AT_MANIFOLD} to @${username.value}.`,
+        managramMessage.value, // Use the actual message value
         apiKey.value,
       );
 
       if (!sendManaResult.success) {
         throw new Error(
-          `Failed to send mana to borrower: ${
-            sendManaResult.error || "Unknown error."
-          }`,
+          `Failed to send mana to borrower: ${sendManaResult.error || "Unknown error."}`,
         );
       }
 
@@ -313,9 +327,7 @@ export default function InsuranceCalc() {
 
       if (!addBountyResult.success) {
         throw new Error(
-          `Failed to add bounty to market: ${
-            addBountyResult.error || "Unknown error."
-          }`,
+          `Failed to add bounty to market: ${addBountyResult.error || "Unknown error."}`,
         );
       }
 
@@ -382,9 +394,7 @@ Risk Free 🦝RISK Fee Guarantee™️
 
       if (!postCommentResult.success) {
         throw new Error(
-          `Failed to post insurance receipt comment: ${
-            postCommentResult.error || "Unknown error."
-          }`,
+          `Failed to post insurance receipt comment: ${postCommentResult.error || "Unknown error."}`,
         );
       }
 
@@ -412,8 +422,7 @@ Risk Free 🦝RISK Fee Guarantee™️
     }
 
     if (!isFormValid) {
-      paymentMessage.value =
-        "Please fill in all required fields before confirming.";
+      paymentMessage.value = "Please fill in all required fields before confirming.";
       paymentMessageType.value = "error";
       return;
     }
@@ -434,18 +443,19 @@ Risk Free 🦝RISK Fee Guarantee™️
 
   // Calculate total payment - ensure these values are numbers before summing
   const currentLoanAmount = loanAmount.value || 0;
-  const currentInsuranceFee = insuranceFee !== null
-    ? Math.round(insuranceFee)
+  const currentInsuranceFee = insuranceFee !== null ? Math.round(insuranceFee) : 0;
+  const currentLenderFee = (lenderFeePercentage.value !== null && currentLoanAmount > 0)
+    ? Math.round(currentLoanAmount * (lenderFeePercentage.value / 100))
     : 0;
-  const totalPayment = currentLoanAmount + currentInsuranceFee;
+  const _totalPaymentCalc = currentLoanAmount + currentInsuranceFee; // Renamed to _totalPaymentCalc to avoid linting warning
+
+  const netLenderGain = currentLenderFee - currentInsuranceFee;
 
   // Determine button text based on states
-  let buttonText = `Send M${currentInsuranceFee} fee and loan @${
-    username.value || "borrower"
-  } M${currentLoanAmount} mana`;
+  let buttonText =
+    `Send M${currentInsuranceFee} fee and loan @${username.value || "borrower"} M${currentLoanAmount} mana`;
 
-  let buttonClass =
-    `mt-6 w-full p-3 rounded-md text-lg font-semibold transition-colors duration-200 `;
+  let buttonClass = `mt-6 w-full p-3 rounded-md text-lg font-semibold transition-colors duration-200 `;
 
   if (cooldownActive.value) {
     buttonText = "Please wait...";
@@ -470,9 +480,25 @@ Risk Free 🦝RISK Fee Guarantee™️
         input[type="date"].custom-date-input::-webkit-calendar-picker-indicator {
           filter: invert(1);
         }
+        /* Custom number input with '%' suffix */
+        .input-with-suffix {
+          position: relative;
+        }
+        .input-with-suffix input {
+          padding-right: 1.5rem; /* Adjust as needed for suffix width */
+        }
+        .input-with-suffix::after {
+          content: '%';
+          position: absolute;
+          right: 0.5rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #9CA3AF; /* gray-400 */
+        }
         `}
       </style>
       <div class="w-full max-w-md mx-auto pb-6 px-0 sm:px-6 md:max-w-2xl lg:max-w-4xl">
+
         <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <ScoreResult
@@ -530,7 +556,7 @@ Risk Free 🦝RISK Fee Guarantee™️
                 </label>
                 <input
                   id="loanAmount"
-                  type="text"
+                  type="number"
                   value={loanAmount.value.toString()}
                   placeholder="Loan amount"
                   onInput={handleLoanInput}
@@ -554,8 +580,8 @@ Risk Free 🦝RISK Fee Guarantee™️
               />
               {loanDueDate.value && (
                 <p class="text-gray-400 text-xs mt-1">
-                  Policy ends: {getPolicyEndDate(loanDueDate.value)}{" "}
-                  (1 week after)
+                  Policy ends: {getPolicyEndDate(loanDueDate.value)} (1 week
+                  after)
                 </p>
               )}
             </div>
@@ -589,6 +615,28 @@ Risk Free 🦝RISK Fee Guarantee™️
 
             <div class="mt-4">
               <label
+                htmlFor="managramMessage"
+                class="block text-sm font-medium text-gray-300"
+              >
+                Managram Message (100 char max)
+              </label>
+              <textarea
+                id="managramMessage"
+                name="managramMessage"
+                value={managramMessage.value}
+                onInput={handleManagramMessageInput}
+                maxLength={100}
+                rows={3} // Make it expandable
+                class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
+              >
+              </textarea>
+              <p class="mt-1 text-xs text-gray-400">
+                This message will be sent with the loan mana.
+              </p>
+            </div>
+
+            <div class="mt-4">
+              <label
                 htmlFor="api-key"
                 class="block text-sm font-medium text-gray-300"
               >
@@ -599,9 +647,8 @@ Risk Free 🦝RISK Fee Guarantee™️
                 id="api-key"
                 name="apiKey"
                 value={apiKey.value}
-                onInput={(
-                  e,
-                ) => (apiKey.value = (e.target as HTMLInputElement).value)}
+                onInput={(e) =>
+                  (apiKey.value = (e.target as HTMLInputElement).value)}
                 placeholder="xxxxx-xxxx-xxxx-xxxxxxxxxxxxxxx"
                 class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
               />
@@ -656,7 +703,7 @@ Risk Free 🦝RISK Fee Guarantee™️
           <p
             class={`${
               insuranceFee === null || !loanAmount.value ||
-                !selectedCoverage.value
+              !selectedCoverage.value
                 ? "text-orange-400"
                 : "text-green-400"
             } text-lg font-bold`}
@@ -667,18 +714,40 @@ Risk Free 🦝RISK Fee Guarantee™️
           <p class="text-sm text-gray-400">
             M{currentLoanAmount} to @{username.value || "borrower"}
           </p>
+
+          <div class="flex justify-end items-center text-sm text-gray-400">
+            <span>Lender Fee: +M{currentLenderFee} </span>
+            <div class="relative ml-2 input-with-suffix">
+              <input
+                id="lenderFeePercentage"
+                type="number"
+                value={lenderFeePercentage.value !== null
+                  ? lenderFeePercentage.value.toString()
+                  : ""}
+                onInput={handleLenderFeePercentageInput}
+                class="w-20 p-1 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm text-right"
+              />
+            </div>
+          </div>
+
           <p class="text-sm text-gray-400">
+            {partnerCodeValid.value && initialInsuranceFeeBeforeDiscount !== null && (
+              <span class="line-through mr-1">
+                (before discount) M{Math.round(initialInsuranceFeeBeforeDiscount)}
+              </span>
+            )}
             M{currentInsuranceFee} to RISK
           </p>
-          {partnerCodeValid.value &&
-            initialInsuranceFeeBeforeDiscount !== null && (
-            <p class="text-sm text-gray-400 line-through">
-              (before discount) M{Math.round(initialInsuranceFeeBeforeDiscount)}
+
+          <p class="text-lg font-bold text-white mt-2">
+            Total out of pocket: M
+            {currentLoanAmount + currentInsuranceFee}
+          </p>
+          {currentLoanAmount > 0 && (
+            <p class="text-sm text-gray-400">
+              Net to lender if successful: M{netLenderGain}
             </p>
           )}
-          <p class="text-lg font-bold text-white mt-2">
-            = M{totalPayment}
-          </p>
         </div>
 
         <button
