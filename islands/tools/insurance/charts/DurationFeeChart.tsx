@@ -41,7 +41,6 @@ export default function DurationFeeChart(
       }
       if (!desiredXTickValues.includes(0)) desiredXTickValues.unshift(0);
 
-
       const mainChartData: Array<{ x: number; y: number }> = [];
       const labelsForAxis: number[] = [];
 

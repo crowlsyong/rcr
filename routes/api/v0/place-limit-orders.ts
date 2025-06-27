@@ -2,11 +2,11 @@ import { Handlers } from "$fresh/server.ts";
 import {
   cancelManifoldBet,
   placeManifoldBet,
-} from "../../utils/api/manifold_bet_helpers.ts";
+} from "../../../utils/api/manifold_bet_helpers.ts";
 import {
   BetPayload,
   ManifoldBetResponse,
-} from "../../utils/api/manifold_types.ts";
+} from "../../../utils/api/manifold_types.ts";
 
 interface ApiOrder {
   amount: number;

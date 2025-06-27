@@ -3,7 +3,7 @@
 /// <reference lib="deno.unstable" />
 
 import db from "../../database/db.ts";
-import { handler as scoreHandler } from "../../routes/api/score.ts";
+import { handler as scoreHandler } from "../../routes/api/v0/score.ts";
 
 const CRON_NAME = "Update User Credit Scores";
 // Process 100 users per cron job execution.

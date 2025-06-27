@@ -4,7 +4,7 @@ import {
   calculateInsuranceDetails,
   executeInsuranceTransaction,
   InsuranceCalculationResult,
-} from "../../utils/api/insurance_calculator_logic.ts";
+} from "../../../utils/api/insurance_calculator_logic.ts";
 
 function handleError(message: string, status: number): Response {
   return new Response(JSON.stringify({ success: false, error: message }), {
@@ -72,11 +72,14 @@ export const handler: Handlers<InsuranceCalculationResult | null> = {
         headers: { "Content-Type": "application/json" },
       });
     } catch (e) {
-      return handleError(`Server error: ${
-        typeof e === "object" && e !== null && "message" in e
-          ? (e as { message: string }).message
-          : String(e)
-      }`, 500);
+      return handleError(
+        `Server error: ${
+          typeof e === "object" && e !== null && "message" in e
+            ? (e as { message: string }).message
+            : String(e)
+        }`,
+        500,
+      );
     }
   },
 
@@ -109,7 +112,10 @@ export const handler: Handlers<InsuranceCalculationResult | null> = {
       return handleError("Invalid institution specified", 400);
     }
     if (institution && !commentId) {
-      return handleError("Comment ID is required for institutional funding", 400);
+      return handleError(
+        "Comment ID is required for institutional funding",
+        400,
+      );
     }
 
     try {
@@ -129,7 +135,8 @@ export const handler: Handlers<InsuranceCalculationResult | null> = {
         !calcResult.borrowerProfile
       ) {
         return handleError(
-          calcResult.error || "Failed to validate loan details before execution",
+          calcResult.error ||
+            "Failed to validate loan details before execution",
           500,
         );
       }
@@ -163,11 +170,14 @@ export const handler: Handlers<InsuranceCalculationResult | null> = {
         headers: { "Content-Type": "application/json" },
       });
     } catch (e) {
-      return handleError(`Server error: ${
-        typeof e === "object" && e !== null && "message" in e
-          ? (e as { message: string }).message
-          : String(e)
-      }`, 500);
+      return handleError(
+        `Server error: ${
+          typeof e === "object" && e !== null && "message" in e
+            ? (e as { message: string }).message
+            : String(e)
+        }`,
+        500,
+      );
     }
   },
 };

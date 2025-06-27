@@ -88,7 +88,7 @@ export default function DirectExecution(props: DirectExecutionProps) {
     }
 
     try {
-      const response = await fetch("/api/place-limit-orders", {
+      const response = await fetch("/api/v0/place-limit-orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

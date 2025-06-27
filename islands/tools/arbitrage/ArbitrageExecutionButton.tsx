@@ -76,7 +76,7 @@ export default function ArbitrageExecutionButton(
     };
 
     try {
-      const response = await fetch("/api/place-arbitrage-bets", {
+      const response = await fetch("/api/v0/place-arbitrage-bets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

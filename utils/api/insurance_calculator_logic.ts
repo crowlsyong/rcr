@@ -1,11 +1,11 @@
 // utils/api/insurance_calculator_logic.ts
 import {
   addBounty,
-  fetchUserData,
-  fetchUserPortfolio,
+  fetchLoanTransactions,
   fetchManaAndRecentRank,
   fetchTransactionCount,
-  fetchLoanTransactions,
+  fetchUserData,
+  fetchUserPortfolio,
   postComment,
   sendManagram,
 } from "./manifold_api_service.ts";
@@ -75,7 +75,9 @@ export interface TransactionExecutionResult {
 
 // --- Helper Functions ---
 
-async function getUserScoreProfile(username: string): Promise<UserScoreProfile> {
+async function getUserScoreProfile(
+  username: string,
+): Promise<UserScoreProfile> {
   const { userData, fetchSuccess, userDeleted } = await fetchUserData(username);
 
   if (!fetchSuccess || !userData) {
@@ -365,7 +367,10 @@ export async function executeInsuranceTransaction(
 
   if (params.institution) {
     if (!params.commentId) {
-      return { success: false, error: "Comment ID is required for institutional funding" };
+      return {
+        success: false,
+        error: "Comment ID is required for institutional funding",
+      };
     }
     loanBountyResult = await addBounty(
       targetMarketId,
@@ -392,7 +397,10 @@ export async function executeInsuranceTransaction(
   }
 
   if (!loanBountyResult.success || !loanBountyResult.data) {
-    return { success: false, error: `Failed to process loan transaction: ${loanBountyResult.error}` };
+    return {
+      success: false,
+      error: `Failed to process loan transaction: ${loanBountyResult.error}`,
+    };
   }
   // Now loanTxId can be const as it's assigned unconditionally after this check
   const loanTxId = loanBountyResult.data.id;
@@ -404,9 +412,13 @@ export async function executeInsuranceTransaction(
     apiKey,
   );
   if (!insuranceBountyResult.success || !insuranceBountyResult.data) {
-    return { success: false, error: `Failed to pay insurance fee: ${insuranceBountyResult.error}` };
+    return {
+      success: false,
+      error: `Failed to pay insurance fee: ${insuranceBountyResult.error}`,
+    };
   }
-  const insuranceTxId = (insuranceBountyResult.data as ManaPaymentTransaction).id;
+  const insuranceTxId =
+    (insuranceBountyResult.data as ManaPaymentTransaction).id;
 
   const receiptMessage = generateReceiptMessage({
     loanTxId,
@@ -428,7 +440,9 @@ export async function executeInsuranceTransaction(
     apiKey,
   );
   if (!postCommentResult.success || !postCommentResult.data) {
-    console.warn(`Transactions succeeded but failed to post receipt comment: ${postCommentResult.error}`);
+    console.warn(
+      `Transactions succeeded but failed to post receipt comment: ${postCommentResult.error}`,
+    );
   }
 
   return {

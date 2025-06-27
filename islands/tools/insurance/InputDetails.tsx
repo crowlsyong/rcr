@@ -159,7 +159,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
         return;
       }
 
-      const res = await fetch(`/api/score?username=${user}`);
+      const res = await fetch(`/api/v0/score?username=${user}`);
       const data = await res.json();
 
       if (data.error) {
@@ -253,7 +253,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
 
     const debounceTimer = setTimeout(async () => {
       try {
-        const response = await fetch("/api/validate-partner-code", {
+        const response = await fetch("/api/v0/validate-partner-code", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -425,11 +425,10 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
     ? Math.round(insuranceFee)
     : 0;
 
-  const displayDurationFee =
-    loanAmount.value > 0 && insuranceFee !== null && durationFeePercentage.value > 0
-      ? Math.ceil(currentLoanAmount * durationFeePercentage.value)
-      : 0;
-
+  const displayDurationFee = loanAmount.value > 0 && insuranceFee !== null &&
+      durationFeePercentage.value > 0
+    ? Math.ceil(currentLoanAmount * durationFeePercentage.value)
+    : 0;
 
   return (
     <>

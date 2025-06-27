@@ -7,7 +7,7 @@ import ScoreResult from "./creditscore/ScoreResult.tsx";
 interface CreditScoreData {
   username: string;
   creditScore: number;
-  riskMultiplier: number;
+  riskBaseFee: number;
   avatarUrl: string | null;
   userExists: boolean;
 }
@@ -146,7 +146,7 @@ export default function GameShowCreditScore(
                 <ScoreResult
                   username={user1Data.value?.username || "N/A"}
                   creditScore={user1Data.value?.creditScore || 0}
-                  riskMultiplier={user1Data.value?.riskMultiplier || 0}
+                  riskBaseFee={user1Data.value?.riskBaseFee || 0}
                   avatarUrl={user1Data.value?.avatarUrl || null}
                   isWaiting={false}
                   urlPrefix="https://manifold.markets"
@@ -170,7 +170,7 @@ export default function GameShowCreditScore(
                 <ScoreResult
                   username={user2Data.value?.username || "N/A"}
                   creditScore={user2Data.value?.creditScore || 0}
-                  riskMultiplier={user2Data.value?.riskMultiplier || 0}
+                  riskBaseFee={user2Data.value?.riskBaseFee || 0}
                   avatarUrl={user2Data.value?.avatarUrl || null}
                   isWaiting={false}
                   urlPrefix="https://manifold.markets"

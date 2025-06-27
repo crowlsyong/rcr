@@ -2,7 +2,7 @@
 // routes/api/history.ts
 
 import { Handlers } from "$fresh/server.ts";
-import db from "../../database/db.ts"; // Import the KV database instance
+import db from "../../../database/db.ts"; // Import the KV database instance
 
 interface CreditScoreDataPoint {
   userId: string;

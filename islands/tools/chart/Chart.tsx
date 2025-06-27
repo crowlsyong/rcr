@@ -83,7 +83,7 @@ export default function Chart({ username }: ChartProps) {
       }
 
       try {
-        const scoreRes = await fetch(`/api/score?username=${username}`);
+        const scoreRes = await fetch(`/api/v0/score?username=${username}`);
         if (!scoreRes.ok) {
           setError(
             `Failed to fetch current score data: ${scoreRes.statusText}`,
@@ -109,7 +109,7 @@ export default function Chart({ username }: ChartProps) {
         }
 
         const historyRes = await fetch(
-          `/api/history?userId=${currentScoreData.userId}`,
+          `/api/v0/history?userId=${currentScoreData.userId}`,
         );
         if (!historyRes.ok) {
           console.error(

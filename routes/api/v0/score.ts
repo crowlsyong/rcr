@@ -4,20 +4,23 @@ import {
   fetchTransactionCount,
   fetchUserData,
   fetchUserPortfolio,
-} from "../../utils/api/manifold_api_service.ts";
+} from "../../../utils/api/manifold_api_service.ts";
 import {
   calculateNetLoanBalance,
   calculateriskBaseFee,
   computeMMR,
   mapToCreditScore,
-} from "../../utils/api/score_calculation_logic.ts";
+} from "../../../utils/api/score_calculation_logic.ts";
 import {
   getLastScoreUpdateTime,
   saveHistoricalScore,
   updateLastScoreUpdateTime,
-} from "../../utils/api/kv_store_service.ts";
-import { ManifoldUser, UserPortfolio } from "../../utils/api/manifold_types.ts";
-import db from "../../database/db.ts"; // Make sure db is imported
+} from "../../../utils/api/kv_store_service.ts";
+import {
+  ManifoldUser,
+  UserPortfolio,
+} from "../../../utils/api/manifold_types.ts";
+import db from "../../../database/db.ts"; // Make sure db is imported
 
 const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2";
 
