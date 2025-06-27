@@ -1,8 +1,10 @@
 // islands/menu/MenuDropdown.tsx
+
 import { useSignal } from "@preact/signals";
 import { ComponentType } from "preact";
 import { JSX } from "preact/jsx-runtime";
 import { TbChevronDown, TbExternalLink } from "@preact-icons/tb";
+import { useEffect } from "preact/hooks"; // Import useEffect
 
 const ChevronDownIcon = TbChevronDown as ComponentType<
   JSX.IntrinsicElements["svg"]
@@ -27,6 +29,14 @@ export default function MenuDropdown(
   { title, links, isMenuOpen }: MenuDropdownProps,
 ) {
   const isOpen = useSignal(false);
+  const currentPath = useSignal(""); // New signal to hold the current path
+
+  useEffect(() => {
+    // Set currentPath only on the client side
+    if (typeof window !== "undefined") {
+      currentPath.value = globalThis.location.pathname;
+    }
+  }, []);
 
   return (
     <div>
@@ -51,21 +61,29 @@ export default function MenuDropdown(
         }`}
       >
         <div class="space-y-2 pl-4 border-l-2 border-gray-700/50">
-          {links.map((link) => (
-            <a
-              key={link.url}
-              href={link.url}
-              target={link.targetBlank ? "_blank" : "_self"}
-              rel={link.targetBlank ? "noopener noreferrer" : undefined}
-              class="relative flex items-center justify-start border border-[#334155] text-white py-2 px-3 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-sm"
-              tabIndex={isMenuOpen ? 0 : -1}
-            >
-              <span>{link.label}</span>
-              {link.targetBlank && typeof window !== "undefined" && (
-                <ExternalLinkIcon class="absolute right-3 w-4 h-4 opacity-70" />
-              )}
-            </a>
-          ))}
+          {links.map((link) => {
+            // Determine if the link is active
+            const isActive = currentPath.value === link.url;
+            const linkClasses = `relative flex items-center justify-start border border-[#334155] text-white py-2 px-3 rounded-md transition-colors duration-200 text-sm ${
+              isActive ? "bg-blue-700" : "hover:bg-[#1E293B]"
+            }`; // Added active styling
+
+            return (
+              <a
+                key={`${link.label}-${link.url}`}
+                href={link.url}
+                target={link.targetBlank ? "_blank" : "_self"}
+                rel={link.targetBlank ? "noopener noreferrer" : undefined}
+                class={linkClasses}
+                tabIndex={isMenuOpen ? 0 : -1}
+              >
+                <span>{link.label}</span>
+                {link.targetBlank && typeof window !== "undefined" && (
+                  <ExternalLinkIcon class="absolute right-3 w-4 h-4 opacity-70" />
+                )}
+              </a>
+            );
+          })}
         </div>
       </div>
     </div>
