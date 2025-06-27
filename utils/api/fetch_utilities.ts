@@ -6,7 +6,9 @@ export async function fetchWithRetries(
   options?: RequestInit,
   retries = 2,
   delayMs = 1000,
-): Promise<{ response: Response | null; error: Error | null; success: boolean }> {
+): Promise<
+  { response: Response | null; error: Error | null; success: boolean }
+> {
   for (let i = 0; i <= retries; i++) {
     try {
       const response = await fetch(url, options);
@@ -52,9 +54,7 @@ export async function fetchWithRetries(
       }
       // Final attempt failed due to network error. Return an Error object.
       console.error(
-        `Fetch error for ${url} after ${
-          retries + 1
-        } attempts: ${errorMessage}`,
+        `Fetch error for ${url} after ${retries + 1} attempts: ${errorMessage}`,
       );
       return { response: null, error: new Error(errorMessage), success: false };
     }

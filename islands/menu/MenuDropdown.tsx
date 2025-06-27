@@ -64,9 +64,10 @@ export default function MenuDropdown(
           {links.map((link) => {
             // Determine if the link is active
             const isActive = currentPath.value === link.url;
-            const linkClasses = `relative flex items-center justify-start border border-[#334155] text-white py-2 px-3 rounded-md transition-colors duration-200 text-sm ${
-              isActive ? "bg-blue-700" : "hover:bg-[#1E293B]"
-            }`; // Added active styling
+            const linkClasses =
+              `relative flex items-center justify-start border border-[#334155] text-white py-2 px-3 rounded-md transition-colors duration-200 text-sm ${
+                isActive ? "bg-blue-700" : "hover:bg-[#1E293B]"
+              }`; // Added active styling
 
             return (
               <a

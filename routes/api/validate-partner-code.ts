@@ -47,7 +47,11 @@ export const handler: Handlers = {
       );
     } else {
       return new Response(
-        JSON.stringify({ isValid: false, message: "Invalid partner code", discountType: null }),
+        JSON.stringify({
+          isValid: false,
+          message: "Invalid partner code",
+          discountType: null,
+        }),
         {
           headers: { "Content-Type": "application/json" },
           status: 200, // Returning 200 even for invalid code is common for validation

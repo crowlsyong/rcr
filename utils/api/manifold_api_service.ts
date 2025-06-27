@@ -73,8 +73,9 @@ export async function postDataToManifoldApi<T>(
     return {
       success: false,
       data: null,
-      error:
-        `Manifold API error (${response.status}): ${errorText || response.statusText}`,
+      error: `Manifold API error (${response.status}): ${
+        errorText || response.statusText
+      }`,
       status: response.status,
     };
   }

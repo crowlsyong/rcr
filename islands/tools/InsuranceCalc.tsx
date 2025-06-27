@@ -1,5 +1,4 @@
 // islands/InsuranceCalc.tsx
-
 import { useSignal } from "@preact/signals";
 import { useEffect, useRef, useState } from "preact/hooks";
 import ScoreResult from "./creditscore/ScoreResult.tsx";
@@ -19,7 +18,8 @@ interface CreditScoreData {
 }
 
 const INSURANCE_MARKET_ID = "QEytQ5ch0P";
-const INSURANCE_MARKET_URL = "https://manifold.markets/crowlsyong/risk-payment-portal";
+const INSURANCE_MARKET_URL =
+  "https://manifold.markets/crowlsyong/risk-payment-portal";
 const LENDER_ACCOUNT_AT_MANIFOLD = "100Anonymous";
 const CONTACT_USERNAME = "crowlsyong";
 
@@ -31,6 +31,10 @@ export default function InsuranceCalc() {
   const [debouncedUsername, setDebouncedUsername] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const [insuranceFee, setInsuranceFee] = useState<number | null>(null);
+  const [
+    initialInsuranceFeeBeforeDiscount,
+    setInitialInsuranceFeeBeforeDiscount,
+  ] = useState<number | null>(null);
   const [riskMultiplier, setRiskMultiplier] = useState(0);
   const scoreData = useSignal<CreditScoreData | null>(null);
   const error = useSignal<string>("");
@@ -46,7 +50,11 @@ export default function InsuranceCalc() {
   const partnerCodeValid = useSignal(false);
   const partnerCodeMessage = useSignal("");
   const [isCodeChecking, setIsCodeChecking] = useState(false);
-  const discountSource = useSignal<string | null>(null); // New signal for the source of the discount
+  const discountSource = useSignal<string | null>(null);
+
+  const isConfirming = useSignal(false);
+  const cooldownActive = useSignal(false);
+  const cooldownMessage = useSignal("");
 
   const coverageFees: { [key: number]: number } = {
     25: 0.02,
@@ -54,6 +62,27 @@ export default function InsuranceCalc() {
     75: 0.08,
     100: 0.12,
   };
+
+  useEffect(() => {
+    let timeoutId: number;
+    if (isConfirming.value) {
+      timeoutId = setTimeout(() => isConfirming.value = false, 4000);
+    }
+    return () => clearTimeout(timeoutId);
+  }, [isConfirming.value]);
+
+  useEffect(() => {
+    let cooldownTimeout: number;
+    if (cooldownActive.value) {
+      cooldownMessage.value =
+        "Woah! You just did that. Wait a sec before trying again.";
+      cooldownTimeout = setTimeout(() => {
+        cooldownActive.value = false;
+        cooldownMessage.value = "";
+      }, 2000);
+    }
+    return () => clearTimeout(cooldownTimeout);
+  }, [cooldownActive.value]);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedUsername(username.value), 100);
@@ -65,7 +94,7 @@ export default function InsuranceCalc() {
     if (code === "") {
       partnerCodeValid.value = false;
       partnerCodeMessage.value = "";
-      discountSource.value = null; // Clear discount source
+      discountSource.value = null;
       calculateInsuranceFee();
       return;
     }
@@ -90,7 +119,7 @@ export default function InsuranceCalc() {
         const data = await response.json();
         partnerCodeValid.value = data.isValid;
         partnerCodeMessage.value = data.message;
-        discountSource.value = data.discountType || null; // Capture discount type
+        discountSource.value = data.discountType || null;
       } catch (err) {
         partnerCodeValid.value = false;
         partnerCodeMessage.value = `Error checking code: ${
@@ -98,7 +127,7 @@ export default function InsuranceCalc() {
             ? (err as { message: string }).message
             : String(err)
         }`;
-        discountSource.value = null; // Clear discount source on error
+        discountSource.value = null;
       } finally {
         setIsCodeChecking(false);
         calculateInsuranceFee();
@@ -144,19 +173,22 @@ export default function InsuranceCalc() {
       loanAmount.value <= 0 || !selectedCoverage.value || riskMultiplier === 0
     ) {
       setInsuranceFee(null);
+      setInitialInsuranceFeeBeforeDiscount(null);
       return;
     }
 
     const coverageFee = coverageFees[selectedCoverage.value];
 
-    let totalFee = (riskMultiplier * loanAmount.value) +
+    let currentFee = (riskMultiplier * loanAmount.value) +
       (loanAmount.value * coverageFee);
 
+    setInitialInsuranceFeeBeforeDiscount(currentFee);
+
     if (partnerCodeValid.value) {
-      totalFee *= 0.75;
+      currentFee *= 0.75;
     }
 
-    setInsuranceFee(totalFee);
+    setInsuranceFee(currentFee);
   }
 
   useEffect(() => {
@@ -236,6 +268,7 @@ export default function InsuranceCalc() {
     }
 
     setIsProcessingPayment(true);
+    isConfirming.value = false;
 
     try {
       const { userData: borrowerData, fetchSuccess: borrowerFetchSuccess } =
@@ -266,7 +299,9 @@ export default function InsuranceCalc() {
 
       if (!sendManaResult.success) {
         throw new Error(
-          `Failed to send mana to borrower: ${sendManaResult.error || "Unknown error."}`,
+          `Failed to send mana to borrower: ${
+            sendManaResult.error || "Unknown error."
+          }`,
         );
       }
 
@@ -278,7 +313,9 @@ export default function InsuranceCalc() {
 
       if (!addBountyResult.success) {
         throw new Error(
-          `Failed to add bounty to market: ${addBountyResult.error || "Unknown error."}`,
+          `Failed to add bounty to market: ${
+            addBountyResult.error || "Unknown error."
+          }`,
         );
       }
 
@@ -292,7 +329,6 @@ export default function InsuranceCalc() {
 
       let discountLine = "";
       if (partnerCodeValid.value && discountSource.value) {
-        // Use discountSource.value which comes from the API, not the raw code
         discountLine = `\n${discountSource.value} Discount: 25%`;
       }
 
@@ -346,13 +382,16 @@ Risk Free 🦝RISK Fee Guarantee™️
 
       if (!postCommentResult.success) {
         throw new Error(
-          `Failed to post insurance receipt comment: ${postCommentResult.error || "Unknown error."}`,
+          `Failed to post insurance receipt comment: ${
+            postCommentResult.error || "Unknown error."
+          }`,
         );
       }
 
       paymentMessage.value = "Insurance policy successfully created and paid!";
       paymentMessageType.value = "success";
       paymentPortalLink.value = INSURANCE_MARKET_URL;
+      cooldownActive.value = true;
     } catch (e) {
       paymentMessage.value = `Payment failed: ${
         typeof e === "object" && e !== null && "message" in e
@@ -360,8 +399,31 @@ Risk Free 🦝RISK Fee Guarantee™️
           : String(e)
       }`;
       paymentMessageType.value = "error";
+      cooldownActive.value = true;
     } finally {
       setIsProcessingPayment(false);
+      isConfirming.value = false;
+    }
+  };
+
+  const handleConfirmStepClick = () => {
+    if (cooldownActive.value) {
+      return;
+    }
+
+    if (!isFormValid) {
+      paymentMessage.value =
+        "Please fill in all required fields before confirming.";
+      paymentMessageType.value = "error";
+      return;
+    }
+
+    paymentMessage.value = "";
+
+    if (isConfirming.value) {
+      handleConfirmPayment();
+    } else {
+      isConfirming.value = true;
     }
   };
 
@@ -369,6 +431,36 @@ Risk Free 🦝RISK Fee Guarantee™️
     loanAmount.value > 0 &&
     selectedCoverage.value && insuranceFee !== null && loanDueDate.value &&
     apiKey.value && !isProcessingPayment;
+
+  // Calculate total payment - ensure these values are numbers before summing
+  const currentLoanAmount = loanAmount.value || 0;
+  const currentInsuranceFee = insuranceFee !== null
+    ? Math.round(insuranceFee)
+    : 0;
+  const totalPayment = currentLoanAmount + currentInsuranceFee;
+
+  // Determine button text based on states
+  let buttonText = `Send M${currentInsuranceFee} fee and loan @${
+    username.value || "borrower"
+  } M${currentLoanAmount} mana`;
+
+  let buttonClass =
+    `mt-6 w-full p-3 rounded-md text-lg font-semibold transition-colors duration-200 `;
+
+  if (cooldownActive.value) {
+    buttonText = "Please wait...";
+    buttonClass += `bg-gray-700 text-gray-400 cursor-not-allowed`;
+  } else if (isProcessingPayment) {
+    buttonText = "Processing...";
+    buttonClass += `bg-gray-700 text-gray-400 cursor-not-allowed`;
+  } else if (isConfirming.value) {
+    buttonText = "Are you sure? Click to Confirm";
+    buttonClass += `bg-yellow-700 hover:bg-yellow-800 text-white`;
+  } else if (!isFormValid) {
+    buttonClass += `bg-gray-700 text-gray-400 cursor-not-allowed`;
+  } else {
+    buttonClass += `bg-blue-600 hover:bg-blue-700 text-white`;
+  }
 
   return (
     <>
@@ -381,7 +473,6 @@ Risk Free 🦝RISK Fee Guarantee™️
         `}
       </style>
       <div class="w-full max-w-md mx-auto pb-6 px-0 sm:px-6 md:max-w-2xl lg:max-w-4xl">
-
         <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <ScoreResult
@@ -433,25 +524,24 @@ Risk Free 🦝RISK Fee Guarantee™️
                   class="w-full pl-8 p-3 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
+              <div class="mt-2">
+                <label htmlFor="loanAmount" class="text-gray-400 mb-1 block">
+                  Enter loan amount
+                </label>
+                <input
+                  id="loanAmount"
+                  type="text"
+                  value={loanAmount.value.toString()}
+                  placeholder="Loan amount"
+                  onInput={handleLoanInput}
+                  class="w-full p-3 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
             </div>
           </div>
 
           <div>
             <div class="mt-0">
-              <label htmlFor="loanAmount" class="text-gray-400 mb-1 block">
-                Enter loan amount
-              </label>
-              <input
-                id="loanAmount"
-                type="text"
-                value={loanAmount.value.toString()}
-                placeholder="Loan amount"
-                onInput={handleLoanInput}
-                class="w-full p-3 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div class="mt-4">
               <label htmlFor="loanDueDate" class="text-gray-400 mb-1 block">
                 Loan Due Date
               </label>
@@ -464,8 +554,8 @@ Risk Free 🦝RISK Fee Guarantee™️
               />
               {loanDueDate.value && (
                 <p class="text-gray-400 text-xs mt-1">
-                  Policy ends: {getPolicyEndDate(loanDueDate.value)} (1 week
-                  after)
+                  Policy ends: {getPolicyEndDate(loanDueDate.value)}{" "}
+                  (1 week after)
                 </p>
               )}
             </div>
@@ -509,8 +599,9 @@ Risk Free 🦝RISK Fee Guarantee™️
                 id="api-key"
                 name="apiKey"
                 value={apiKey.value}
-                onInput={(e) =>
-                  (apiKey.value = (e.target as HTMLInputElement).value)}
+                onInput={(
+                  e,
+                ) => (apiKey.value = (e.target as HTMLInputElement).value)}
                 placeholder="xxxxx-xxxx-xxxx-xxxxxxxxxxxxxxx"
                 class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
               />
@@ -535,7 +626,7 @@ Risk Free 🦝RISK Fee Guarantee™️
                 value={partnerCodeInput.value}
                 onInput={handlePartnerCodeInput}
                 placeholder="Enter code here"
-                class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
+                class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
               />
               {isCodeChecking
                 ? (
@@ -560,50 +651,50 @@ Risk Free 🦝RISK Fee Guarantee™️
           </div>
         </div>
 
-        <div class="mt-4 text-right space-y-2">
-          <p class="text-gray-400 text-xs">
-            {loanAmount.value ? `Loan Amount: M${loanAmount.value}` : ""}
-          </p>
-
+        {/* Unified financial summary box */}
+        <div class="mt-4 p-4 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-right space-y-1">
           <p
             class={`${
               insuranceFee === null || !loanAmount.value ||
-              !selectedCoverage.value
+                !selectedCoverage.value
                 ? "text-orange-400"
                 : "text-green-400"
-            } text-lg`}
+            } text-lg font-bold`}
           >
-            {insuranceFee === null || !loanAmount.value ||
-                !selectedCoverage.value
-              ? ""
-              : "Insurance Fee: "}
-            <span class="font-bold">
-              {insuranceFee === null || !loanAmount.value ||
-                  !selectedCoverage.value
-                ? ""
-                : "M"}
-            </span>
-            <span class="font-bold">
-              {insuranceFee === null || !loanAmount.value ||
-                  !selectedCoverage.value
-                ? ""
-                : Math.round(insuranceFee)}
-            </span>
+            Insurance Fee: M{currentInsuranceFee}
+          </p>
+          <hr class="border-gray-700" />
+          <p class="text-sm text-gray-400">
+            M{currentLoanAmount} to @{username.value || "borrower"}
+          </p>
+          <p class="text-sm text-gray-400">
+            M{currentInsuranceFee} to RISK
+          </p>
+          {partnerCodeValid.value &&
+            initialInsuranceFeeBeforeDiscount !== null && (
+            <p class="text-sm text-gray-400 line-through">
+              (before discount) M{Math.round(initialInsuranceFeeBeforeDiscount)}
+            </p>
+          )}
+          <p class="text-lg font-bold text-white mt-2">
+            = M{totalPayment}
           </p>
         </div>
 
         <button
           type="button"
-          onClick={handleConfirmPayment}
-          disabled={!isFormValid}
-          class={`mt-6 w-full p-3 rounded-md text-lg font-semibold transition-colors duration-200 ${
-            isFormValid
-              ? "bg-blue-600 hover:bg-blue-700 text-white"
-              : "bg-gray-700 text-gray-400 cursor-not-allowed"
-          }`}
+          onClick={handleConfirmStepClick}
+          disabled={!isFormValid || isProcessingPayment || cooldownActive.value}
+          class={buttonClass}
         >
-          {isProcessingPayment ? "Processing..." : "Confirm Insurance Payment"}
+          {buttonText}
         </button>
+
+        {cooldownActive.value && cooldownMessage.value && (
+          <p class="mt-2 text-center text-orange-400 text-sm">
+            {cooldownMessage.value}
+          </p>
+        )}
 
         {paymentMessage.value && (
           <p
