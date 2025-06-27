@@ -18,6 +18,8 @@ import * as $auth_oauth2callback from "./routes/auth/oauth2callback.ts";
 import * as $auth_signin from "./routes/auth/signin.ts";
 import * as $auth_signout from "./routes/auth/signout.ts";
 import * as $chart_username_ from "./routes/chart/[username].tsx";
+import * as $docs_layout from "./routes/docs/_layout.tsx";
+import * as $docs_api from "./routes/docs/api.tsx";
 import * as $extension from "./routes/extension.tsx";
 import * as $forbidden from "./routes/forbidden.tsx";
 import * as $gameshow_usernames_ from "./routes/gameshow/[usernames].tsx";
@@ -112,6 +114,8 @@ const manifest = {
     "./routes/auth/signin.ts": $auth_signin,
     "./routes/auth/signout.ts": $auth_signout,
     "./routes/chart/[username].tsx": $chart_username_,
+    "./routes/docs/_layout.tsx": $docs_layout,
+    "./routes/docs/api.tsx": $docs_api,
     "./routes/extension.tsx": $extension,
     "./routes/forbidden.tsx": $forbidden,
     "./routes/gameshow/[usernames].tsx": $gameshow_usernames_,

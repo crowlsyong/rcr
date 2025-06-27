@@ -65,25 +65,43 @@ export async function handler(
     scriptSrc: [
       "'self'",
       "https://manifold.markets",
-      "'unsafe-eval'",
-      "'unsafe-inline'",
+      "'unsafe-eval'", // Consider refining this if possible, it's a broad directive
+      "'unsafe-inline'", // Consider refining this if possible, it's a broad directive
     ],
     styleSrc: [
       "'self'",
       "https://manifold.markets",
-      "'unsafe-inline'",
+      "'unsafe-inline'", // Consider refining this if possible
     ],
     imgSrc: [
       "'self'",
       "https://firebasestorage.googleapis.com",
       "https://lh3.googleusercontent.com",
       "data:",
+      "https://www.notion.so",
+      "https://notion.site",
+      "https://atom-club-701.notion.site", // Specific Notion subdomain for images
     ],
     fontSrc: ["'self'", "https://manifold.markets"],
     connectSrc: [
       "'self'",
       "https://manifold.markets",
       "https://api.manifold.markets",
+      "https://www.notion.so",
+      "https://notion.site",
+      "https://atom-club-701.notion.site", // Specific Notion subdomain for connections
+    ],
+    frameSrc: [
+      "'self'",
+      "https://notion.site",
+      "https://www.notion.so",
+      "https://atom-club-701.notion.site", // Specific Notion subdomain for iframes
+    ],
+    childSrc: [
+      "'self'",
+      "https://notion.site",
+      "https://www.notion.so",
+      "https://atom-club-701.notion.site", // Specific Notion subdomain for child frames (including iframes)
     ],
   };
 

@@ -5,7 +5,8 @@ import MenuBar from "../islands/menu/MenuBar.tsx"; // Import the MenuBar
 export default function App({ Component, url }: PageProps) {
   const showMenuBar = !url.pathname.startsWith("/iframe") &&
     !url.pathname.startsWith("/old-ext") &&
-    !url.pathname.startsWith("/gameshow");
+    !url.pathname.startsWith("/gameshow") &&
+    !url.pathname.startsWith("/docs") ;
 
   return (
     <html lang="en">
