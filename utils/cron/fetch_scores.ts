@@ -43,7 +43,7 @@ async function processUserScore(user: User): Promise<void> {
   );
   try {
     const mockRequest = new Request(
-      `http://localhost/api/score?username=${
+      `http://localhost/api/v0/score?username=${
         encodeURIComponent(user.username)
       }`,
       { method: "GET" },
