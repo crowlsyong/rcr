@@ -52,6 +52,7 @@ export default function ChartContainer() {
           maxDistributionPercentage={maxDistributionPercentage.value}
           centerShift={centerShift.value}
           onDistributionChange={handleDistributionChange} // <-- ADDED THIS PROP
+          marketQuestion="" // TODO: Replace with actual market question value as needed
         />
       </div>
     </div>
