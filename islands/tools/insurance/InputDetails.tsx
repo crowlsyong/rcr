@@ -8,13 +8,13 @@ import PolicyDetailsSection from "./PolicyDetailsSection.tsx";
 import FinancialSummary from "./FinancialSummary.tsx";
 import OptionalFeatures from "./OptionalFeatures.tsx";
 import { fetchUserData } from "../../../utils/api/manifold_api_service.ts";
-import { RISK_LEVEL_DATA } from "../../../utils/score_utils.ts"; // Corrected import path
+import { RISK_LEVEL_DATA } from "../../../utils/score_utils.ts";
 
 interface CreditScoreData {
   username: string;
   creditScore: number;
-  riskBaseFee: number; // Renamed: This will now be derived from creditScore within this component
-  avatarUrl: string | null;
+  riskBaseFee: number;
+  avatarUrl: string | null; // RE-ADDED: LoanInputSection needs this
 }
 
 interface InputDetailsProps {
@@ -37,7 +37,7 @@ interface InputDetailsProps {
   setInsuranceFee: (value: number | null) => void;
   initialInsuranceFeeBeforeDiscount: number | null;
   setInitialInsuranceFeeBeforeDiscount: (value: number | null) => void;
-  riskBaseFee: number; // Renamed: This will now be derived from credit score
+  riskBaseFee: number;
   setriskBaseFee: (value: number) => void;
   getPolicyEndDate: (loanDueDateStr: string) => string;
   isLenderUsernameValid: Signal<boolean>;
@@ -74,8 +74,8 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
     setInsuranceFee,
     initialInsuranceFeeBeforeDiscount,
     setInitialInsuranceFeeBeforeDiscount,
-    riskBaseFee, // Renamed: Keep this prop for display, but its value will be updated
-    setriskBaseFee, // Renamed: This setter will be used to update based on credit score
+    riskBaseFee,
+    setriskBaseFee,
     getPolicyEndDate,
     isLenderUsernameValid,
     isBorrowerUsernameValid,
@@ -89,26 +89,23 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
   const [debouncedLenderUsername, setDebouncedLenderUsername] = useState("");
   const scoreData = useSignal<CreditScoreData | null>(null);
   const borrowerUsernameError = useSignal<string>("");
-  const lenderUsernameError = useSignal<string>(""); // Keep this for lender username errors
+  const lenderUsernameError = useSignal<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
   const durationFeePercentage = useSignal<number>(0);
 
-  // Function to determine risk multiplier based on credit score using RISK_LEVEL_DATA
   const getriskBaseFeeFromScore = (score: number): number => {
     const foundLevel = RISK_LEVEL_DATA.find(
       (level) => score >= level.scoreMin && score <= level.scoreMax,
     );
-    return foundLevel ? foundLevel.feeMultiplier : 0; // Return 0 or a default if score is out of range
+    return foundLevel ? foundLevel.feeMultiplier : 0;
   };
 
-  // Function to calculate duration fee percentage
   const calculateDurationFeePercentage = (days: number): number => {
     const a = 0.0000207;
     const b = 1.5;
-    return parseFloat(Math.min(a * Math.pow(days, b), 0.75).toFixed(4)); // Cap at 75%
+    return parseFloat(Math.min(a * Math.pow(days, b), 0.75).toFixed(4));
   };
 
-  // Function to calculate days between two dates
   const calculateDaysBetween = (startDate: Date, endDate: Date): number => {
     const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -142,7 +139,6 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
     }
   }, [username.value, lenderUsername.value]);
 
-  // Fetch the score data based on username and derive riskBaseFee
   async function validateAndFetchBorrowerData(user: string) {
     if (!user) {
       resetBorrowerDataState();
@@ -155,7 +151,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
         scoreData.value = null;
         borrowerUsernameError.value = "Borrower username not found or deleted.";
         isBorrowerUsernameValid.value = false;
-        setriskBaseFee(0); // Reset riskBaseFee on error
+        setriskBaseFee(0);
         setInsuranceFee(null);
         setInitialInsuranceFeeBeforeDiscount(null);
         return;
@@ -168,16 +164,21 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
         scoreData.value = null;
         borrowerUsernameError.value = `Error fetching score: ${data.error}`;
         isBorrowerUsernameValid.value = true;
-        setriskBaseFee(0); // Reset riskBaseFee on score error
+        setriskBaseFee(0);
         setInsuranceFee(null);
         setInitialInsuranceFeeBeforeDiscount(null);
       } else {
-        scoreData.value = data;
-        // Derive riskBaseFee directly from the fetched creditScore using local data
+        // Correctly set all properties including avatarUrl from the fetched data
+        scoreData.value = {
+          username: data.username,
+          creditScore: data.creditScore,
+          riskBaseFee: getriskBaseFeeFromScore(data.creditScore),
+          avatarUrl: data.avatarUrl, // Ensure avatarUrl is passed from fetch result
+        };
         const derivedriskBaseFee = getriskBaseFeeFromScore(
           data.creditScore,
         );
-        setriskBaseFee(derivedriskBaseFee); // Update the state
+        setriskBaseFee(derivedriskBaseFee);
         borrowerUsernameError.value = "";
         isBorrowerUsernameValid.value = true;
       }
@@ -189,13 +190,12 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
           : String(err)
       }`;
       isBorrowerUsernameValid.value = false;
-      setriskBaseFee(0); // Reset riskBaseFee on fetch error
+      setriskBaseFee(0);
       setInsuranceFee(null);
       setInitialInsuranceFeeBeforeDiscount(null);
     }
   }
 
-  // Define validateLenderUsername function here
   async function validateLenderUsername(user: string) {
     if (!user) {
       lenderUsernameError.value = "";
@@ -235,7 +235,6 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
   }, [debouncedBorrowerUsername]);
 
   useEffect(() => {
-    // This useEffect depends on the *debounced* lender username
     validateLenderUsername(debouncedLenderUsername);
   }, [debouncedLenderUsername]);
 
@@ -312,7 +311,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
       loanAmount.value * calculatedDurationFeePercentage,
     );
 
-    let currentFee = (riskBaseFee * loanAmount.value) + // Use riskBaseFee here
+    let currentFee = (riskBaseFee * loanAmount.value) +
       (loanAmount.value * coverageFee) + durationFee; // Add duration fee here
 
     setInitialInsuranceFeeBeforeDiscount(currentFee);
@@ -447,8 +446,8 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
           inputRef={inputRef}
           handleUsernameInput={handleUsernameInput}
           error={borrowerUsernameError}
-          scoreData={scoreData}
-          riskBaseFee={riskBaseFee} // Use renamed prop
+          scoreData={scoreData} // Passing scoreData which now contains avatarUrl
+          riskBaseFee={riskBaseFee}
           lenderUsername={lenderUsername}
           handleLenderUsernameInput={handleLenderUsernameInput}
           lenderUsernameError={lenderUsernameError}
@@ -498,9 +497,10 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
         netLenderGain={currentLenderFee - currentInsuranceFee}
         apiKeyLength={apiKey.value.length}
         durationFee={displayDurationFee}
-        selectedCoverage={selectedCoverage} // Pass selectedCoverage to FinancialSummary
-        riskBaseFee={riskBaseFee} // Use renamed prop and pass to FinancialSummary
-        loanDueDate={loanDueDate} // Pass loanDueDate to FinancialSummary
+        selectedCoverage={selectedCoverage}
+        riskBaseFee={riskBaseFee}
+        loanDueDate={loanDueDate}
+        borrowerCreditScore={scoreData.value?.creditScore || 0}
       />
     </>
   );

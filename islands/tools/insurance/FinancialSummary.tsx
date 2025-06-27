@@ -22,6 +22,7 @@ interface FinancialSummaryProps {
   selectedCoverage: Signal<number | null>;
   riskBaseFee: number;
   loanDueDate: Signal<string>;
+  borrowerCreditScore: number; // New prop: credit score for highlighting
 }
 
 const coverageFeesStatic: { [key: number]: number } = {
@@ -67,6 +68,7 @@ export default function FinancialSummary(
     selectedCoverage,
     riskBaseFee,
     loanDueDate,
+    borrowerCreditScore,
   } = props;
 
   const currentInsuranceFee = insuranceFee !== null
@@ -141,9 +143,12 @@ export default function FinancialSummary(
 
       {/* Risk Fee Info Hover */}
       <p class="text-sm text-gray-400 flex items-center justify-end">
-        RISK Base Fee: {riskFullDisplay}
+        Risk Base Fee: {riskFullDisplay}
         {riskBaseFee !== 0 && (
-          <InfoHover content={<RiskFeeChart />} width="w-96">
+          <InfoHover
+            content={<RiskFeeChart highlightScore={borrowerCreditScore} />} // Pass highlightScore
+            width="w-96"
+          >
             <InfoIcon />
           </InfoHover>
         )}
