@@ -6,13 +6,13 @@ import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $_middleware from "./routes/_middleware.ts";
 import * as $admin_index from "./routes/admin/index.tsx";
-import * as $api_v0_username_lite from "./routes/api/v0/[username]/lite.ts";
 import * as $api_v0_middleware from "./routes/api/v0/_middleware.ts";
 import * as $api_v0_history from "./routes/api/v0/history.ts";
 import * as $api_v0_insurance from "./routes/api/v0/insurance.ts";
 import * as $api_v0_place_arbitrage_bets from "./routes/api/v0/place-arbitrage-bets.ts";
 import * as $api_v0_place_limit_orders from "./routes/api/v0/place-limit-orders.ts";
 import * as $api_v0_score from "./routes/api/v0/score.ts";
+import * as $api_v0_score_username_lite from "./routes/api/v0/score/[username]/lite.ts";
 import * as $api_v0_validate_partner_code from "./routes/api/v0/validate-partner-code.ts";
 import * as $arbitrage from "./routes/arbitrage.tsx";
 import * as $auth_oauth2callback from "./routes/auth/oauth2callback.ts";
@@ -103,13 +103,13 @@ const manifest = {
     "./routes/_app.tsx": $_app,
     "./routes/_middleware.ts": $_middleware,
     "./routes/admin/index.tsx": $admin_index,
-    "./routes/api/v0/[username]/lite.ts": $api_v0_username_lite,
     "./routes/api/v0/_middleware.ts": $api_v0_middleware,
     "./routes/api/v0/history.ts": $api_v0_history,
     "./routes/api/v0/insurance.ts": $api_v0_insurance,
     "./routes/api/v0/place-arbitrage-bets.ts": $api_v0_place_arbitrage_bets,
     "./routes/api/v0/place-limit-orders.ts": $api_v0_place_limit_orders,
     "./routes/api/v0/score.ts": $api_v0_score,
+    "./routes/api/v0/score/[username]/lite.ts": $api_v0_score_username_lite,
     "./routes/api/v0/validate-partner-code.ts": $api_v0_validate_partner_code,
     "./routes/arbitrage.tsx": $arbitrage,
     "./routes/auth/oauth2callback.ts": $auth_oauth2callback,

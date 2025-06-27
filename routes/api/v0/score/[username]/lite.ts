@@ -5,16 +5,16 @@ import {
   fetchTransactionCount,
   fetchUserData,
   fetchUserPortfolio,
-} from "../../../../utils/api/manifold_api_service.ts";
+} from "../../../../../utils/api/manifold_api_service.ts";
 import {
   calculateNetLoanBalance,
   computeMMR,
   mapToCreditScore,
-} from "../../../../utils/api/score_calculation_logic.ts";
+} from "../../../../../utils/api/score_calculation_logic.ts";
 import {
   ManifoldUser,
   UserPortfolio,
-} from "../../../../utils/api/manifold_types.ts";
+} from "../../../../../utils/api/manifold_types.ts";
 
 const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2";
 
