@@ -46,6 +46,7 @@ export default function InsuranceCalc() {
   const partnerCodeValid = useSignal(false);
   const partnerCodeMessage = useSignal("");
   const [isCodeChecking, setIsCodeChecking] = useState(false);
+  const discountSource = useSignal<string | null>(null); // New signal for the source of the discount
 
   const coverageFees: { [key: number]: number } = {
     25: 0.02,
@@ -64,6 +65,7 @@ export default function InsuranceCalc() {
     if (code === "") {
       partnerCodeValid.value = false;
       partnerCodeMessage.value = "";
+      discountSource.value = null; // Clear discount source
       calculateInsuranceFee();
       return;
     }
@@ -88,6 +90,7 @@ export default function InsuranceCalc() {
         const data = await response.json();
         partnerCodeValid.value = data.isValid;
         partnerCodeMessage.value = data.message;
+        discountSource.value = data.discountType || null; // Capture discount type
       } catch (err) {
         partnerCodeValid.value = false;
         partnerCodeMessage.value = `Error checking code: ${
@@ -95,6 +98,7 @@ export default function InsuranceCalc() {
             ? (err as { message: string }).message
             : String(err)
         }`;
+        discountSource.value = null; // Clear discount source on error
       } finally {
         setIsCodeChecking(false);
         calculateInsuranceFee();
@@ -287,12 +291,9 @@ export default function InsuranceCalc() {
       const coveragePercentage = selectedCoverage.value;
 
       let discountLine = "";
-      if (partnerCodeValid.value) {
-        if (partnerCodeInput.value === "100-BANK-25") {
-          discountLine = "\nBANK Discount: 25%";
-        } else if (partnerCodeInput.value === "IMF-BANK-25") {
-          discountLine = "\nIMF Discount: 25%";
-        }
+      if (partnerCodeValid.value && discountSource.value) {
+        // Use discountSource.value which comes from the API, not the raw code
+        discountLine = `\n${discountSource.value} Discount: 25%`;
       }
 
       const receiptMessage = `# 🦝RISK Insurance Receipt
@@ -514,9 +515,9 @@ Risk Free 🦝RISK Fee Guarantee™️
                 class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
               />
               <p class="mt-1 text-xs text-gray-400">
-                We don't store this key. Find your API key on your Manifold profile page by clicking the
-                gear
-                icon and selecting Account Settings.
+                We don't store this key. Find your API key on your Manifold
+                profile page by clicking the gear icon and selecting Account
+                Settings.
               </p>
             </div>
 
