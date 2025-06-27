@@ -10,6 +10,7 @@ import * as $api_history from "./routes/api/history.ts";
 import * as $api_place_arbitrage_bets from "./routes/api/place-arbitrage-bets.ts";
 import * as $api_place_limit_orders from "./routes/api/place-limit-orders.ts";
 import * as $api_score from "./routes/api/score.ts";
+import * as $api_validate_partner_code from "./routes/api/validate-partner-code.ts";
 import * as $arbitrage from "./routes/arbitrage.tsx";
 import * as $auth_oauth2callback from "./routes/auth/oauth2callback.ts";
 import * as $auth_signin from "./routes/auth/signin.ts";
@@ -89,6 +90,7 @@ const manifest = {
     "./routes/api/place-arbitrage-bets.ts": $api_place_arbitrage_bets,
     "./routes/api/place-limit-orders.ts": $api_place_limit_orders,
     "./routes/api/score.ts": $api_score,
+    "./routes/api/validate-partner-code.ts": $api_validate_partner_code,
     "./routes/arbitrage.tsx": $arbitrage,
     "./routes/auth/oauth2callback.ts": $auth_oauth2callback,
     "./routes/auth/signin.ts": $auth_signin,

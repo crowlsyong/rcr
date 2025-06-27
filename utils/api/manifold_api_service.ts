@@ -1,12 +1,142 @@
+// utils/api/manifold_api_service.ts
+
 import { fetchWithRetries } from "./fetch_utilities.ts";
 import {
   ManaPaymentTransaction,
+  ManifoldComment,
   ManifoldUser,
   MarketData,
   UserPortfolio,
 } from "./manifold_types.ts";
 
 const MANIFOLD_API_BASE_URL = "https://api.manifold.markets/v0";
+
+interface PostResponse<T = unknown> {
+  success: boolean;
+  data: T | null;
+  error: string | null;
+  status: number | null;
+}
+
+export async function postDataToManifoldApi<T>(
+  endpoint: string,
+  data: Record<string, unknown>,
+  apiKey: string,
+): Promise<PostResponse<T>> {
+  if (!apiKey) {
+    return {
+      success: false,
+      data: null,
+      error: "Manifold API key is missing. Please provide it.",
+      status: 400,
+    };
+  }
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    "Authorization": `Key ${apiKey}`,
+  };
+
+  const { response, success, error } = await fetchWithRetries(
+    `${MANIFOLD_API_BASE_URL}${endpoint}`,
+    {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify(data),
+    },
+  );
+
+  if (!success || !response) {
+    return {
+      success: false,
+      data: null,
+      error: `Network or fetch error: ${
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : String(error)
+      }`,
+      status: 500,
+    };
+  }
+
+  if (!response.ok) {
+    let errorText = await response.text();
+    try {
+      const errorJson = JSON.parse(errorText);
+      errorText = errorJson.message || errorText;
+    } catch {
+      // Not JSON, use as is
+    }
+    console.error(
+      `Manifold API POST error to ${endpoint}: ${response.status} ${response.statusText} - ${errorText}`,
+    );
+    return {
+      success: false,
+      data: null,
+      error:
+        `Manifold API error (${response.status}): ${errorText || response.statusText}`,
+      status: response.status,
+    };
+  }
+
+  try {
+    const json: T = await response.json();
+    return { success: true, data: json, error: null, status: response.status };
+  } catch (jsonError) {
+    console.error(
+      `Manifold API POST: Error parsing JSON response for ${endpoint}: ${
+        typeof jsonError === "object" && jsonError !== null &&
+          "message" in jsonError
+          ? (jsonError as { message: string }).message
+          : String(jsonError)
+      }`,
+    );
+    return {
+      success: false,
+      data: null,
+      error: `Error parsing API response for ${endpoint}`,
+      status: 200,
+    };
+  }
+}
+
+export async function sendManagram(
+  toIds: string[],
+  amount: number,
+  message: string,
+  apiKey: string,
+): Promise<PostResponse<ManaPaymentTransaction>> {
+  return await postDataToManifoldApi<ManaPaymentTransaction>(
+    "/managram",
+    { toIds, amount, message },
+    apiKey,
+  );
+}
+
+export async function addBounty(
+  marketId: string,
+  amount: number,
+  apiKey: string,
+): Promise<PostResponse<ManaPaymentTransaction>> {
+  return await postDataToManifoldApi<ManaPaymentTransaction>(
+    `/market/${marketId}/add-bounty`,
+    { amount },
+    apiKey,
+  );
+}
+
+export async function postComment(
+  contractId: string,
+  text: string,
+  apiKey: string,
+): Promise<PostResponse<ManifoldComment>> {
+  // Switched from 'content' (TipTap JSON) to 'markdown'
+  return await postDataToManifoldApi<ManifoldComment>(
+    "/comment",
+    { contractId, markdown: text }, // Pass the text directly as markdown
+    apiKey,
+  );
+}
 
 export async function fetchUserData(
   username: string,

@@ -99,3 +99,14 @@ export interface ManifoldBetResponse {
   isFilled: boolean;
   isCancelled: boolean;
 }
+
+// New interface for Manifold Comment response
+export interface ManifoldComment {
+  id: string;
+  contractId: string;
+  userId: string;
+  content: Array<{ type: string; content?: string }>; // Manifold's BlockJSON
+  createdTime: number;
+  parentCommentId?: string;
+  replyToCommentId?: string;
+}
