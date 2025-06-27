@@ -14,11 +14,11 @@ interface LoanInputSectionProps {
     {
       username: string;
       creditScore: number;
-      riskMultiplier: number;
+      riskBaseFee: number;
       avatarUrl: string | null;
     } | null
   >;
-  riskMultiplier: number;
+  riskBaseFee: number;
   lenderUsername: Signal<string>;
   handleLenderUsernameInput: (e: Event) => void;
   lenderUsernameError: Signal<string>; // Lender username error
@@ -39,7 +39,7 @@ export default function LoanInputSection(
     handleUsernameInput,
     error, // Borrower error
     scoreData,
-    riskMultiplier,
+    riskBaseFee,
     lenderUsername,
     handleLenderUsernameInput,
     lenderUsernameError, // Lender error
@@ -69,7 +69,7 @@ export default function LoanInputSection(
       <ScoreResult
         username={scoreData.value?.username || "N/A"}
         creditScore={scoreData.value?.creditScore || 0}
-        riskMultiplier={riskMultiplier || 0}
+        riskBaseFee={riskBaseFee || 0}
         avatarUrl={scoreData.value?.avatarUrl || null}
         isWaiting={!scoreData.value}
       />

@@ -20,7 +20,7 @@ interface FinancialSummaryProps {
   apiKeyLength: number;
   durationFee: number;
   selectedCoverage: Signal<number | null>;
-  riskMultiplier: number;
+  riskBaseFee: number;
   loanDueDate: Signal<string>;
 }
 
@@ -65,7 +65,7 @@ export default function FinancialSummary(
     apiKeyLength,
     durationFee,
     selectedCoverage,
-    riskMultiplier,
+    riskBaseFee,
     loanDueDate,
   } = props;
 
@@ -101,9 +101,9 @@ export default function FinancialSummary(
     : "(N/A)";
 
   // Risk Base Fee display
-  const riskMultiplierDisplay = (riskMultiplier * 100).toFixed(0);
-  const riskManaAmount = Math.round(riskMultiplier * currentLoanAmount);
-  const riskFullDisplay = `(${riskMultiplierDisplay}% | M${riskManaAmount})`;
+  const riskBaseFeeDisplay = (riskBaseFee * 100).toFixed(0);
+  const riskManaAmount = Math.round(riskBaseFee * currentLoanAmount);
+  const riskFullDisplay = `(${riskBaseFeeDisplay}% | M${riskManaAmount})`;
 
   // Duration Fee display
   const today = new Date().toISOString().split("T")[0];
@@ -139,21 +139,21 @@ export default function FinancialSummary(
         </p>
       )}
 
-      {/* Coverage Fee Info Hover */}
+      {/* Risk Fee Info Hover */}
       <p class="text-sm text-gray-400 flex items-center justify-end">
-        Coverage: {coveragePrefix} {coverageValueDisplay}
-        {selectedCoverage.value !== null && (
-          <InfoHover content={<CoverageFeeChart />} width="w-96">
+        RISK Base Fee: {riskFullDisplay}
+        {riskBaseFee !== 0 && (
+          <InfoHover content={<RiskFeeChart />} width="w-96">
             <InfoIcon />
           </InfoHover>
         )}
       </p>
 
-      {/* Risk Fee Info Hover */}
+      {/* Coverage Fee Info Hover */}
       <p class="text-sm text-gray-400 flex items-center justify-end">
-        Risk Multiplier: {riskFullDisplay}
-        {riskMultiplier !== 0 && (
-          <InfoHover content={<RiskFeeChart />} width="w-96">
+        Coverage: {coveragePrefix} {coverageValueDisplay}
+        {selectedCoverage.value !== null && (
+          <InfoHover content={<CoverageFeeChart />} width="w-96">
             <InfoIcon />
           </InfoHover>
         )}

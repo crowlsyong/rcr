@@ -7,7 +7,7 @@ import {
 } from "../../utils/api/manifold_api_service.ts";
 import {
   calculateNetLoanBalance,
-  calculateRiskMultiplier,
+  calculateriskBaseFee,
   computeMMR,
   mapToCreditScore,
 } from "../../utils/api/score_calculation_logic.ts";
@@ -47,7 +47,7 @@ export async function handler(req: Request): Promise<Response> {
     const responsePayload = {
       username: username,
       creditScore: 0,
-      riskMultiplier: 0,
+      riskBaseFee: 0,
       avatarUrl: null,
       userExists: false,
       fetchSuccess: true,
@@ -152,7 +152,7 @@ export async function handler(req: Request): Promise<Response> {
     );
 
     const creditScore = mapToCreditScore(rawMMR);
-    const risk = calculateRiskMultiplier(creditScore);
+    const risk = calculateriskBaseFee(creditScore);
 
     if (shouldSaveHistoricalData && !userDeleted) {
       await saveHistoricalScore(
@@ -174,7 +174,7 @@ export async function handler(req: Request): Promise<Response> {
     const output = {
       username: userData.username,
       creditScore,
-      riskMultiplier: risk,
+      riskBaseFee: risk,
       avatarUrl: userData.avatarUrl || null,
       userExists: true,
       fetchSuccess: true,

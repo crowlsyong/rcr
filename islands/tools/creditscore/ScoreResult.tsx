@@ -10,7 +10,7 @@ import type { JSX } from "preact/jsx-runtime";
 interface ScoreResultProps {
   username: string;
   creditScore: number;
-  riskMultiplier: number;
+  riskBaseFee: number;
   avatarUrl: string | null;
   isWaiting: boolean;
   userExists?: boolean;
@@ -28,7 +28,7 @@ const ExternalLinkIcon = TbExternalLink as ComponentType<
 export default function ScoreResult({
   username,
   creditScore,
-  riskMultiplier,
+  riskBaseFee,
   avatarUrl,
   isWaiting,
   userExists = true,
@@ -147,7 +147,7 @@ export default function ScoreResult({
           {isDataAvailable
             ? (
               <p class="text-xs">
-                Base Insurance Fee: {(riskMultiplier * 100).toFixed(0)}%
+                Base Insurance Fee: {(riskBaseFee * 100).toFixed(0)}%
               </p>
             )
             : null}

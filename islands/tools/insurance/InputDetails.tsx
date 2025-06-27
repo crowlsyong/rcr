@@ -11,7 +11,7 @@ import { fetchUserData } from "../../../utils/api/manifold_api_service.ts";
 interface CreditScoreData {
   username: string;
   creditScore: number;
-  riskMultiplier: number;
+  riskBaseFee: number;
   avatarUrl: string | null;
 }
 
@@ -35,8 +35,8 @@ interface InputDetailsProps {
   setInsuranceFee: (value: number | null) => void;
   initialInsuranceFeeBeforeDiscount: number | null;
   setInitialInsuranceFeeBeforeDiscount: (value: number | null) => void;
-  riskMultiplier: number;
-  setRiskMultiplier: (value: number) => void;
+  riskBaseFee: number;
+  setriskBaseFee: (value: number) => void;
   getPolicyEndDate: (loanDueDateStr: string) => string;
   isLenderUsernameValid: Signal<boolean>;
   isBorrowerUsernameValid: Signal<boolean>;
@@ -72,8 +72,8 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
     setInsuranceFee,
     initialInsuranceFeeBeforeDiscount,
     setInitialInsuranceFeeBeforeDiscount,
-    riskMultiplier,
-    setRiskMultiplier,
+    riskBaseFee,
+    setriskBaseFee,
     getPolicyEndDate,
     isLenderUsernameValid,
     isBorrowerUsernameValid,
@@ -142,7 +142,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
         scoreData.value = null;
         borrowerUsernameError.value = "Borrower username not found or deleted.";
         isBorrowerUsernameValid.value = false;
-        setRiskMultiplier(0);
+        setriskBaseFee(0);
         setInsuranceFee(null);
         setInitialInsuranceFeeBeforeDiscount(null);
         return;
@@ -155,12 +155,12 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
         scoreData.value = null;
         borrowerUsernameError.value = `Error fetching score: ${data.error}`;
         isBorrowerUsernameValid.value = true;
-        setRiskMultiplier(0);
+        setriskBaseFee(0);
         setInsuranceFee(null);
         setInitialInsuranceFeeBeforeDiscount(null);
       } else {
         scoreData.value = data;
-        setRiskMultiplier(data.riskMultiplier);
+        setriskBaseFee(data.riskBaseFee);
         borrowerUsernameError.value = "";
         isBorrowerUsernameValid.value = true;
       }
@@ -172,7 +172,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
           : String(err)
       }`;
       isBorrowerUsernameValid.value = false;
-      setRiskMultiplier(0);
+      setriskBaseFee(0);
       setInsuranceFee(null);
       setInitialInsuranceFeeBeforeDiscount(null);
     }
@@ -206,7 +206,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
   function resetBorrowerDataState() {
     scoreData.value = null;
     borrowerUsernameError.value = "";
-    setRiskMultiplier(0);
+    setriskBaseFee(0);
     setInsuranceFee(null);
     setInitialInsuranceFeeBeforeDiscount(null);
     isBorrowerUsernameValid.value = false;
@@ -269,7 +269,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
   const calculateInsuranceFee = () => {
     if (
       loanAmount.value <= 0 || selectedCoverage.value === null ||
-      riskMultiplier === 0 || !loanDueDate.value || !!loanDueDateError.value
+      riskBaseFee === 0 || !loanDueDate.value || !!loanDueDateError.value
     ) {
       setInsuranceFee(null);
       setInitialInsuranceFeeBeforeDiscount(null);
@@ -292,7 +292,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
       loanAmount.value * calculatedDurationFeePercentage,
     );
 
-    let currentFee = (riskMultiplier * loanAmount.value) +
+    let currentFee = (riskBaseFee * loanAmount.value) +
       (loanAmount.value * coverageFee) + durationFee;
 
     setInitialInsuranceFeeBeforeDiscount(currentFee);
@@ -309,7 +309,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
   }, [
     loanAmount.value,
     selectedCoverage.value,
-    riskMultiplier,
+    riskBaseFee,
     partnerCodeValid.value,
     loanDueDate.value,
     loanDueDateError.value,
@@ -418,7 +418,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
           handleUsernameInput={handleUsernameInput}
           error={borrowerUsernameError}
           scoreData={scoreData}
-          riskMultiplier={riskMultiplier}
+          riskBaseFee={riskBaseFee}
           lenderUsername={lenderUsername}
           handleLenderUsernameInput={handleLenderUsernameInput}
           lenderUsernameError={lenderUsernameError}
@@ -469,7 +469,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
         apiKeyLength={apiKey.value.length}
         durationFee={displayDurationFee}
         selectedCoverage={selectedCoverage} // Pass selectedCoverage to FinancialSummary
-        riskMultiplier={riskMultiplier} // Pass riskMultiplier to FinancialSummary
+        riskBaseFee={riskBaseFee} // Pass riskBaseFee to FinancialSummary
         loanDueDate={loanDueDate} // Pass loanDueDate to FinancialSummary
       />
     </>

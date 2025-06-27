@@ -9,7 +9,7 @@ import TimeRangeSelector from "../chart/TimeRangeSelector.tsx";
 interface UserScoreData {
   username: string;
   creditScore: number;
-  riskMultiplier: number;
+  riskBaseFee: number;
   avatarUrl: string | null;
   userExists: boolean;
   latestRank: number | null;
@@ -152,7 +152,7 @@ export default function Chart({ username }: ChartProps) {
           <ScoreResult
             username={scoreData.username}
             creditScore={scoreData.creditScore}
-            riskMultiplier={scoreData.riskMultiplier}
+            riskBaseFee={scoreData.riskBaseFee}
             avatarUrl={scoreData.avatarUrl}
             isWaiting={false}
           />
@@ -196,7 +196,7 @@ export default function Chart({ username }: ChartProps) {
             ? (
               <>
                 <p class="text-sm md:text-base">
-                  Risk Multiplier: <strong>{scoreData.riskMultiplier}</strong>
+                  RISK Base Fee: <strong>{scoreData.riskBaseFee}</strong>
                 </p>
                 <p class="text-sm md:text-base">
                   Latest League Rank:{" "}

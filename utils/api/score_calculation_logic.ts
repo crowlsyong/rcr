@@ -106,7 +106,7 @@ export function mapToCreditScore(mmrValue: number): number {
   return Math.round(Math.max(0, Math.min(1000, score)));
 }
 
-export function calculateRiskMultiplier(score: number): number {
+export function calculateriskBaseFee(score: number): number {
   const clampedScore = Math.max(0, Math.min(score, 1000));
 
   if (clampedScore >= 900) return 0.02;

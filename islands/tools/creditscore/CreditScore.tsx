@@ -9,7 +9,7 @@ import ChartButton from "../../buttons/ChartButton.tsx";
 interface CreditScoreData {
   username: string;
   creditScore: number;
-  riskMultiplier: number;
+  riskBaseFee: number;
   avatarUrl: string | null;
   userExists: boolean;
   fetchSuccess: boolean;
@@ -106,7 +106,7 @@ export default function CreditScore() {
           scoreData.value = {
             username: data.username,
             creditScore: data.creditScore,
-            riskMultiplier: data.riskMultiplier,
+            riskBaseFee: data.riskBaseFee,
             avatarUrl: data.avatarUrl,
             userExists: true,
             fetchSuccess: true,
@@ -117,7 +117,7 @@ export default function CreditScore() {
           scoreData.value = {
             username: user,
             creditScore: 0,
-            riskMultiplier: 0,
+            riskBaseFee: 0,
             avatarUrl: null,
             userExists: false,
             fetchSuccess: true,
@@ -140,7 +140,7 @@ export default function CreditScore() {
         scoreData.value = {
           username: user,
           creditScore: 0,
-          riskMultiplier: 0,
+          riskBaseFee: 0,
           avatarUrl: null,
           userExists: false,
           fetchSuccess: false,
@@ -157,7 +157,7 @@ export default function CreditScore() {
       scoreData.value = {
         username: debouncedUsername,
         creditScore: 0,
-        riskMultiplier: 0,
+        riskBaseFee: 0,
         avatarUrl: null,
         userExists: false,
         fetchSuccess: false,
@@ -181,7 +181,7 @@ export default function CreditScore() {
       <ScoreResult
         username={debouncedUsername}
         creditScore={scoreData.value?.creditScore || 0}
-        riskMultiplier={scoreData.value?.riskMultiplier || 0}
+        riskBaseFee={scoreData.value?.riskBaseFee || 0}
         avatarUrl={scoreData.value?.avatarUrl || null}
         isWaiting={isWaiting}
         userExists={scoreData.value?.userExists}

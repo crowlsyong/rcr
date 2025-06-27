@@ -37,7 +37,7 @@ export default function InsuranceCalc() {
     initialInsuranceFeeBeforeDiscount,
     setInitialInsuranceFeeBeforeDiscount,
   ] = useState<number | null>(null);
-  const [riskMultiplier, setRiskMultiplier] = useState(0);
+  const [riskBaseFee, setriskBaseFee] = useState(0);
 
   const isLenderUsernameValid = useSignal(false);
   const isBorrowerUsernameValid = useSignal(false);
@@ -202,7 +202,7 @@ Policy Ends: ${policyEndDate}
 
 ### Fees
 
-Base Fee (risk multiplier): ${riskMultiplier * 100}%
+Base Fee (risk multiplier): ${riskBaseFee * 100}%
 
 Coverage Fee: ${localCoverageFees[selectedCoverage.value!] * 100}%
 ${discountLine}
@@ -335,8 +335,8 @@ Risk Free 🦝RISK Fee Guarantee™️
           setInsuranceFee={setInsuranceFee}
           initialInsuranceFeeBeforeDiscount={initialInsuranceFeeBeforeDiscount}
           setInitialInsuranceFeeBeforeDiscount={setInitialInsuranceFeeBeforeDiscount}
-          riskMultiplier={riskMultiplier}
-          setRiskMultiplier={setRiskMultiplier}
+          riskBaseFee={riskBaseFee}
+          setriskBaseFee={setriskBaseFee}
           getPolicyEndDate={getPolicyEndDate}
           isLenderUsernameValid={isLenderUsernameValid}
           isBorrowerUsernameValid={isBorrowerUsernameValid}

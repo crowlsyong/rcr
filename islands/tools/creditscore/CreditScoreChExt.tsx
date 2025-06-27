@@ -7,7 +7,7 @@ import ScoreResult from "./ScoreResult.tsx";
 interface CreditScoreData {
   username: string;
   creditScore: number;
-  riskMultiplier: number;
+  riskBaseFee: number;
   avatarUrl: string | null;
 }
 
@@ -54,7 +54,7 @@ export default function CreditScore({ username }: CreditScoreProps) {
       <ScoreResult
         username={scoreData.value?.username || "N/A"}
         creditScore={scoreData.value?.creditScore || 0}
-        riskMultiplier={scoreData.value?.riskMultiplier || 0}
+        riskBaseFee={scoreData.value?.riskBaseFee || 0}
         avatarUrl={scoreData.value?.avatarUrl || null}
         isWaiting={!scoreData.value && !error.value}
         urlPrefix="https://manifold.markets"
