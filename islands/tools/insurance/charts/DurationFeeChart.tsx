@@ -1,10 +1,9 @@
 // islands/insurance/charts/DurationFeeChart.tsx
 import { useEffect, useRef, useState } from "preact/hooks";
-import { Chart, registerables } from "chart.js";
+import { Chart } from "chart.js";
 import { JSX } from "preact";
-
-// Register all Chart.js components needed
-Chart.register(...registerables);
+// Import TooltipModel and TooltipItem types for better callback typing
+import type { TooltipItem } from "chart.js";
 
 // Fee calculation function (remains the same)
 const calculateFeeFromDays = (days: number): number => {
@@ -14,19 +13,23 @@ const calculateFeeFromDays = (days: number): number => {
   return parseFloat(fee.toFixed(4));
 };
 
-export default function DurationFeeChart(): JSX.Element {
+interface DurationFeeChartProps {
+  highlightDays?: number; // New prop: number of days to highlight
+}
+
+export default function DurationFeeChart(
+  { highlightDays }: DurationFeeChartProps,
+): JSX.Element {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<Chart | null>(null);
   const [isChartReady, setIsChartReady] = useState(false);
 
   useEffect(() => {
     if (chartRef.current) {
-      // Destroy existing chart instance if it exists
       if (chartInstance.current) {
         chartInstance.current.destroy();
       }
 
-      // Define specific points and their labels for "exponential" view
       const customLabels = [
         "1 Day",
         "1 Week",
@@ -52,32 +55,58 @@ export default function DurationFeeChart(): JSX.Element {
         365 * 5, // 5 Years
       ];
 
-      const labels: number[] = [];
-      const data: number[] = [];
+      // Convert main data to {x, y} format for consistency with scatter
+      const mainChartData: Array<{ x: number; y: number }> = [];
+      const labelsForAxis: number[] = []; // Only for axis ticks, not direct data
 
       const maxDays = 365 * 5;
       for (let d = 1; d <= maxDays; d += 5) {
-        labels.push(d);
-        data.push(calculateFeeFromDays(d));
+        labelsForAxis.push(d); // X-axis labels
+        mainChartData.push({ x: d, y: calculateFeeFromDays(d) });
+      }
+
+      // Prepare highlight data as a separate dataset
+      const highlightPointData: Array<{ x: number; y: number }> = [];
+      if (highlightDays !== undefined && highlightDays > 0) {
+        const highlightFeeValue = calculateFeeFromDays(highlightDays);
+        highlightPointData.push({ x: highlightDays, y: highlightFeeValue });
       }
 
       const ctx = chartRef.current.getContext("2d");
       if (ctx) {
         chartInstance.current = new Chart(ctx, {
-          type: "line",
+          type: "line", // The base chart type
           data: {
-            labels: labels,
-            datasets: [{
-              label: "Loan Fee",
-              data: data,
-              borderColor: "lime",
-              backgroundColor: "rgba(0,255,0,0.1)",
-              fill: true,
-              tension: 0.3,
-              pointRadius: 0,
-              pointHoverRadius: 8,
-              pointHitRadius: 15,
-            }],
+            labels: labelsForAxis, // X-axis labels for ticks (linear scale still uses it)
+            datasets: [
+              {
+                label: "Loan Fee",
+                data: mainChartData, // Now using {x, y} objects
+                borderColor: "lime",
+                backgroundColor: "rgba(0,255,0,0.1)",
+                fill: true,
+                tension: 0.3,
+                pointRadius: 0,
+                pointHoverRadius: 8,
+                pointHitRadius: 15,
+                order: 2,
+              },
+              // Highlight dataset
+              {
+                label: highlightDays !== undefined && highlightDays > 0
+                  ? `Your Loan (${highlightDays} days)`
+                  : "",
+                data: highlightPointData, // This expects {x, y} objects
+                type: "scatter",
+                backgroundColor: "white",
+                borderColor: "white",
+                pointRadius: 6,
+                pointHoverRadius: 10,
+                pointHitRadius: 20,
+                showLine: false,
+                order: 1,
+              },
+            ],
           },
           options: {
             responsive: true,
@@ -131,24 +160,35 @@ export default function DurationFeeChart(): JSX.Element {
               legend: {
                 labels: {
                   color: "#e2e8f0",
+                  filter: (legendItem) => legendItem.text !== "",
                 },
               },
               tooltip: {
-                mode: "index",
+                mode: "nearest",
                 intersect: false,
                 callbacks: {
-                  label: function (context) {
+                  // Label callback will vary based on dataset type
+                  label: function (context: TooltipItem<"line" | "scatter">) {
                     const label = context.dataset.label || "";
                     if (context.parsed.y !== null) {
-                      return `${label}: ${
-                        (context.parsed.y * 100).toFixed(2)
-                      }%`;
+                      // For line chart or highlight scatter
+                      const rawX = context.parsed.x;
+                      const rawY = context.parsed.y;
+                      return `${label}: ${rawX} days (${
+                        (rawY * 100).toFixed(2)
+                      }%)`;
                     }
                     return label;
                   },
-                  title: function (context) {
-                    const days = context[0].label;
-                    return `Duration: ${days} days`;
+                  // Title callback, explicitly return undefined for no title
+                  title: function (
+                    context: TooltipItem<"line" | "scatter">[],
+                  ): string | void {
+                    // Only show title for the main line data if we want one
+                    if (context[0].dataset.type === "line") {
+                      return `Duration Details`; // Or whatever static title you want
+                    }
+                    return undefined; // Return undefined for no title
                   },
                 },
               },
@@ -165,7 +205,7 @@ export default function DurationFeeChart(): JSX.Element {
         chartInstance.current = null;
       }
     };
-  }, []);
+  }, [highlightDays]);
 
   return (
     <div class="p-4 bg-gray-900 border border-gray-700 rounded-md shadow-lg">

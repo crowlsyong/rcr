@@ -5,7 +5,7 @@ import InfoHover from "../../InfoHover.tsx";
 import DurationFeeChart from "./charts/DurationFeeChart.tsx";
 import CoverageFeeChart from "./charts/CoverageFeeChart.tsx";
 import RiskFeeChart from "./charts/RiskFeeChart.tsx";
-import InfoIcon from "../InfoIcon.tsx"; // Corrected import path for InfoIcon from islands/
+import InfoIcon from "../InfoIcon.tsx";
 
 interface FinancialSummaryProps {
   insuranceFee: number | null;
@@ -19,10 +19,10 @@ interface FinancialSummaryProps {
   netLenderGain: number;
   apiKeyLength: number;
   durationFee: number;
-  selectedCoverage: Signal<number | null>;
+  selectedCoverage: Signal<number | null>; // Prop for Coverage Chart
   riskBaseFee: number;
   loanDueDate: Signal<string>;
-  borrowerCreditScore: number; // New prop: credit score for highlighting
+  borrowerCreditScore: number; // Prop for Risk Chart
 }
 
 const coverageFeesStatic: { [key: number]: number } = {
@@ -65,7 +65,7 @@ export default function FinancialSummary(
     netLenderGain,
     apiKeyLength,
     durationFee,
-    selectedCoverage,
+    selectedCoverage, // Destructure selectedCoverage
     riskBaseFee,
     loanDueDate,
     borrowerCreditScore,
@@ -102,10 +102,10 @@ export default function FinancialSummary(
     ? `(${coveragePercentage}% | M${coverageManaAmount})`
     : "(N/A)";
 
-  // Risk Base Fee display
-  const riskBaseFeeDisplay = (riskBaseFee * 100).toFixed(0);
+  // Risk Multiplier display
+  const riskMultiplierDisplay = (riskBaseFee * 100).toFixed(0);
   const riskManaAmount = Math.round(riskBaseFee * currentLoanAmount);
-  const riskFullDisplay = `(${riskBaseFeeDisplay}% | M${riskManaAmount})`;
+  const riskFullDisplay = `(${riskMultiplierDisplay}% | M${riskManaAmount})`;
 
   // Duration Fee display
   const today = new Date().toISOString().split("T")[0];
@@ -141,12 +141,14 @@ export default function FinancialSummary(
         </p>
       )}
 
-      {/* Risk Fee Info Hover */}
+      {/* Coverage Fee Info Hover */}
       <p class="text-sm text-gray-400 flex items-center justify-end">
-        Risk Base Fee: {riskFullDisplay}
-        {riskBaseFee !== 0 && (
+        Coverage: {coveragePrefix} {coverageValueDisplay}
+        {selectedCoverage.value !== null && (
           <InfoHover
-            content={<RiskFeeChart highlightScore={borrowerCreditScore} />} // Pass highlightScore
+            content={
+              <CoverageFeeChart highlightCoverage={selectedCoverage.value} />
+            } // Pass highlightCoverage
             width="w-96"
           >
             <InfoIcon />
@@ -154,11 +156,14 @@ export default function FinancialSummary(
         )}
       </p>
 
-      {/* Coverage Fee Info Hover */}
+      {/* Risk Fee Info Hover */}
       <p class="text-sm text-gray-400 flex items-center justify-end">
-        Coverage: {coveragePrefix} {coverageValueDisplay}
-        {selectedCoverage.value !== null && (
-          <InfoHover content={<CoverageFeeChart />} width="w-96">
+        Risk Multiplier: {riskFullDisplay}
+        {riskBaseFee !== 0 && (
+          <InfoHover
+            content={<RiskFeeChart highlightScore={borrowerCreditScore} />}
+            width="w-96"
+          >
             <InfoIcon />
           </InfoHover>
         )}
@@ -168,7 +173,10 @@ export default function FinancialSummary(
       {currentLoanAmount > 0 && durationFee > 0 && (
         <p class="text-sm text-gray-400 flex items-center justify-end">
           Duration Fee: {durationDaysInfo} {durationValueDisplay}
-          <InfoHover content={<DurationFeeChart />} width="w-96">
+          <InfoHover
+            content={<DurationFeeChart highlightDays={daysOfLoan} />} // Pass highlightDays
+            width="w-96"
+          >
             <InfoIcon />
           </InfoHover>
         </p>

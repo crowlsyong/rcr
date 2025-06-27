@@ -27,30 +27,26 @@ export function getRiskLevelText(score: number): string {
 
 export function getScoreColor(score: number): string {
   if (score >= 900) {
-    // For scores between 900 and 1000, interpolate from the softer green (54, 186, 63) to the full green (96, 225, 105)
     const t = (score - 900) / 100;
-    return lerpColor([54, 186, 63], [96, 225, 105], t); // Softer green to full green
+    return lerpColor([54, 186, 63], [96, 225, 105], t);
   } else if (score >= 800) {
-    // For scores between 800 and 900, return the original blue-to-green transition
     const t = (score - 800) / 100;
-    return lerpColor([100, 100, 255], [96, 225, 105], t); // Blue to green
+    return lerpColor([100, 100, 255], [96, 225, 105], t);
   } else if (score >= 600) {
-    // For scores between 600 and 799, return the light blue-to-blue transition
     const t = (score - 600) / 200;
-    return lerpColor([50, 150, 200], [100, 100, 255], t); // Light blue to blue
+    return lerpColor([50, 150, 200], [100, 100, 255], t);
   } else {
-    // For scores below 600, return the red-to-purple transition
     const t = score / 600;
-    return lerpColor([255, 100, 100], [180, 100, 255], t); // Red to purple
+    return lerpColor([255, 100, 100], [180, 100, 255], t);
   }
 }
 
 // New Data and helper for Insurance Calculator - ADDED, NOT CHANGED EXISTING
 export const COVERAGE_FEE_DATA = [
-  { label: "C₂₅ (25% covered)", fee: 0.02 },
-  { label: "C₅₀ (50% covered)", fee: 0.05 },
-  { label: "C₇₅ (75% covered)", fee: 0.08 },
-  { label: "C₁₀₀ (100% covered)", fee: 0.12 },
+  { label: "C₂₅ (25% covered)", fee: 0.02, coverageValue: 25 }, // Added coverageValue
+  { label: "C₅₀ (50% covered)", fee: 0.05, coverageValue: 50 }, // Added coverageValue
+  { label: "C₇₅ (75% covered)", fee: 0.08, coverageValue: 75 }, // Added coverageValue
+  { label: "C₁₀₀ (100% covered)", fee: 0.12, coverageValue: 100 }, // Added coverageValue
 ];
 
 export const RISK_LEVEL_DATA = [
