@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { Chart, registerables } from "chart.js";
 import { JSX } from "preact";
-import { riskFeeData } from "../../../../utils/insurance_info.ts";
+import { RISK_LEVEL_DATA } from "../../../../utils/score_utils.ts"; // Corrected import path
 
 Chart.register(...registerables);
 
@@ -17,16 +17,18 @@ export default function RiskFeeChart(): JSX.Element {
         chartInstance.current.destroy();
       }
 
-      // Reverse data to have lower scores (higher risk) at the bottom/left of the chart
-      const sortedRiskData = [...riskFeeData].reverse();
+      // We might want to sort this differently for the chart
+      const chartData = [...RISK_LEVEL_DATA].sort((a, b) =>
+        a.scoreMin - b.scoreMin
+      );
 
-      const labels = sortedRiskData.map((d) => d.scoreRange);
-      const fees = sortedRiskData.map((d) => d.fee);
+      const labels = chartData.map((d) => `${d.scoreMin}–${d.scoreMax}`);
+      const fees = chartData.map((d) => d.feeMultiplier);
 
       const ctx = chartRef.current.getContext("2d");
       if (ctx) {
         chartInstance.current = new Chart(ctx, {
-          type: "bar", // Bar chart for categories
+          type: "bar",
           data: {
             labels: labels,
             datasets: [{
@@ -48,7 +50,7 @@ export default function RiskFeeChart(): JSX.Element {
                   text: "Fee Percentage",
                   color: "#e2e8f0",
                 },
-                max: 1.7, // Max for X-axis to show 160% clearly
+                max: 1.7,
                 grid: {
                   color: "#374151",
                 },
@@ -85,12 +87,12 @@ export default function RiskFeeChart(): JSX.Element {
               tooltip: {
                 callbacks: {
                   title: function (context) {
-                    const dataPoint = sortedRiskData[context[0].dataIndex];
-                    return `Score: ${dataPoint.scoreRange} (${dataPoint.description})`;
+                    const dataPoint = chartData[context[0].dataIndex];
+                    return `Score: ${dataPoint.scoreMin}–${dataPoint.scoreMax} (${dataPoint.description})`;
                   },
                   label: function (context) {
                     const label = context.dataset.label || "";
-                    if (context.parsed.x !== null) { // For horizontal bar, y is context.parsed.x
+                    if (context.parsed.x !== null) {
                       return `${label}: ${
                         (context.parsed.x * 100).toFixed(2)
                       }%`;

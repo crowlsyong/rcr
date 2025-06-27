@@ -1,6 +1,6 @@
 // utils/score_utils.ts
 
-// Color interpolation helper
+// Existing functions - DO NOT CHANGE OR RENAME
 export function lerpColor(
   color1: [number, number, number],
   color2: [number, number, number],
@@ -44,3 +44,64 @@ export function getScoreColor(score: number): string {
     return lerpColor([255, 100, 100], [180, 100, 255], t); // Red to purple
   }
 }
+
+// New Data and helper for Insurance Calculator - ADDED, NOT CHANGED EXISTING
+export const COVERAGE_FEE_DATA = [
+  { label: "C₂₅ (25% covered)", fee: 0.02 },
+  { label: "C₅₀ (50% covered)", fee: 0.05 },
+  { label: "C₇₅ (75% covered)", fee: 0.08 },
+  { label: "C₁₀₀ (100% covered)", fee: 0.12 },
+];
+
+export const RISK_LEVEL_DATA = [
+  {
+    scoreMin: 900,
+    scoreMax: 1000,
+    description: "Extremely Safe",
+    feeMultiplier: 0.02,
+  },
+  {
+    scoreMin: 800,
+    scoreMax: 899,
+    description: "Super Safe",
+    feeMultiplier: 0.03,
+  },
+  {
+    scoreMin: 700,
+    scoreMax: 799,
+    description: "Very Safe",
+    feeMultiplier: 0.05,
+  },
+  { scoreMin: 600, scoreMax: 699, description: "Safe", feeMultiplier: 0.07 },
+  {
+    scoreMin: 500,
+    scoreMax: 599,
+    description: "Moderately Safe",
+    feeMultiplier: 0.10,
+  },
+  {
+    scoreMin: 400,
+    scoreMax: 499,
+    description: "A Bit Risky",
+    feeMultiplier: 0.14,
+  },
+  { scoreMin: 300, scoreMax: 399, description: "Risky", feeMultiplier: 0.25 },
+  {
+    scoreMin: 200,
+    scoreMax: 299,
+    description: "Highly Risky",
+    feeMultiplier: 0.60,
+  },
+  {
+    scoreMin: 100,
+    scoreMax: 199,
+    description: "Extremely Risky",
+    feeMultiplier: 1.00,
+  },
+  {
+    scoreMin: 0,
+    scoreMax: 99,
+    description: "Outrageously Dangerous",
+    feeMultiplier: 1.60,
+  },
+];

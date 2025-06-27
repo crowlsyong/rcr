@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { Chart, registerables } from "chart.js";
 import { JSX } from "preact";
-import { coverageFeeData } from "../../../../utils/insurance_info.ts";
+import { COVERAGE_FEE_DATA } from "../../../../utils/score_utils.ts"; // Corrected import path
 
 Chart.register(...registerables);
 
@@ -17,13 +17,13 @@ export default function CoverageFeeChart(): JSX.Element {
         chartInstance.current.destroy();
       }
 
-      const labels = coverageFeeData.map((d) => d.label);
-      const fees = coverageFeeData.map((d) => d.fee);
+      const labels = COVERAGE_FEE_DATA.map((d) => d.label);
+      const fees = COVERAGE_FEE_DATA.map((d) => d.fee);
 
       const ctx = chartRef.current.getContext("2d");
       if (ctx) {
         chartInstance.current = new Chart(ctx, {
-          type: "bar", // Bar chart for discrete categories
+          type: "bar",
           data: {
             labels: labels,
             datasets: [{
@@ -32,8 +32,8 @@ export default function CoverageFeeChart(): JSX.Element {
               backgroundColor: "rgba(75, 192, 192, 0.6)",
               borderColor: "rgba(75, 192, 192, 1)",
               borderWidth: 1,
-              barPercentage: 0.8, // Adjust bar width
-              categoryPercentage: 0.8, // Adjust space between bars
+              barPercentage: 0.8,
+              categoryPercentage: 0.8,
             }],
           },
           options: {
@@ -62,7 +62,7 @@ export default function CoverageFeeChart(): JSX.Element {
                   text: "Fee Percentage",
                   color: "#e2e8f0",
                 },
-                max: 0.15, // Max for Y-axis to show 12% clearly
+                max: 0.15,
                 grid: {
                   color: "#374151",
                 },
