@@ -135,3 +135,8 @@ export interface ManifoldComment {
   replyToCommentId?: string;
   likes?: number; // Added from API response
 }
+
+export interface ManagramApiResponse {
+  status: "success" | "error";
+  message: string;
+}

@@ -211,7 +211,6 @@ function generateReceiptMessage(
 
 Transaction ID (Loan): ${details.loanTxId}
 
-
 Transaction ID (Insurance Fee): ${details.insuranceTxId}
 
 Coverage: C${details.coverage}
@@ -242,7 +241,6 @@ Total Fee (to RISK): Ṁ${Math.round(details.finalInsuranceFee)}
 
 ### Terms
 
-
 By using this service, you agree to The Fine Print at the very bottom of our dashboard. 60% refund may be available if borrower repays on time and in full. No refund if borrower defaults, but insurance will cover the policy amount.
 
 ---
@@ -250,6 +248,7 @@ By using this service, you agree to The Fine Print at the very bottom of our das
 Have questions or need to activate coverage? Message @${CONTACT_USERNAME} and we’ll walk you through it.
 
 Risk Free 🦝RISK Fee Guarantee™️
+
 
 🦝RISK: Recovery Loan Insurance Kiosk`;
 }
