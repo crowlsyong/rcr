@@ -41,7 +41,7 @@ interface InputDetailsProps {
   isLenderUsernameValid: Signal<boolean>;
   isBorrowerUsernameValid: Signal<boolean>;
   sameUserError: Signal<string>;
-  loanDueDateError: Signal<string>; // New prop: loanDueDateError
+  loanDueDateError: Signal<string>;
 }
 
 const coverageFees: { [key: number]: number } = {
@@ -78,7 +78,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
     isLenderUsernameValid,
     isBorrowerUsernameValid,
     sameUserError,
-    loanDueDateError, // Destructure new prop
+    loanDueDateError,
   } = props;
 
   const [debouncedBorrowerUsername, setDebouncedBorrowerUsername] = useState(
@@ -87,8 +87,21 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
   const [debouncedLenderUsername, setDebouncedLenderUsername] = useState("");
   const scoreData = useSignal<CreditScoreData | null>(null);
   const borrowerUsernameError = useSignal<string>("");
-  const lenderUsernameError = useSignal<string>(""); // Still declared here as its state management is internal to InputDetails
+  const lenderUsernameError = useSignal<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const durationFeePercentage = useSignal<number>(0);
+
+  const calculateDurationFeePercentage = (days: number): number => {
+    const a = 0.0000207;
+    const b = 1.5;
+    return parseFloat(Math.min(a * Math.pow(days, b), 0.75).toFixed(4));
+  };
+
+  const calculateDaysBetween = (startDate: Date, endDate: Date): number => {
+    const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
 
   useEffect(() => {
     const timer = setTimeout(
@@ -256,17 +269,31 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
   const calculateInsuranceFee = () => {
     if (
       loanAmount.value <= 0 || selectedCoverage.value === null ||
-      riskMultiplier === 0
+      riskMultiplier === 0 || !loanDueDate.value || !!loanDueDateError.value
     ) {
       setInsuranceFee(null);
       setInitialInsuranceFeeBeforeDiscount(null);
+      durationFeePercentage.value = 0;
       return;
     }
 
     const coverageFee = coverageFees[selectedCoverage.value];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(loanDueDate.value + "T00:00:00");
+    const days = calculateDaysBetween(today, dueDate);
+
+    const calculatedDurationFeePercentage = calculateDurationFeePercentage(
+      days,
+    );
+    durationFeePercentage.value = calculatedDurationFeePercentage;
+
+    const durationFee = Math.ceil(
+      loanAmount.value * calculatedDurationFeePercentage,
+    );
 
     let currentFee = (riskMultiplier * loanAmount.value) +
-      (loanAmount.value * coverageFee);
+      (loanAmount.value * coverageFee) + durationFee;
 
     setInitialInsuranceFeeBeforeDiscount(currentFee);
 
@@ -284,6 +311,8 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
     selectedCoverage.value,
     riskMultiplier,
     partnerCodeValid.value,
+    loanDueDate.value,
+    loanDueDateError.value,
   ]);
 
   useEffect(() => {
@@ -335,15 +364,14 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
     loanAmount.value = validValue ? parseInt(validValue) : 0;
   };
 
-  // This handler is now passed down to PolicyDetailsSection
   const handleLoanDueDateInput = (e: Event) => {
     const inputValue = (e.target as HTMLInputElement).value;
     loanDueDate.value = inputValue;
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize to start of today
+    today.setHours(0, 0, 0, 0);
 
-    const selectedDate = new Date(inputValue + "T00:00:00"); // Parse as local date
+    const selectedDate = new Date(inputValue + "T00:00:00");
     if (isNaN(selectedDate.getTime())) {
       loanDueDateError.value = "Please select a valid date.";
     } else if (selectedDate <= today) {
@@ -376,6 +404,10 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
     ? Math.round(insuranceFee)
     : 0;
 
+  const displayDurationFee = insuranceFee !== null
+    ? Math.ceil(currentLoanAmount * durationFeePercentage.value)
+    : 0;
+
   return (
     <>
       <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -400,7 +432,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
         <PolicyDetailsSection
           loanDueDate={loanDueDate}
           handleLoanDueDateInput={handleLoanDueDateInput}
-          loanDueDateError={loanDueDateError} // Pass the error signal down
+          loanDueDateError={loanDueDateError}
           getPolicyEndDate={getPolicyEndDate}
           selectedCoverage={selectedCoverage}
           handleCoverageClick={handleCoverageClick}
@@ -420,7 +452,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
           partnerCodeValid={partnerCodeValid}
           lenderFeePercentage={lenderFeePercentage}
           handleLenderFeePercentageInput={handleLenderFeePercentageInput}
-          loanAmount={loanAmount} // Pass loanAmount here for lender fee calculation
+          loanAmount={loanAmount}
         />
       )}
 
@@ -435,6 +467,10 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
         partnerCodeValid={partnerCodeValid}
         netLenderGain={currentLenderFee - currentInsuranceFee}
         apiKeyLength={apiKey.value.length}
+        durationFee={displayDurationFee}
+        selectedCoverage={selectedCoverage} // Pass selectedCoverage to FinancialSummary
+        riskMultiplier={riskMultiplier} // Pass riskMultiplier to FinancialSummary
+        loanDueDate={loanDueDate} // Pass loanDueDate to FinancialSummary
       />
     </>
   );
