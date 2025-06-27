@@ -1,15 +1,17 @@
 // islands/insurance/charts/DurationFeeChart.tsx
 import { useEffect, useRef, useState } from "preact/hooks";
-import { Chart } from "chart.js";
+import { Chart, registerables } from "chart.js";
 import { JSX } from "preact";
-// Import TooltipModel and TooltipItem types for better callback typing
-import type { TooltipItem } from "chart.js";
+import type { TooltipModel, TooltipItem } from "chart.js";
 
-// Fee calculation function (remains the same)
+// Register all Chart.js components needed
+Chart.register(...registerables);
+
+// Fee calculation function (ADJUSTED)
 const calculateFeeFromDays = (days: number): number => {
-  const a = 0.0000207; // scaling constant
-  const b = 1.5; // exponent
-  const fee = Math.min(a * Math.pow(days, b), 0.75); // cap at 75%
+  const a = 0.00000640; // Adjusted scaling constant for new cap and less steepness
+  const b = 1.5; // Keeping exponent the same for now, but overall scaling is reduced
+  const fee = Math.min(a * Math.pow(days, b), 0.50); // New cap at 50% (0.50)
   return parseFloat(fee.toFixed(4));
 };
 
@@ -26,10 +28,12 @@ export default function DurationFeeChart(
 
   useEffect(() => {
     if (chartRef.current) {
+      // Destroy existing chart instance if it exists
       if (chartInstance.current) {
         chartInstance.current.destroy();
       }
 
+      // Define specific points and their labels for "exponential" view
       const customLabels = [
         "1 Day",
         "1 Week",
@@ -59,8 +63,8 @@ export default function DurationFeeChart(
       const mainChartData: Array<{ x: number; y: number }> = [];
       const labelsForAxis: number[] = []; // Only for axis ticks, not direct data
 
-      const maxDays = 365 * 5;
-      for (let d = 1; d <= maxDays; d += 5) {
+      const maxDays = 365 * 5; // Up to 5 years (1825 days)
+      for (let d = 1; d <= maxDays; d += 5) { // Plot every 5 days for a smooth curve
         labelsForAxis.push(d); // X-axis labels
         mainChartData.push({ x: d, y: calculateFeeFromDays(d) });
       }
@@ -86,10 +90,10 @@ export default function DurationFeeChart(
                 backgroundColor: "rgba(0,255,0,0.1)",
                 fill: true,
                 tension: 0.3,
-                pointRadius: 0,
+                pointRadius: 0, // Hide points on the main line
                 pointHoverRadius: 8,
                 pointHitRadius: 15,
-                order: 2,
+                order: 2, // Drawn below highlight dataset
               },
               // Highlight dataset
               {
@@ -98,7 +102,7 @@ export default function DurationFeeChart(
                   : "",
                 data: highlightPointData, // This expects {x, y} objects
                 type: "scatter",
-                backgroundColor: "white",
+                backgroundColor: "white", // Color of the highlight point
                 borderColor: "white",
                 pointRadius: 6,
                 pointHoverRadius: 10,
@@ -144,7 +148,7 @@ export default function DurationFeeChart(
                   text: "Fee Percentage",
                   color: "#e2e8f0",
                 },
-                max: 0.8,
+                max: 0.55, // Adjusted max for the new 50% cap (a little padding)
                 grid: {
                   color: "#374151",
                 },
@@ -167,28 +171,20 @@ export default function DurationFeeChart(
                 mode: "nearest",
                 intersect: false,
                 callbacks: {
-                  // Label callback will vary based on dataset type
                   label: function (context: TooltipItem<"line" | "scatter">) {
                     const label = context.dataset.label || "";
                     if (context.parsed.y !== null) {
-                      // For line chart or highlight scatter
                       const rawX = context.parsed.x;
                       const rawY = context.parsed.y;
-                      return `${label}: ${rawX} days (${
-                        (rawY * 100).toFixed(2)
-                      }%)`;
+                      return `${label}: ${rawX} days (${(rawY * 100).toFixed(2)}%)`;
                     }
                     return label;
                   },
-                  // Title callback, explicitly return undefined for no title
-                  title: function (
-                    context: TooltipItem<"line" | "scatter">[],
-                  ): string | void {
-                    // Only show title for the main line data if we want one
+                  title: function (context: TooltipItem<"line" | "scatter">[]): string | void {
                     if (context[0].dataset.type === "line") {
-                      return `Duration Details`; // Or whatever static title you want
+                      return `Duration Details`;
                     }
-                    return undefined; // Return undefined for no title
+                    return undefined;
                   },
                 },
               },
