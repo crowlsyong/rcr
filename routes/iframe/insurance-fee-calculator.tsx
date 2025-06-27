@@ -2,7 +2,7 @@
 
 // import { useSignal } from "@preact/signals";
 // import CreditScore from "../../islands/CreditScore.tsx";
-import InsuranceCalc from "../../islands/tools/InsuranceCalc.tsx";
+import InsuranceCalc from "../../islands/tools/insurance/InsuranceCalc.tsx";
 // import MenuBar from "../../components/MenuBar.tsx";
 
 export default function Home() {

@@ -36,7 +36,6 @@ import * as $menu_LinkDataProvider from "./islands/menu/LinkDataProvider.tsx";
 import * as $menu_MenuBar from "./islands/menu/MenuBar.tsx";
 import * as $menu_MenuDropdown from "./islands/menu/MenuDropdown.tsx";
 import * as $tools_GameShowCreditScore from "./islands/tools/GameShowCreditScore.tsx";
-import * as $tools_InsuranceCalc from "./islands/tools/InsuranceCalc.tsx";
 import * as $tools_arbitrage_ArbitrageCalculator from "./islands/tools/arbitrage/ArbitrageCalculator.tsx";
 import * as $tools_arbitrage_ArbitrageExecutionButton from "./islands/tools/arbitrage/ArbitrageExecutionButton.tsx";
 import * as $tools_arbitrage_ArbitragePlacement from "./islands/tools/arbitrage/ArbitragePlacement.tsx";
@@ -50,6 +49,12 @@ import * as $tools_chart_TimeRangeSelector from "./islands/tools/chart/TimeRange
 import * as $tools_creditscore_CreditScore from "./islands/tools/creditscore/CreditScore.tsx";
 import * as $tools_creditscore_CreditScoreChExt from "./islands/tools/creditscore/CreditScoreChExt.tsx";
 import * as $tools_creditscore_ScoreResult from "./islands/tools/creditscore/ScoreResult.tsx";
+import * as $tools_insurance_FinancialSummary from "./islands/tools/insurance/FinancialSummary.tsx";
+import * as $tools_insurance_InputDetails from "./islands/tools/insurance/InputDetails.tsx";
+import * as $tools_insurance_InsuranceCalc from "./islands/tools/insurance/InsuranceCalc.tsx";
+import * as $tools_insurance_LoanInputSection from "./islands/tools/insurance/LoanInputSection.tsx";
+import * as $tools_insurance_PaymentAction from "./islands/tools/insurance/PaymentAction.tsx";
+import * as $tools_insurance_PolicyDetailsSection from "./islands/tools/insurance/PolicyDetailsSection.tsx";
 import * as $tools_limits_AnswerSelector from "./islands/tools/limits/AnswerSelector.tsx";
 import * as $tools_limits_DirectExecution from "./islands/tools/limits/DirectExecution.tsx";
 import * as $tools_limits_LimitOrderCalculation from "./islands/tools/limits/LimitOrderCalculation.ts";
@@ -119,7 +124,6 @@ const manifest = {
     "./islands/menu/MenuBar.tsx": $menu_MenuBar,
     "./islands/menu/MenuDropdown.tsx": $menu_MenuDropdown,
     "./islands/tools/GameShowCreditScore.tsx": $tools_GameShowCreditScore,
-    "./islands/tools/InsuranceCalc.tsx": $tools_InsuranceCalc,
     "./islands/tools/arbitrage/ArbitrageCalculator.tsx":
       $tools_arbitrage_ArbitrageCalculator,
     "./islands/tools/arbitrage/ArbitrageExecutionButton.tsx":
@@ -142,6 +146,17 @@ const manifest = {
       $tools_creditscore_CreditScoreChExt,
     "./islands/tools/creditscore/ScoreResult.tsx":
       $tools_creditscore_ScoreResult,
+    "./islands/tools/insurance/FinancialSummary.tsx":
+      $tools_insurance_FinancialSummary,
+    "./islands/tools/insurance/InputDetails.tsx": $tools_insurance_InputDetails,
+    "./islands/tools/insurance/InsuranceCalc.tsx":
+      $tools_insurance_InsuranceCalc,
+    "./islands/tools/insurance/LoanInputSection.tsx":
+      $tools_insurance_LoanInputSection,
+    "./islands/tools/insurance/PaymentAction.tsx":
+      $tools_insurance_PaymentAction,
+    "./islands/tools/insurance/PolicyDetailsSection.tsx":
+      $tools_insurance_PolicyDetailsSection,
     "./islands/tools/limits/AnswerSelector.tsx": $tools_limits_AnswerSelector,
     "./islands/tools/limits/DirectExecution.tsx": $tools_limits_DirectExecution,
     "./islands/tools/limits/LimitOrderCalculation.ts":

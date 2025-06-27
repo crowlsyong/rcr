@@ -1,6 +1,6 @@
 // routes/insurance.tsx
 
-import InsuranceCalc from "../islands/tools/InsuranceCalc.tsx";
+import InsuranceCalc from "../islands/tools/insurance/InsuranceCalc.tsx";
 import { Head } from "$fresh/runtime.ts";
 import { RouteContext } from "$fresh/server.ts";
 
