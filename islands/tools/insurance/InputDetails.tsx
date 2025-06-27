@@ -5,6 +5,8 @@ import { JSX } from "preact";
 import LoanInputSection from "./LoanInputSection.tsx";
 import PolicyDetailsSection from "./PolicyDetailsSection.tsx";
 import FinancialSummary from "./FinancialSummary.tsx";
+import OptionalFeatures from "./OptionalFeatures.tsx";
+import { fetchUserData } from "../../../utils/api/manifold_api_service.ts";
 
 interface CreditScoreData {
   username: string;
@@ -16,26 +18,29 @@ interface CreditScoreData {
 interface InputDetailsProps {
   username: Signal<string>;
   lenderUsername: Signal<string>;
-  loanAmount: Signal<number>;
+  loanAmount: Signal<number>; // Pass this down
   selectedCoverage: Signal<number | null>;
   loanDueDate: Signal<string>;
   managramMessage: Signal<string>;
   lenderFeePercentage: Signal<number | null>;
   apiKey: Signal<string>;
+  handleApiKeyInput: (e: Event) => void;
   partnerCodeInput: Signal<string>;
   partnerCodeValid: Signal<boolean>;
   partnerCodeMessage: Signal<string>;
   isCodeChecking: boolean;
   setIsCodeChecking: (value: boolean) => void;
-  discountSource: Signal<string | null>; // Still a signal, direct .value assignment
-  // Expose these for parent component to read calculated values
+  discountSource: Signal<string | null>;
   insuranceFee: number | null;
   setInsuranceFee: (value: number | null) => void;
   initialInsuranceFeeBeforeDiscount: number | null;
   setInitialInsuranceFeeBeforeDiscount: (value: number | null) => void;
   riskMultiplier: number;
   setRiskMultiplier: (value: number) => void;
-  getPolicyEndDate: (loanDueDateStr: string) => string; // Pass from parent
+  getPolicyEndDate: (loanDueDateStr: string) => string;
+  isLenderUsernameValid: Signal<boolean>;
+  isBorrowerUsernameValid: Signal<boolean>;
+  sameUserError: Signal<string>;
 }
 
 const coverageFees: { [key: number]: number } = {
@@ -55,6 +60,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
     managramMessage,
     lenderFeePercentage,
     apiKey,
+    handleApiKeyInput,
     partnerCodeInput,
     partnerCodeValid,
     partnerCodeMessage,
@@ -68,55 +74,136 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
     riskMultiplier,
     setRiskMultiplier,
     getPolicyEndDate,
+    isLenderUsernameValid,
+    isBorrowerUsernameValid,
+    sameUserError,
   } = props;
 
-  const [debouncedUsername, setDebouncedUsername] = useState("");
+  const [debouncedBorrowerUsername, setDebouncedBorrowerUsername] = useState(
+    "",
+  );
+  const [debouncedLenderUsername, setDebouncedLenderUsername] = useState("");
   const scoreData = useSignal<CreditScoreData | null>(null);
-  const usernameError = useSignal<string>("");
+  const borrowerUsernameError = useSignal<string>("");
+  const lenderUsernameError = useSignal<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedUsername(username.value), 100);
+    const timer = setTimeout(
+      () => setDebouncedBorrowerUsername(username.value),
+      500,
+    );
     return () => clearTimeout(timer);
   }, [username.value]);
 
-  async function fetchScoreData(user: string) {
+  useEffect(() => {
+    const timer = setTimeout(
+      () => setDebouncedLenderUsername(lenderUsername.value),
+      500,
+    );
+    return () => clearTimeout(timer);
+  }, [lenderUsername.value]);
+
+  useEffect(() => {
+    if (
+      username.value && lenderUsername.value &&
+      username.value.toLowerCase() === lenderUsername.value.toLowerCase()
+    ) {
+      sameUserError.value = "Borrower and Lender cannot be the same user.";
+    } else {
+      sameUserError.value = "";
+    }
+  }, [username.value, lenderUsername.value]);
+
+  async function validateAndFetchBorrowerData(user: string) {
+    if (!user) {
+      resetBorrowerDataState();
+      return;
+    }
     try {
+      const { userData, fetchSuccess, userDeleted } = await fetchUserData(user);
+
+      if (!fetchSuccess || !userData || userDeleted) {
+        scoreData.value = null;
+        borrowerUsernameError.value = "Borrower username not found or deleted.";
+        isBorrowerUsernameValid.value = false;
+        setRiskMultiplier(0);
+        setInsuranceFee(null);
+        setInitialInsuranceFeeBeforeDiscount(null);
+        return;
+      }
+
       const res = await fetch(`/api/score?username=${user}`);
       const data = await res.json();
+
       if (data.error) {
         scoreData.value = null;
-        usernameError.value = data.error;
+        borrowerUsernameError.value = `Error fetching score: ${data.error}`;
+        isBorrowerUsernameValid.value = true;
+        setRiskMultiplier(0);
+        setInsuranceFee(null);
+        setInitialInsuranceFeeBeforeDiscount(null);
       } else {
         scoreData.value = data;
         setRiskMultiplier(data.riskMultiplier);
-        usernameError.value = "";
+        borrowerUsernameError.value = "";
+        isBorrowerUsernameValid.value = true;
       }
     } catch (err) {
       scoreData.value = null;
-      usernameError.value = `Network/fetch error: ${
+      borrowerUsernameError.value = `Network/fetch error: ${
         typeof err === "object" && err !== null && "message" in err
           ? (err as { message: string }).message
           : String(err)
       }`;
+      isBorrowerUsernameValid.value = false;
+      setRiskMultiplier(0);
+      setInsuranceFee(null);
+      setInitialInsuranceFeeBeforeDiscount(null);
     }
   }
 
-  function resetScoreData() {
+  async function validateLenderUsername(user: string) {
+    if (!user) {
+      lenderUsernameError.value = "";
+      isLenderUsernameValid.value = false;
+      return;
+    }
+    try {
+      const { userData, fetchSuccess, userDeleted } = await fetchUserData(user);
+      if (fetchSuccess && userData && !userDeleted) {
+        lenderUsernameError.value = "";
+        isLenderUsernameValid.value = true;
+      } else {
+        lenderUsernameError.value = "Lender username not found or deleted.";
+        isLenderUsernameValid.value = false;
+      }
+    } catch (err) {
+      lenderUsernameError.value = `Error checking lender username: ${
+        typeof err === "object" && err !== null && "message" in err
+          ? (err as { message: string }).message
+          : String(err)
+      }`;
+      isLenderUsernameValid.value = false;
+    }
+  }
+
+  function resetBorrowerDataState() {
     scoreData.value = null;
-    usernameError.value = "";
+    borrowerUsernameError.value = "";
     setRiskMultiplier(0);
-    setInsuranceFee(null); // Reset fee
-    setInitialInsuranceFeeBeforeDiscount(null); // Reset initial fee
+    setInsuranceFee(null);
+    setInitialInsuranceFeeBeforeDiscount(null);
+    isBorrowerUsernameValid.value = false;
   }
 
   useEffect(() => {
-    if (debouncedUsername) {
-      fetchScoreData(debouncedUsername);
-    } else {
-      resetScoreData();
-    }
-  }, [debouncedUsername]);
+    validateAndFetchBorrowerData(debouncedBorrowerUsername);
+  }, [debouncedBorrowerUsername]);
+
+  useEffect(() => {
+    validateLenderUsername(debouncedLenderUsername);
+  }, [debouncedLenderUsername]);
 
   useEffect(() => {
     const code = partnerCodeInput.value.trim();
@@ -166,7 +253,8 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
 
   const calculateInsuranceFee = () => {
     if (
-      loanAmount.value <= 0 || !selectedCoverage.value || riskMultiplier === 0
+      loanAmount.value <= 0 || selectedCoverage.value === null ||
+      riskMultiplier === 0
     ) {
       setInsuranceFee(null);
       setInitialInsuranceFeeBeforeDiscount(null);
@@ -270,60 +358,67 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
       : 0;
   const currentInsuranceFee = insuranceFee !== null
     ? Math.round(insuranceFee)
-    : 0; // Local copy for FinancialSummary
+    : 0;
 
   return (
-    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
-      <LoanInputSection
-        username={username}
-        debouncedUsername={debouncedUsername}
-        inputRef={inputRef}
-        handleUsernameInput={handleUsernameInput}
-        error={usernameError}
-        scoreData={scoreData}
-        riskMultiplier={riskMultiplier}
-        lenderUsername={lenderUsername}
-        handleLenderUsernameInput={handleLenderUsernameInput}
-        loanAmount={loanAmount}
-        handleLoanInput={handleLoanInput}
-      />
-
-      <PolicyDetailsSection
-        loanDueDate={loanDueDate}
-        handleLoanDueDateInput={handleLoanDueDateInput}
-        getPolicyEndDate={getPolicyEndDate}
-        selectedCoverage={selectedCoverage}
-        handleCoverageClick={handleCoverageClick}
-        managramMessage={managramMessage}
-        handleManagramMessageInput={handleManagramMessageInput}
-        currentLoanAmount={currentLoanAmount}
-        currentLenderFee={currentLenderFee}
-        apiKey={apiKey}
-        handleApiKeyInput={(
-          e,
-        ) => (apiKey.value = (e.target as HTMLInputElement).value)}
-        partnerCodeInput={partnerCodeInput}
-        handlePartnerCodeInput={handlePartnerCodeInput}
-        isCodeChecking={isCodeChecking}
-        partnerCodeMessage={partnerCodeMessage}
-        partnerCodeValid={partnerCodeValid}
-        lenderFeePercentage={lenderFeePercentage}
-        handleLenderFeePercentageInput={handleLenderFeePercentageInput}
-      />
-      <div class="md:col-span-2">
-        <FinancialSummary
-          insuranceFee={insuranceFee}
-          currentLoanAmount={currentLoanAmount}
+    <>
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <LoanInputSection
           username={username}
-          currentLenderFee={currentLenderFee}
-          lenderFeePercentage={lenderFeePercentage}
-          handleLenderFeePercentageInput={handleLenderFeePercentageInput}
-          initialInsuranceFeeBeforeDiscount={initialInsuranceFeeBeforeDiscount}
-          partnerCodeValid={partnerCodeValid}
-          netLenderGain={currentLenderFee - currentInsuranceFee}
-          apiKeyLength={apiKey.value.length}
+          debouncedUsername={debouncedBorrowerUsername}
+          inputRef={inputRef}
+          handleUsernameInput={handleUsernameInput}
+          error={borrowerUsernameError}
+          scoreData={scoreData}
+          riskMultiplier={riskMultiplier}
+          lenderUsername={lenderUsername}
+          handleLenderUsernameInput={handleLenderUsernameInput}
+          lenderUsernameError={lenderUsernameError}
+          loanAmount={loanAmount}
+          handleLoanInput={handleLoanInput}
+          isBorrowerUsernameValid={isBorrowerUsernameValid}
+          isLenderUsernameValid={isLenderUsernameValid}
+          sameUserError={sameUserError}
+        />
+
+        <PolicyDetailsSection
+          loanDueDate={loanDueDate}
+          handleLoanDueDateInput={handleLoanDueDateInput}
+          getPolicyEndDate={getPolicyEndDate}
+          selectedCoverage={selectedCoverage}
+          handleCoverageClick={handleCoverageClick}
+          apiKey={apiKey}
+          handleApiKeyInput={handleApiKeyInput}
         />
       </div>
-    </div>
+
+      {apiKey.value.length >= 8 && (
+        <OptionalFeatures
+          managramMessage={managramMessage}
+          handleManagramMessageInput={handleManagramMessageInput}
+          partnerCodeInput={partnerCodeInput}
+          handlePartnerCodeInput={handlePartnerCodeInput}
+          isCodeChecking={isCodeChecking}
+          partnerCodeMessage={partnerCodeMessage}
+          partnerCodeValid={partnerCodeValid}
+          lenderFeePercentage={lenderFeePercentage}
+          handleLenderFeePercentageInput={handleLenderFeePercentageInput}
+          loanAmount={loanAmount} // Pass loanAmount here for lender fee calculation
+        />
+      )}
+
+      <FinancialSummary
+        insuranceFee={insuranceFee}
+        currentLoanAmount={currentLoanAmount}
+        username={username}
+        currentLenderFee={currentLenderFee}
+        lenderFeePercentage={lenderFeePercentage}
+        handleLenderFeePercentageInput={handleLenderFeePercentageInput}
+        initialInsuranceFeeBeforeDiscount={initialInsuranceFeeBeforeDiscount}
+        partnerCodeValid={partnerCodeValid}
+        netLenderGain={currentLenderFee - currentInsuranceFee}
+        apiKeyLength={apiKey.value.length}
+      />
+    </>
   );
 }

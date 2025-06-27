@@ -53,6 +53,7 @@ import * as $tools_insurance_FinancialSummary from "./islands/tools/insurance/Fi
 import * as $tools_insurance_InputDetails from "./islands/tools/insurance/InputDetails.tsx";
 import * as $tools_insurance_InsuranceCalc from "./islands/tools/insurance/InsuranceCalc.tsx";
 import * as $tools_insurance_LoanInputSection from "./islands/tools/insurance/LoanInputSection.tsx";
+import * as $tools_insurance_OptionalFeatures from "./islands/tools/insurance/OptionalFeatures.tsx";
 import * as $tools_insurance_PaymentAction from "./islands/tools/insurance/PaymentAction.tsx";
 import * as $tools_insurance_PolicyDetailsSection from "./islands/tools/insurance/PolicyDetailsSection.tsx";
 import * as $tools_limits_AnswerSelector from "./islands/tools/limits/AnswerSelector.tsx";
@@ -153,6 +154,8 @@ const manifest = {
       $tools_insurance_InsuranceCalc,
     "./islands/tools/insurance/LoanInputSection.tsx":
       $tools_insurance_LoanInputSection,
+    "./islands/tools/insurance/OptionalFeatures.tsx":
+      $tools_insurance_OptionalFeatures,
     "./islands/tools/insurance/PaymentAction.tsx":
       $tools_insurance_PaymentAction,
     "./islands/tools/insurance/PolicyDetailsSection.tsx":

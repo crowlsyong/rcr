@@ -1,4 +1,4 @@
-// components/PolicyDetailsSection.tsx
+// islands/insurance/PolicyDetailsSection.tsx
 import { Signal } from "@preact/signals";
 import { JSX } from "preact";
 
@@ -8,19 +8,8 @@ interface PolicyDetailsSectionProps {
   getPolicyEndDate: (loanDueDateStr: string) => string;
   selectedCoverage: Signal<number | null>;
   handleCoverageClick: (percentage: number | null) => void;
-  managramMessage: Signal<string>;
-  handleManagramMessageInput: (e: Event) => void;
-  currentLoanAmount: number;
-  currentLenderFee: number;
-  apiKey: Signal<string>;
-  handleApiKeyInput: (e: Event) => void;
-  partnerCodeInput: Signal<string>;
-  handlePartnerCodeInput: (e: Event) => void;
-  isCodeChecking: boolean;
-  partnerCodeMessage: Signal<string>;
-  partnerCodeValid: Signal<boolean>;
-  lenderFeePercentage: Signal<number | null>;
-  handleLenderFeePercentageInput: (e: Event) => void;
+  apiKey: Signal<string>; // Add back apiKey prop
+  handleApiKeyInput: (e: Event) => void; // Add back apiKey handler prop
 }
 
 export default function PolicyDetailsSection(
@@ -32,17 +21,8 @@ export default function PolicyDetailsSection(
     getPolicyEndDate,
     selectedCoverage,
     handleCoverageClick,
-    managramMessage,
-    handleManagramMessageInput,
-    apiKey,
-    handleApiKeyInput,
-    partnerCodeInput,
-    handlePartnerCodeInput,
-    isCodeChecking,
-    partnerCodeMessage,
-    partnerCodeValid,
-    lenderFeePercentage,
-    handleLenderFeePercentageInput,
+    apiKey, // Destructure apiKey
+    handleApiKeyInput, // Destructure handler
   } = props;
 
   const coverageLabels = ["25%", "50%", "75%", "100%"];
@@ -120,92 +100,6 @@ export default function PolicyDetailsSection(
           We don't store this key. Find your API key on your Manifold profile
           page by clicking the gear icon and selecting Account Settings.
         </p>
-      </div>
-
-      {apiKey.value.length >= 8 && (
-        <div class="mt-4 p-3 bg-gray-800 border border-gray-700 rounded-md shadow-sm">
-          <div class="flex items-center justify-between">
-            <label
-              htmlFor="lenderFeePercentage"
-              class="block text-sm font-medium text-gray-300"
-            >
-              Lender Fee Percentage
-            </label>
-            <div class="relative group input-with-suffix w-24">
-              <input
-                id="lenderFeePercentage"
-                type="number"
-                value={lenderFeePercentage.value !== null
-                  ? lenderFeePercentage.value.toString()
-                  : ""}
-                onInput={handleLenderFeePercentageInput}
-                class="w-full p-2 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-8 text-right"
-              />
-            </div>
-          </div>
-          <p class="mt-1 text-xs text-gray-400">
-            This percentage of the loan amount will be the lender's fee.
-          </p>
-        </div>
-      )}
-
-      {apiKey.value.length >= 8 && (
-        <div class="mt-4">
-          <label
-            htmlFor="managramMessage"
-            class="block text-sm font-medium text-gray-300"
-          >
-            Managram Message (100 char max)
-          </label>
-          <textarea
-            id="managramMessage"
-            name="managramMessage"
-            value={managramMessage.value}
-            onInput={handleManagramMessageInput}
-            maxLength={100}
-            rows={3}
-            class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
-          >
-          </textarea>
-          <p class="mt-1 text-xs text-gray-400">
-            This message will be sent with the loan mana.
-          </p>
-        </div>
-      )}
-
-      <div class="mt-4">
-        <label
-          htmlFor="partner-code"
-          class="block text-sm font-medium text-gray-300"
-        >
-          Partner Code (optional for discount)
-        </label>
-        <input
-          type="text"
-          id="partner-code"
-          name="partnerCode"
-          value={partnerCodeInput.value}
-          onInput={handlePartnerCodeInput}
-          placeholder="Enter code here"
-          class="mt-1 block w-full border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-800 text-gray-100"
-        />
-        {isCodeChecking
-          ? (
-            <p class="mt-1 text-xs text-gray-500 animate-pulse">
-              Checking code...
-            </p>
-          )
-          : (
-            partnerCodeMessage.value && (
-              <p
-                class={`mt-1 text-xs ${
-                  partnerCodeValid.value ? "text-green-400" : "text-orange-400"
-                }`}
-              >
-                {partnerCodeMessage.value}
-              </p>
-            )
-          )}
       </div>
     </div>
   );

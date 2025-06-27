@@ -39,6 +39,10 @@ export default function InsuranceCalc() {
   ] = useState<number | null>(null);
   const [riskMultiplier, setRiskMultiplier] = useState(0);
 
+  const isLenderUsernameValid = useSignal(false);
+  const isBorrowerUsernameValid = useSignal(false);
+  const sameUserError = useSignal("");
+
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const paymentMessage = useSignal<string>("");
   const paymentMessageType = useSignal<"success" | "error" | "">("");
@@ -92,11 +96,13 @@ export default function InsuranceCalc() {
 
     if (
       !username.value || !lenderUsername.value || !loanAmount.value ||
-      selectedCoverage.value === null || // Changed to strict null check
-      insuranceFee === null || !loanDueDate.value
+      selectedCoverage.value === null ||
+      insuranceFee === null || !loanDueDate.value ||
+      !isBorrowerUsernameValid.value || !isLenderUsernameValid.value ||
+      !!sameUserError.value
     ) {
       paymentMessage.value =
-        "Please fill in all required fields (Borrower, Lender, Loan Amount, Coverage, Loan Due Date).";
+        "Please fill in all required fields and resolve all errors.";
       paymentMessageType.value = "error";
       return;
     }
@@ -252,8 +258,10 @@ Risk Free 🦝RISK Fee Guarantee™️
       return;
     }
 
-    // Fixed: Explicitly convert to boolean using !!
     if (!isFormValid) {
+      paymentMessage.value =
+        "Please fill in all required fields and resolve errors.";
+      paymentMessageType.value = "error";
       return;
     }
 
@@ -267,7 +275,9 @@ Risk Free 🦝RISK Fee Guarantee™️
   const isFormValid = !!username.value && !!lenderUsername.value &&
     loanAmount.value > 0 &&
     selectedCoverage.value !== null && insuranceFee !== null &&
-    !!loanDueDate.value && !!apiKey.value && !isProcessingPayment;
+    !!loanDueDate.value && !!apiKey.value && !isProcessingPayment &&
+    isLenderUsernameValid.value && isBorrowerUsernameValid.value &&
+    !sameUserError.value;
 
   const currentInsuranceFee = insuranceFee !== null
     ? Math.round(insuranceFee)
@@ -311,6 +321,9 @@ Risk Free 🦝RISK Fee Guarantee™️
           managramMessage={managramMessage}
           lenderFeePercentage={lenderFeePercentage}
           apiKey={apiKey}
+          handleApiKeyInput={(
+            e,
+          ) => (apiKey.value = (e.target as HTMLInputElement).value)}
           partnerCodeInput={partnerCodeInput}
           partnerCodeValid={partnerCodeValid}
           partnerCodeMessage={partnerCodeMessage}
@@ -324,6 +337,9 @@ Risk Free 🦝RISK Fee Guarantee™️
           riskMultiplier={riskMultiplier}
           setRiskMultiplier={setRiskMultiplier}
           getPolicyEndDate={getPolicyEndDate}
+          isLenderUsernameValid={isLenderUsernameValid}
+          isBorrowerUsernameValid={isBorrowerUsernameValid}
+          sameUserError={sameUserError}
         />
 
         <PaymentAction
