@@ -51,7 +51,6 @@ import * as $tools_chart_TimeRangeSelector from "./islands/tools/chart/TimeRange
 import * as $tools_creditscore_CreditScore from "./islands/tools/creditscore/CreditScore.tsx";
 import * as $tools_creditscore_CreditScoreChExt from "./islands/tools/creditscore/CreditScoreChExt.tsx";
 import * as $tools_creditscore_ScoreResult from "./islands/tools/creditscore/ScoreResult.tsx";
-import * as $tools_insurance_DurationFeeInfo from "./islands/tools/insurance/DurationFeeInfo.tsx";
 import * as $tools_insurance_FinancialSummary from "./islands/tools/insurance/FinancialSummary.tsx";
 import * as $tools_insurance_InputDetails from "./islands/tools/insurance/InputDetails.tsx";
 import * as $tools_insurance_InsuranceCalc from "./islands/tools/insurance/InsuranceCalc.tsx";
@@ -155,8 +154,6 @@ const manifest = {
       $tools_creditscore_CreditScoreChExt,
     "./islands/tools/creditscore/ScoreResult.tsx":
       $tools_creditscore_ScoreResult,
-    "./islands/tools/insurance/DurationFeeInfo.tsx":
-      $tools_insurance_DurationFeeInfo,
     "./islands/tools/insurance/FinancialSummary.tsx":
       $tools_insurance_FinancialSummary,
     "./islands/tools/insurance/InputDetails.tsx": $tools_insurance_InputDetails,

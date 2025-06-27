@@ -2,16 +2,16 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { Chart, registerables } from "chart.js";
 import { JSX } from "preact";
-import type { TooltipModel, TooltipItem } from "chart.js";
+import type { TooltipItem } from "chart.js";
 
 // Register all Chart.js components needed
 Chart.register(...registerables);
 
-// Fee calculation function (ADJUSTED)
+// Fee calculation function (ADJUSTED for flatline at ~3 years)
 const calculateFeeFromDays = (days: number): number => {
-  const a = 0.00000640; // Adjusted scaling constant for new cap and less steepness
-  const b = 1.5; // Keeping exponent the same for now, but overall scaling is reduced
-  const fee = Math.min(a * Math.pow(days, b), 0.50); // New cap at 50% (0.50)
+  const a = 0.00001379; // Adjusted scaling constant to hit 50% around 3 years
+  const b = 1.5; // Exponent remains the same
+  const fee = Math.min(a * Math.pow(days, b), 0.50); // Cap at 50% (0.50)
   return parseFloat(fee.toFixed(4));
 };
 
@@ -33,39 +33,26 @@ export default function DurationFeeChart(
         chartInstance.current.destroy();
       }
 
-      // Define specific points and their labels for "exponential" view
-      const customLabels = [
-        "1 Day",
-        "1 Week",
-        "1 Month",
-        "3 Months",
-        "6 Months",
-        "1 Year",
-        "2 Years",
-        "3 Years",
-        "4 Years",
-        "5 Years",
-      ];
-      const daysPointsForLabels = [
-        1, // 1 Day
-        7, // 1 Week
-        30, // ~1 Month
-        90, // ~3 Months
-        180, // ~6 Months
-        365, // 1 Year
-        365 * 2, // 2 Years
-        365 * 3, // 3 Years
-        365 * 4, // 4 Years
-        365 * 5, // 5 Years
-      ];
+      // X-axis Tick Values: 0, 100, 200, ..., up to 1800 (approx 5 years) to show flatline
+      const desiredXTickValues: number[] = [];
+      for (let i = 0; i <= 365 * 5; i += 100) { // Go up to 5 years, every 100 days
+        desiredXTickValues.push(i);
+      }
+      // Ensure 3 years (1095) is exactly on a tick if desired
+      if (!desiredXTickValues.includes(365 * 3)) {
+        desiredXTickValues.push(365 * 3);
+        desiredXTickValues.sort((a, b) => a - b);
+      }
+
+      const maxDaysToDisplay = 365 * 5; // Display up to 5 years (1825 days)
 
       // Convert main data to {x, y} format for consistency with scatter
       const mainChartData: Array<{ x: number; y: number }> = [];
-      const labelsForAxis: number[] = []; // Only for axis ticks, not direct data
+      const labelsForAxis: number[] = []; // Used for Chart.js labels property (numerical X-values)
 
-      const maxDays = 365 * 5; // Up to 5 years (1825 days)
-      for (let d = 1; d <= maxDays; d += 5) { // Plot every 5 days for a smooth curve
-        labelsForAxis.push(d); // X-axis labels
+      // Plot every 5 days for a smooth curve up to the max display.
+      for (let d = 0; d <= maxDaysToDisplay; d += 5) {
+        labelsForAxis.push(d); // X-axis numerical labels
         mainChartData.push({ x: d, y: calculateFeeFromDays(d) });
       }
 
@@ -120,26 +107,33 @@ export default function DurationFeeChart(
                 type: "linear",
                 title: {
                   display: true,
-                  text: "Loan Duration",
+                  text: "Loan Duration (Days)", // Updated title
                   color: "#e2e8f0",
                 },
+                min: 0, // Set explicit min
+                max: maxDaysToDisplay, // Set explicit max to display the flatline
                 grid: {
                   color: "#374151",
                 },
                 ticks: {
                   color: "#e2e8f0",
+                  // Custom callback to show only desired labels
                   callback: function (val) {
                     const days = val as number;
-                    for (let i = 0; i < daysPointsForLabels.length; i++) {
-                      if (days === daysPointsForLabels[i]) {
-                        return customLabels[i];
-                      }
+                    // Find if this day value is one of our desired tick values
+                    if (desiredXTickValues.includes(days)) {
+                      // Optionally, add labels like "1 Year", "3 Years" etc.
+                      if (days === 365) return "1 Year";
+                      if (days === 365 * 2) return "2 Years";
+                      if (days === 365 * 3) return "3 Years";
+                      if (days === 0) return "0 Days"; // Label 0 explicitly
+                      return days.toString(); // For other 100, 200, etc.
                     }
-                    return "";
+                    return ""; // Hide other ticks
                   },
-                  autoSkip: false,
-                  maxRotation: 45,
-                  minRotation: 45,
+                  autoSkip: false, // Prevent Chart.js from auto-skipping our custom ticks
+                  maxRotation: 0, // Keep labels horizontal
+                  minRotation: 0,
                 },
               },
               y: {
@@ -148,7 +142,7 @@ export default function DurationFeeChart(
                   text: "Fee Percentage",
                   color: "#e2e8f0",
                 },
-                max: 0.55, // Adjusted max for the new 50% cap (a little padding)
+                max: 0.55,
                 grid: {
                   color: "#374151",
                 },
@@ -176,11 +170,15 @@ export default function DurationFeeChart(
                     if (context.parsed.y !== null) {
                       const rawX = context.parsed.x;
                       const rawY = context.parsed.y;
-                      return `${label}: ${rawX} days (${(rawY * 100).toFixed(2)}%)`;
+                      return `${label}: ${rawX} days (${
+                        (rawY * 100).toFixed(2)
+                      }%)`;
                     }
                     return label;
                   },
-                  title: function (context: TooltipItem<"line" | "scatter">[]): string | void {
+                  title: function (
+                    context: TooltipItem<"line" | "scatter">[],
+                  ): string | void {
                     if (context[0].dataset.type === "line") {
                       return `Duration Details`;
                     }
