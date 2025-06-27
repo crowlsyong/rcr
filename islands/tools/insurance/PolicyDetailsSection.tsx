@@ -1,10 +1,11 @@
-// islands/tools/insurance/PolicyDetailsSection.tsx
+// islands/insurance/PolicyDetailsSection.tsx
 import { Signal } from "@preact/signals";
 import { JSX } from "preact";
 
 interface PolicyDetailsSectionProps {
   loanDueDate: Signal<string>;
   handleLoanDueDateInput: (e: Event) => void;
+  loanDueDateError: Signal<string>; // New prop for error message
   getPolicyEndDate: (loanDueDateStr: string) => string;
   selectedCoverage: Signal<number | null>;
   handleCoverageClick: (percentage: number | null) => void;
@@ -18,6 +19,7 @@ export default function PolicyDetailsSection(
   const {
     loanDueDate,
     handleLoanDueDateInput,
+    loanDueDateError, // Destructure new prop
     getPolicyEndDate,
     selectedCoverage,
     handleCoverageClick,
@@ -46,6 +48,11 @@ export default function PolicyDetailsSection(
         {loanDueDate.value && (
           <p class="text-gray-400 text-xs mt-1">
             Policy ends: {getPolicyEndDate(loanDueDate.value)} (1 week after)
+          </p>
+        )}
+        {loanDueDateError.value && ( // Display the error message
+          <p class="text-red-400 text-sm text-center mt-2">
+            {loanDueDateError.value}
           </p>
         )}
       </div>

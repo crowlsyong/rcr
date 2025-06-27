@@ -1,4 +1,4 @@
-// islands/tools/insurance/InsuranceCalc.tsx
+// islands/insurance/InsuranceCalc.tsx
 import { useSignal } from "@preact/signals";
 import { useEffect, useState } from "preact/hooks";
 import {
@@ -42,6 +42,7 @@ export default function InsuranceCalc() {
   const isLenderUsernameValid = useSignal(false);
   const isBorrowerUsernameValid = useSignal(false);
   const sameUserError = useSignal("");
+  const loanDueDateError = useSignal<string>(""); // Declare here as the source of truth for the date error
 
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const paymentMessage = useSignal<string>("");
@@ -99,7 +100,7 @@ export default function InsuranceCalc() {
       selectedCoverage.value === null ||
       insuranceFee === null || !loanDueDate.value ||
       !isBorrowerUsernameValid.value || !isLenderUsernameValid.value ||
-      !!sameUserError.value
+      !!sameUserError.value || !!loanDueDateError.value // Crucial check: if loanDueDateError has a message, it's invalid
     ) {
       paymentMessage.value =
         "Please fill in all required fields and resolve all errors.";
@@ -273,9 +274,9 @@ Risk Free 🦝RISK Fee Guarantee™️
   };
 
   const isFormValid = !!username.value && !!lenderUsername.value &&
-    loanAmount.value > 0 &&
-    selectedCoverage.value !== null && insuranceFee !== null &&
-    !!loanDueDate.value && !!apiKey.value && !isProcessingPayment &&
+    loanAmount.value > 0 && selectedCoverage.value !== null &&
+    insuranceFee !== null && !!loanDueDate.value && !loanDueDateError.value &&
+    !!apiKey.value && !isProcessingPayment &&
     isLenderUsernameValid.value && isBorrowerUsernameValid.value &&
     !sameUserError.value;
 
@@ -340,6 +341,7 @@ Risk Free 🦝RISK Fee Guarantee™️
           isLenderUsernameValid={isLenderUsernameValid}
           isBorrowerUsernameValid={isBorrowerUsernameValid}
           sameUserError={sameUserError}
+          loanDueDateError={loanDueDateError} // Pass loanDueDateError here
         />
 
         <PaymentAction
