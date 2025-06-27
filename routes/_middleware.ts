@@ -84,7 +84,7 @@ export async function handler(
       "'self'",
       "https://manifold.markets",
       "https://api.manifold.markets",
-    ], // <-- ADDED THIS LINE
+    ],
   };
 
   const cspString = Object.entries(cspDirectives)
