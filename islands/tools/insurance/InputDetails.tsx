@@ -1,4 +1,4 @@
-// islands/insurance/InputDetails.tsx
+// islands/tools/insurance/InputDetails.tsx
 import { Signal, useSignal } from "@preact/signals";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { JSX } from "preact";

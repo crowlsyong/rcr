@@ -1,4 +1,4 @@
-// components/LoanInputSection.tsx
+// islands/tools/insurance/LoanInputSection.tsx
 import { Signal } from "@preact/signals";
 import { Ref } from "preact";
 import { JSX } from "preact";

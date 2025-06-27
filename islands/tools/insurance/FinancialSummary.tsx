@@ -1,4 +1,4 @@
-// components/FinancialSummary.tsx
+// islands/tools/insurance/FinancialSummary.tsx
 import { Signal } from "@preact/signals";
 import { JSX } from "preact";
 

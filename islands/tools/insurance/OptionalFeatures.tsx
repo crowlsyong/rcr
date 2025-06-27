@@ -1,4 +1,4 @@
-// islands/insurance/OptionalFeatures.tsx
+// islands/tools/insurance/OptionalFeatures.tsx
 import { Signal } from "@preact/signals";
 import { JSX } from "preact";
 

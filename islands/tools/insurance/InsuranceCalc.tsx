@@ -1,4 +1,4 @@
-// islands/insurance/InsuranceCalc.tsx
+// islands/tools/insurance/InsuranceCalc.tsx
 import { useSignal } from "@preact/signals";
 import { useEffect, useState } from "preact/hooks";
 import {

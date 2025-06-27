@@ -1,4 +1,4 @@
-// islands/insurance/PaymentAction.tsx
+// islands/tools/insurance/PaymentAction.tsx
 import { Signal } from "@preact/signals";
 import { JSX } from "preact";
 
