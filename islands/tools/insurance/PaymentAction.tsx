@@ -67,7 +67,6 @@ export default function PaymentAction(
         {buttonText}
       </button>
 
-      {/* Removed the cooldown message display */}
       {
         /* {cooldownActive.value && cooldownMessage.value && (
         <p class="mt-2 text-center text-orange-400 text-sm">

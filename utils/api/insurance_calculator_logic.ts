@@ -24,6 +24,7 @@ const INSTITUTION_MARKETS = {
   IMF: { id: "PdLcZARORc", name: "IMF" },
   BANK: { id: "tqQIAgd6EZ", name: "BANK" },
   RISK: { id: "QEytQ5ch0P", name: "RISK" },
+  OFFSHORE: { id: "CAQchupgyN", name: "OFFSHORE" }, // Added Offshore market
 };
 
 // --- Interfaces for structured data ---
@@ -349,7 +350,7 @@ export async function executeInsuranceTransaction(
     discountApplied: boolean;
     lenderFee: number;
     managramMessage?: string;
-    institution?: "IMF" | "BANK" | "RISK";
+    institution?: "IMF" | "BANK" | "RISK" | "OFFSHORE"; // Added Offshore
     commentId?: string;
   },
 ): Promise<TransactionExecutionResult> {

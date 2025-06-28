@@ -35,13 +35,14 @@ interface InstitutionsProps {
   cooldownActive: Signal<boolean>;
   cooldownMessage: Signal<string>;
 
-  institution: Signal<"BANK" | "IMF" | "RISK" | null>;
+  institution: Signal<"BANK" | "IMF" | "RISK" | "OFFSHORE" | null>;
   useInstitution: Signal<boolean>;
 }
 
 const IMF_BOUNTY_MARKET_ID = "PdLcZARORc";
 const BANK_BOUNTY_MARKET_ID = "tqQIAgd6EZ";
 const RISK_BOUNTY_MARKET_ID = "QEytQ5ch0P";
+const OFFSHORE_BOUNTY_MARKET_ID = "CAQchupgyN"; // New Offshore Market ID
 
 const INSTITUTION_MARKETS: {
   [key: string]: { id: string; name: string; description: string };
@@ -60,6 +61,11 @@ const INSTITUTION_MARKETS: {
     id: RISK_BOUNTY_MARKET_ID,
     name: "RISK",
     description: "Awards loan as bounty on the RISK Payment Portal.",
+  },
+  OFFSHORE: {
+    id: OFFSHORE_BOUNTY_MARKET_ID,
+    name: "OFFSHORE",
+    description: "Awards loan as bounty on the OFFSHORE market.",
   },
 };
 
@@ -238,7 +244,9 @@ export default function Institutions(props: InstitutionsProps): JSX.Element {
     }
   }, [useInstitution.value]);
 
-  const handleInstitutionSelect = (selected: "BANK" | "IMF" | "RISK") => {
+  const handleInstitutionSelect = (
+    selected: "BANK" | "IMF" | "RISK" | "OFFSHORE",
+  ) => {
     institution.value = selected;
     selectedCommentId.value = null;
     awardBountyMessage.value = null;
@@ -509,7 +517,9 @@ Risk Free 🦝RISK Fee Guarantee™️
                 type="button"
                 key={key}
                 onClick={() =>
-                  handleInstitutionSelect(key as "BANK" | "IMF" | "RISK")}
+                  handleInstitutionSelect(
+                    key as "BANK" | "IMF" | "RISK" | "OFFSHORE",
+                  )}
                 class={`flex-1 p-2 rounded-md font-semibold text-sm transition-colors duration-200 min-w-[100px] ${
                   institution.value === key
                     ? "bg-blue-600 text-white"

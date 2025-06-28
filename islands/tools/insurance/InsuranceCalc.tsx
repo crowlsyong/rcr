@@ -55,7 +55,9 @@ export default function InsuranceCalc() {
   const cooldownMessage = useSignal("");
 
   const useInstitution = useSignal(false);
-  const institution = useSignal<"BANK" | "IMF" | "RISK" | null>(null);
+  const institution = useSignal<"BANK" | "IMF" | "RISK" | "OFFSHORE" | null>(
+    null,
+  );
 
   useEffect(() => {
     let timeoutId: number;

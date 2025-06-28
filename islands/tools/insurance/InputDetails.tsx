@@ -1,5 +1,4 @@
 // islands/tools/insurance/InputDetails.tsx
-
 import { Signal, useSignal } from "@preact/signals";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { JSX } from "preact";
@@ -47,7 +46,7 @@ interface InputDetailsProps {
   setDurationFee: (value: number) => void;
 }
 
-const coverageFees: { [key: number]: number } = {
+const COVERAGE_FEES: { [key: number]: number } = {
   25: 0.02,
   50: 0.05,
   75: 0.08,
@@ -184,12 +183,12 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
         isBorrowerUsernameValid.value = true;
       }
     } catch (err) {
-      scoreData.value = null;
       borrowerUsernameError.value = `Network/fetch error: ${
         typeof err === "object" && err !== null && "message" in err
           ? (err as { message: string }).message
           : String(err)
       }`;
+      scoreData.value = null;
       isBorrowerUsernameValid.value = false;
       setriskBaseFee(0);
       setInsuranceFee(null);
@@ -297,7 +296,7 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
       return;
     }
 
-    const coverageFee = coverageFees[selectedCoverage.value];
+    const coverageFee = COVERAGE_FEES[selectedCoverage.value];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const dueDate = new Date(loanDueDate.value + "T00:00:00");

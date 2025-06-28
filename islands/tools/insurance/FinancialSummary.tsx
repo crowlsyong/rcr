@@ -25,7 +25,7 @@ interface FinancialSummaryProps {
   borrowerCreditScore: number;
 }
 
-const coverageFeesStatic: { [key: number]: number } = {
+const COVERAGE_FEES_STATIC: { [key: number]: number } = {
   25: 0.02,
   50: 0.05,
   75: 0.08,
@@ -80,12 +80,12 @@ export default function FinancialSummary(
     ? `C${selectedCoverage.value}`
     : "N/A";
   const coveragePercentage = selectedCoverage.value !== null
-    ? (coverageFeesStatic[selectedCoverage.value] * 100).toFixed(0)
+    ? (COVERAGE_FEES_STATIC[selectedCoverage.value] * 100).toFixed(0)
     : "N/A";
   const coverageManaAmount = selectedCoverage.value !== null &&
       currentLoanAmount > 0
     ? Math.round(
-      coverageFeesStatic[selectedCoverage.value] * currentLoanAmount,
+      COVERAGE_FEES_STATIC[selectedCoverage.value] * currentLoanAmount,
     )
     : 0;
   const coverageValueDisplay = coverageManaAmount > 0
