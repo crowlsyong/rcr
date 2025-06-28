@@ -17,9 +17,9 @@ import {
 } from "./score_calculation_logic.ts";
 import { ManaPaymentTransaction } from "./manifold_types.ts";
 
-const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2";
-const INSURANCE_MARKET_ID = "QEytQ5ch0P";
-const CONTACT_USERNAME = "crowlsyong";
+export const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2";
+export const INSURANCE_MARKET_ID = "QEytQ5ch0P";
+export const CONTACT_USERNAME = "crowlsyong";
 const INSTITUTION_MARKETS = {
   IMF: { id: "PdLcZARORc", name: "IMF" },
   BANK: { id: "tqQIAgd6EZ", name: "BANK" },
@@ -68,10 +68,16 @@ export interface TransactionExecutionResult {
   success: boolean;
   message?: string; // Made optional
   error?: string;
-  loanTransactionId?: string;
-  insuranceTransactionId?: string;
-  receiptCommentId?: string;
-  marketUrl?: string;
+  loanTransactionId?: string; // Tx ID for the loan disbursement
+  insuranceTransactionId?: string; // Tx ID for the insurance fee payment
+  receiptCommentId?: string; // ID of the posted receipt comment
+  marketUrl?: string; // URL of the market where the receipt was posted
+
+  // NEW: Dry run specific fields
+  dryRunMode?: boolean;
+  dryRunLoanTxId?: string; // Placeholder for simulated loan Tx ID
+  dryRunInsuranceTxId?: string; // Placeholder for simulated insurance Tx ID
+  // dryRunReceiptContent is intentionally omitted (undefined) as per user request
 }
 
 // --- Helper Functions ---
@@ -256,6 +262,89 @@ Risk Free 🦝RISK Fee Guarantee™️
 🦝RISK: Recovery Loan Insurance Kiosk`;
 }
 
+// New function for credit card specific receipt
+export function generateCreditCardReceiptMessage(
+  details: {
+    insuranceTxId: string;
+    coverage: number;
+    lenderUsername: string;
+    borrowerUsername: string;
+    loanAmount: number;
+    loanDueDate: string;
+    riskBaseFee: number;
+    durationFee: number;
+    finalInsuranceFee: number;
+    discountApplied: boolean;
+    policyEndDate: string;
+  },
+  includeFullDetails: boolean,
+): string {
+  const coverageFees: { [key: number]: number } = {
+    25: 0.02,
+    50: 0.05,
+    75: 0.08,
+    100: 0.12,
+  };
+  const formattedCoverageFee = `${coverageFees[details.coverage] * 100}%`;
+  const discountLine = details.discountApplied
+    ? "\nDiscount Code Applied: 25%"
+    : "";
+
+  const formattedRiskBaseFee = (details.riskBaseFee * 100).toFixed(2);
+
+  let receiptContent = `# 🦝RISK Credit Card Insurance Receipt
+
+### Summary
+
+Transaction ID (Insurance Fee): ${details.insuranceTxId}
+
+Coverage: C${details.coverage}
+
+Lender: @${details.lenderUsername}
+
+Borrower: @${details.borrowerUsername}
+
+Original Loan Amount (from Credit Card): Ṁ${details.loanAmount}
+
+Date of Policy Start: ${new Date().toISOString().split("T")[0]}
+
+Loan Due Date: ${details.loanDueDate}
+
+Policy Ends: ${details.policyEndDate}
+
+### Fees
+
+Base Fee (risk multiplier): ${formattedRiskBaseFee}%
+
+Coverage Fee: ${formattedCoverageFee}
+
+Duration Fee: Ṁ${details.durationFee}
+
+${discountLine}
+
+Total Fee (to RISK): Ṁ${Math.round(details.finalInsuranceFee)}`;
+
+  if (includeFullDetails) {
+    receiptContent += `
+
+### Terms
+
+By using this service, you agree to The Fine Print at the very bottom of our dashboard. This policy is for a credit card loan. 60% refund may be available if borrower repays on time and in full to the credit provider. No refund if borrower defaults, but insurance will cover the policy amount.
+
+---
+
+Have questions or need to activate coverage? Message @${CONTACT_USERNAME} and we’ll walk you through it.
+
+
+Risk Free 🦝RISK Fee Guarantee™️
+
+
+🦝RISK: Recovery Loan Insurance Kiosk`;
+  }
+
+  return receiptContent;
+}
+
 // --- Main Exported Functions ---
 
 export async function calculateInsuranceDetails(
@@ -350,19 +439,37 @@ export async function executeInsuranceTransaction(
     discountApplied: boolean;
     lenderFee: number;
     managramMessage?: string;
-    institution?: "IMF" | "BANK" | "RISK" | "OFFSHORE"; // Added Offshore
+    institution?: "IMF" | "BANK" | "RISK" | "OFFSHORE";
     commentId?: string;
+    dryRun: boolean; // NEW: dryRun parameter
   },
 ): Promise<TransactionExecutionResult> {
   const roundedInsuranceFee = Math.round(params.finalFee);
-  // Use ternary for direct const assignment
   const targetMarketId: string = params.institution
     ? INSTITUTION_MARKETS[params.institution].id
     : INSURANCE_MARKET_ID;
 
+  if (params.dryRun) { // NEW: Dry Run Logic
+    const simulatedLoanTxId = `simulated-loan-TXN-ID-${
+      Date.now().toString().slice(-6)
+    }`;
+    const simulatedInsuranceTxId = `simulated-ins-TXN-ID-${
+      Date.now().toString().slice(-6)
+    }`;
+    return {
+      success: true,
+      message: "Dry run successful. No transactions were executed.",
+      dryRunMode: true,
+      dryRunLoanTxId: simulatedLoanTxId,
+      dryRunInsuranceTxId: simulatedInsuranceTxId,
+      // receiptCommentId and marketUrl are omitted (undefined) as per user request
+    };
+  }
+
+  // --- Original Live Transaction Logic Below ---
   let loanBountyResult: {
     success: boolean;
-    data: ManaPaymentTransaction | null; // Corrected 'any' to specific type
+    data: ManaPaymentTransaction | null;
     error: string | null;
   };
 
@@ -403,7 +510,6 @@ export async function executeInsuranceTransaction(
       error: `Failed to process loan transaction: ${loanBountyResult.error}`,
     };
   }
-  // Now loanTxId can be const as it's assigned unconditionally after this check
   const loanTxId = loanBountyResult.data.id;
 
   const insuranceBountyResult = await addBounty(
@@ -421,6 +527,7 @@ export async function executeInsuranceTransaction(
   const insuranceTxId =
     (insuranceBountyResult.data as ManaPaymentTransaction).id;
 
+  // For live transactions, always generate the full receipt message including terms
   const receiptMessage = generateReceiptMessage({
     loanTxId,
     insuranceTxId,

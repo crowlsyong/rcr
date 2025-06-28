@@ -4,6 +4,7 @@ import {
   calculateInsuranceDetails,
   executeInsuranceTransaction,
   InsuranceCalculationResult,
+  TransactionExecutionResult, // NEW: Import TransactionExecutionResult
 } from "../../../utils/api/insurance_calculator_logic.ts";
 
 function handleError(message: string, status: number): Response {
@@ -13,7 +14,10 @@ function handleError(message: string, status: number): Response {
   });
 }
 
-export const handler: Handlers<InsuranceCalculationResult | null> = {
+// NOTE: The GET handler remains unchanged as it's purely for calculation.
+export const handler: Handlers<
+  InsuranceCalculationResult | TransactionExecutionResult | null
+> = {
   async GET(req) {
     const url = new URL(req.url);
     const params = url.searchParams;
@@ -97,10 +101,15 @@ export const handler: Handlers<InsuranceCalculationResult | null> = {
       managramMessage,
       institution,
       commentId,
+      dryRun = false, // NEW: Extract dryRun from body, default to false
     } = body;
 
-    if (!apiKey) {
-      return handleError("API key is required for POST requests", 401);
+    // API Key is only strictly required for non-dryRun requests
+    if (!apiKey && !dryRun) {
+      return handleError(
+        "API key is required for non-dryRun POST requests",
+        401,
+      );
     }
     if (
       !borrowerUsername || !lenderUsername || !loanAmount || !coverage ||
@@ -108,12 +117,16 @@ export const handler: Handlers<InsuranceCalculationResult | null> = {
     ) {
       return handleError("Missing required parameters in POST body", 400);
     }
-    if (institution && !["IMF", "BANK", "RISK"].includes(institution)) {
+    // Only validate institution/commentId if not in dryRun mode or if institution is actually provided
+    if (
+      !dryRun && institution &&
+      !["IMF", "BANK", "RISK", "OFFSHORE"].includes(institution)
+    ) { // Added OFFSHORE as valid
       return handleError("Invalid institution specified", 400);
     }
-    if (institution && !commentId) {
+    if (!dryRun && institution && !commentId) {
       return handleError(
-        "Comment ID is required for institutional funding",
+        "Comment ID is required for institutional funding in non-dryRun mode",
         400,
       );
     }
@@ -156,6 +169,7 @@ export const handler: Handlers<InsuranceCalculationResult | null> = {
         managramMessage,
         institution,
         commentId,
+        dryRun, // NEW: Pass the dryRun flag
       });
 
       if (!executionResult.success) {
