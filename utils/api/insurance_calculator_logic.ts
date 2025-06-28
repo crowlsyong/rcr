@@ -4,8 +4,8 @@ import {
   fetchLoanTransactions,
   fetchManaAndRecentRank,
   fetchTransactionCount,
-  fetchUserData, // KEEP this import (for username-based full profile)
-  fetchUserDataLiteById, // FIXED: Add fetchUserDataLiteById import (for ID-based lite profile)
+  fetchUserData,
+  fetchUserDataLiteById, // Keep this import
   fetchUserPortfolio,
   postComment,
   sendManagram,
@@ -87,7 +87,6 @@ export interface TransactionExecutionResult {
   discountMessage?: string;
 }
 
-// fetchUserIdentity now correctly handles resolution using either username or userId
 async function fetchUserIdentity(
   identifier: { username?: string; userId?: string },
 ): Promise<{
@@ -95,47 +94,42 @@ async function fetchUserIdentity(
   fetchSuccess: boolean;
   userDeleted: boolean;
 }> {
-  console.log("DEBUG: fetchUserIdentity called with:", identifier);
-
+  console.log("DEBUG: fetchUserIdentity called with:", identifier); // Keep for general debugging
   if (identifier.username) {
-    // If username is provided, prioritize fetching by username (gives full profile directly)
     const result = await fetchUserData(identifier.username);
-    console.log("DEBUG: fetchUserIdentity - fetched by username result:", result);
+    console.log("DEBUG: fetchUserIdentity - fetched by username result:", result); // Keep
     return result;
   } else if (identifier.userId) {
-    // If only userId is provided, first get lite profile to resolve username, then full profile
     const liteResult = await fetchUserDataLiteById(identifier.userId);
-    console.log("DEBUG: fetchUserIdentity - fetched lite by userId result:", liteResult);
+    console.log("DEBUG: fetchUserIdentity - fetched lite by userId result:", liteResult); // Keep
 
     if (liteResult.fetchSuccess && liteResult.userData?.username) {
-      // If username successfully resolved from lite endpoint, fetch the full profile
       const fullProfileResult = await fetchUserData(
         liteResult.userData.username,
       );
-      console.log("DEBUG: fetchUserIdentity - fetched full profile from resolved username:", fullProfileResult);
+      console.log("DEBUG: fetchUserIdentity - fetched full profile from resolved username:", fullProfileResult); // Keep
       return fullProfileResult;
     } else {
       console.log(
         `DEBUG: fetchUserIdentity - Failed to resolve username from userId '${identifier.userId}' via lite endpoint.`,
-      );
-      // Return null data if lite fetch fails or doesn't provide a username
+      ); // Keep
       return { userData: null, fetchSuccess: false, userDeleted: false };
     }
   }
 
-  console.log("DEBUG: fetchUserIdentity returning null (no valid identifier provided).");
+  console.log("DEBUG: fetchUserIdentity returning null (no valid identifier provided)."); // Keep
   return { userData: null, fetchSuccess: false, userDeleted: false };
 }
 
 async function getUserScoreProfile(
   identifier: { username?: string; userId?: string },
 ): Promise<UserScoreProfile> {
-  console.log("DEBUG: getUserScoreProfile called with:", identifier);
+  console.log("DEBUG: getUserScoreProfile called with:", identifier); // Keep
   const identifierString = identifier.username || identifier.userId;
   if (!identifierString) {
     console.log(
       "DEBUG: getUserScoreProfile returning early (no identifier string).",
-    );
+    ); // Keep
     return {
       username: "",
       userId: "",
@@ -153,12 +147,12 @@ async function getUserScoreProfile(
   console.log(
     "DEBUG: getUserScoreProfile - fetchUserIdentity returned:",
     { userData, fetchSuccess, userDeleted },
-  );
+  ); // Keep
 
   if (!fetchSuccess || !userData) {
     console.log(
       `DEBUG: getUserScoreProfile - User '${identifierString}' not found or deleted (fetchSuccess: ${fetchSuccess}, userDeleted: ${userDeleted}).`,
-    );
+    ); // Keep
     return {
       username: userData?.username || identifier.username || "",
       userId: userData?.id || identifier.userId || "",
@@ -175,14 +169,14 @@ async function getUserScoreProfile(
 
   console.log(
     `DEBUG: getUserScoreProfile - Processing user: ID=${userId}, Username=${username}.`,
-  );
+  ); // Keep
 
   if (!username) {
     console.warn(
       `DEBUG: getUserScoreProfile: No username found for user ID '${userId}' after fetch. Cannot fetch transaction count. Returning profile with default high risk.`,
-    );
+    ); // Keep
     return {
-      username: userData.username, // This should have been set if fetch was successful
+      username: userData.username,
       userId: userData.id,
       creditScore: 0,
       riskBaseFee: 1.60,
@@ -195,7 +189,7 @@ async function getUserScoreProfile(
   try {
     const createdTime = userData.createdTime ?? Date.now();
     const ageDays = (Date.now() - createdTime) / 86_400_000;
-    console.log(`DEBUG: getUserScoreProfile - ageDays: ${ageDays}`);
+    console.log(`DEBUG: getUserScoreProfile - ageDays: ${ageDays}`); // Keep
 
     const [
       portfolioFetch,
@@ -209,10 +203,10 @@ async function getUserScoreProfile(
       fetchLoanTransactions(userId),
     ]);
 
-    console.log(
-      "DEBUG: getUserScoreProfile - API fetches results:",
-      { portfolioFetch, rankData, transactionData, loanData },
-    );
+    // console.log( // REMOVED: Excessive logging of entire API fetches results
+    //   "DEBUG: getUserScoreProfile - API fetches results:",
+    //   { portfolioFetch, rankData, transactionData, loanData },
+    // );
 
     if (!portfolioFetch.success || !portfolioFetch.portfolio) {
       throw new Error(
@@ -225,7 +219,7 @@ async function getUserScoreProfile(
 
     console.log(
       "DEBUG: getUserScoreProfile - Data for MMR calculation:",
-      {
+      { // Keep this focused log for MMR inputs
         balance: portfolioFetch.portfolio.balance,
         calculatedProfit: portfolioFetch.portfolio.investmentValue +
           portfolioFetch.portfolio.balance -
@@ -262,7 +256,7 @@ async function getUserScoreProfile(
     console.log(
       "DEBUG: getUserScoreProfile - Final score profile:",
       { username: userData.username, userId: userData.id, creditScore, riskBaseFee },
-    );
+    ); // Keep this focused final log
 
     return {
       username: userData.username,
@@ -281,7 +275,7 @@ async function getUserScoreProfile(
           ? (innerError as { message: string }).message
           : String(innerError)
       }. Returning profile with default high risk.`,
-    );
+    ); // Keep for critical errors
     return {
       username: username,
       userId: userId,
