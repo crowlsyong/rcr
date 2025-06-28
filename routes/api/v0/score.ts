@@ -1,3 +1,4 @@
+// routes/api/v0/score.ts
 import {
   fetchLoanTransactions,
   fetchManaAndRecentRank,

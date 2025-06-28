@@ -1,4 +1,4 @@
-// routes/api/_middleware.ts
+// routes/api/v0/_middleware.ts
 import { FreshContext } from "$fresh/server.ts";
 
 const CORS_HEADERS = {

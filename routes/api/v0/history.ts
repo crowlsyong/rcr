@@ -1,5 +1,5 @@
 /// <reference lib="deno.unstable" />
-// routes/api/history.ts
+// routes/api/v0/history.ts
 
 import { Handlers } from "$fresh/server.ts";
 import db from "../../../database/db.ts"; // Import the KV database instance

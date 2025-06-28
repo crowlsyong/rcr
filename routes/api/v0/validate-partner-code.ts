@@ -1,4 +1,4 @@
-// routes/api/validate-partner-code.ts
+// routes/api/v0/validate-partner-code.ts
 
 import { Handlers } from "$fresh/server.ts";
 
