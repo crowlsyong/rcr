@@ -5,18 +5,17 @@ import {
   generateCreditCardReceiptMessage,
   INSURANCE_MARKET_ID,
 } from "../../../utils/api/insurance_calculator_logic.ts";
-import {
-  addBounty,
-  postComment,
-} from "../../../utils/api/manifold_api_service.ts";
+import { addBounty, postComment } from "../../../utils/api/manifold_api_service.ts";
 import { ManaPaymentTransaction } from "../../../utils/api/manifold_types.ts";
 
 interface CreditInsuranceRequestBody {
   creditcard: boolean;
   policy: "C25" | "C50" | "C75" | "C100";
   apikey: string;
-  lenderUsername: string;
-  borrowerUsername: string;
+  lenderUsername?: string;
+  lenderId?: string;
+  borrowerUsername?: string;
+  borrowerId?: string;
   amount: number;
   discountcode?: string;
   loanDue: number; // Unix timestamp
@@ -26,8 +25,8 @@ interface CreditInsuranceRequestBody {
 interface CreditInsuranceResponse {
   insuranceActivated: boolean;
   covered: number;
-  totalFee: number; // This is the fee AFTER discount
-  totalFeeBeforeDiscount?: number; // NEW: Fee before discount
+  totalFee: number;
+  totalFeeBeforeDiscount?: number;
   baseFee: number;
   coverageFee: number;
   durationFee: number;
@@ -72,7 +71,9 @@ export const handler: Handlers<CreditInsuranceResponse | null> = {
       policy,
       apikey,
       lenderUsername,
+      lenderId,
       borrowerUsername,
+      borrowerId,
       amount,
       discountcode,
       loanDue, // Unix timestamp
@@ -86,21 +87,55 @@ export const handler: Handlers<CreditInsuranceResponse | null> = {
     if (!apikey && !dryRun) { // API key is not required for dryRun requests
       return handleError("API key is required for non-dryRun requests.", 401);
     }
-    if (
-      !lenderUsername || !borrowerUsername || !amount || !policy || !loanDue
-    ) {
+
+    // --- Validation: Mutually exclusive username/userId and presence check ---
+    let actualBorrowerUsername: string | undefined;
+    let actualBorrowerId: string | undefined;
+    let actualLenderUsername: string | undefined;
+    let actualLenderId: string | undefined;
+
+    if (borrowerUsername && borrowerId) {
       return handleError(
-        "Missing required parameters: lenderUsername, borrowerUsername, amount, policy, loanDue",
+        "Please provide either 'borrowerUsername' or 'borrowerId', but not both.",
         400,
       );
+    } else if (!borrowerUsername && !borrowerId) {
+      return handleError(
+        "Missing required parameter: 'borrowerUsername' or 'borrowerId'.",
+        400,
+      );
+    } else if (borrowerUsername) {
+      actualBorrowerUsername = borrowerUsername;
+    } else if (borrowerId) {
+      actualBorrowerId = borrowerId;
+    }
+
+    if (lenderUsername && lenderId) {
+      return handleError(
+        "Please provide either 'lenderUsername' or 'lenderId', but not both.",
+        400,
+      );
+    } else if (!lenderUsername && !lenderId) {
+      return handleError(
+        "Missing required parameter: 'lenderUsername' or 'lenderId'.",
+        400,
+      );
+    } else if (lenderUsername) {
+      actualLenderUsername = lenderUsername;
+    } else if (lenderId) {
+      actualLenderId = lenderId;
+    }
+    // --- END Validation ---
+
+    if (
+      !amount || !policy || !loanDue
+    ) {
+      return handleError("Missing required parameters: amount, policy, loanDue", 400);
     }
 
     const coverage = getCoverageValueFromPolicy(policy);
     if (coverage === null) {
-      return handleError(
-        "Invalid policy value. Must be C25, C50, C75, or C100.",
-        400,
-      );
+      return handleError("Invalid policy value. Must be C25, C50, C75, or C100.", 400);
     }
     if (amount <= 0) {
       return handleError("Loan amount must be greater than zero.", 400);
@@ -111,10 +146,7 @@ export const handler: Handlers<CreditInsuranceResponse | null> = {
     today.setHours(0, 0, 0, 0); // Normalize today to start of day
 
     if (isNaN(loanDueDate.getTime()) || loanDueDate <= today) {
-      return handleError(
-        "Loan due date must be a valid future date (Unix timestamp).",
-        400,
-      );
+      return handleError("Loan due date must be a valid future date (Unix timestamp).", 400);
     }
 
     // Convert loanDue date object back to YYYY-MM-DD string for calculation logic
@@ -123,8 +155,10 @@ export const handler: Handlers<CreditInsuranceResponse | null> = {
     try {
       // 2. Calculate Insurance Details
       const calcResult = await calculateInsuranceDetails({
-        borrowerUsername,
-        lenderUsername,
+        borrowerUsername: actualBorrowerUsername,
+        borrowerId: actualBorrowerId,
+        lenderUsername: actualLenderUsername,
+        lenderId: actualLenderId,
         loanAmount: amount,
         coverage,
         dueDate: loanDueDateString,
@@ -132,24 +166,14 @@ export const handler: Handlers<CreditInsuranceResponse | null> = {
         lenderFee: 0, // No lender fee for the loan itself in this flow
       });
 
-      if (
-        !calcResult.success || !calcResult.feeDetails ||
-        !calcResult.borrowerProfile
-      ) {
+      if (!calcResult.success || !calcResult.feeDetails || !calcResult.borrowerProfile || !calcResult.lenderProfile) {
         return handleError(
           calcResult.error || "Failed to calculate insurance details.",
           500,
         );
       }
 
-      const {
-        finalFee,
-        riskFee,
-        coverageFee,
-        durationFee,
-        discountApplied,
-        totalInitialFee,
-      } = // NEW: Extracted totalInitialFee
+      const { finalFee, riskFee, coverageFee, durationFee, discountApplied, totalInitialFee } =
         calcResult.feeDetails;
 
       const roundedInsuranceFee = Math.round(finalFee);
@@ -161,14 +185,16 @@ export const handler: Handlers<CreditInsuranceResponse | null> = {
 
       let insuranceActivated = false;
       let insuranceTxId: string | null = null;
-      let receiptMessage: string = "";
       let receiptStatus: string = "";
-      let dryRunInsuranceTxId: string | undefined = undefined;
+      let _dryRunInsuranceTxId: string | undefined = undefined;
+
+      // dryRunReceiptContent is now part of the CreditInsuranceResponse interface
+      // and will only be assigned in the live transaction path.
+      // For dryRun, it will remain `undefined` as requested.
 
       if (dryRun) {
         insuranceActivated = false;
-        dryRunInsuranceTxId = "simulated-TXN-ID-" +
-          Date.now().toString().slice(-6);
+        _dryRunInsuranceTxId = "simulated-TXN-ID-" + Date.now().toString().slice(-6);
         receiptStatus = "no receipt in dryRun mode";
       } else {
         // 3. Process Actual Insurance Payment
@@ -181,24 +207,21 @@ export const handler: Handlers<CreditInsuranceResponse | null> = {
 
         if (insuranceBountyResult.success && insuranceBountyResult.data) {
           insuranceActivated = true;
-          insuranceTxId =
-            (insuranceBountyResult.data as ManaPaymentTransaction).id;
+          insuranceTxId = (insuranceBountyResult.data as ManaPaymentTransaction).id;
         } else {
           return handleError(
-            `Failed to pay insurance fee: ${
-              insuranceBountyResult.error || "Unknown error"
-            }`,
+            `Failed to pay insurance fee: ${insuranceBountyResult.error || "Unknown error"}`,
             500,
           );
         }
 
         // 4. Generate Receipt Message and Post It (always generate full for live)
-        receiptMessage = generateCreditCardReceiptMessage(
+        const receiptMessage = generateCreditCardReceiptMessage(
           {
             insuranceTxId: insuranceTxId,
             coverage,
-            lenderUsername,
-            borrowerUsername,
+            lenderUsername: calcResult.lenderProfile.username,
+            borrowerUsername: calcResult.borrowerProfile.username,
             loanAmount: amount,
             loanDueDate: loanDueDateString,
             riskBaseFee: calcResult.borrowerProfile.riskBaseFee,
@@ -222,8 +245,7 @@ export const handler: Handlers<CreditInsuranceResponse | null> = {
           console.warn(
             `Credit insurance payment successful but failed to post receipt comment: ${postCommentResult.error}`,
           );
-          receiptStatus =
-            "Payment successful, but receipt could not be posted.";
+          receiptStatus = "Payment successful, but receipt could not be posted.";
         }
       }
 
@@ -232,7 +254,7 @@ export const handler: Handlers<CreditInsuranceResponse | null> = {
         insuranceActivated,
         covered: coveredAmount,
         totalFee: roundedInsuranceFee,
-        totalFeeBeforeDiscount: Math.round(totalInitialFee), // NEW: Add before discount fee
+        totalFeeBeforeDiscount: Math.round(totalInitialFee),
         baseFee: Math.round(riskFee),
         coverageFee: Math.round(coverageFee),
         durationFee: Math.round(durationFee),
@@ -247,7 +269,7 @@ export const handler: Handlers<CreditInsuranceResponse | null> = {
 
       if (dryRun) {
         responseBody.dryRunMode = true;
-        responseBody.dryRunInsuranceTxId = dryRunInsuranceTxId;
+        responseBody.dryRunInsuranceTxId = _dryRunInsuranceTxId;
       }
 
       return new Response(JSON.stringify(responseBody), {

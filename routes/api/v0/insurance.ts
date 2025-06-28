@@ -4,7 +4,7 @@ import {
   calculateInsuranceDetails,
   executeInsuranceTransaction,
   InsuranceCalculationResult,
-  TransactionExecutionResult, // NEW: Import TransactionExecutionResult
+  TransactionExecutionResult,
 } from "../../../utils/api/insurance_calculator_logic.ts";
 
 function handleError(message: string, status: number): Response {
@@ -15,15 +15,15 @@ function handleError(message: string, status: number): Response {
 }
 
 // NOTE: The GET handler remains unchanged as it's purely for calculation.
-export const handler: Handlers<
-  InsuranceCalculationResult | TransactionExecutionResult | null
-> = {
+// It will continue to use usernames as it's typically for UI-driven lookups.
+export const handler: Handlers<InsuranceCalculationResult | TransactionExecutionResult | null> = {
   async GET(req) {
     const url = new URL(req.url);
     const params = url.searchParams;
 
-    const borrowerUsername = params.get("borrowerUsername");
-    const lenderUsername = params.get("lenderUsername");
+    const borrowerUsername = params.get("borrowerUsername") || undefined;
+    const lenderUsername = params.get("lenderUsername") || undefined;
+
     const loanAmountStr = params.get("loanAmount");
     const coverageStr = params.get("coverage");
     const dueDate = params.get("dueDate");
@@ -92,7 +92,9 @@ export const handler: Handlers<
     const {
       apiKey,
       borrowerUsername,
+      borrowerId,
       lenderUsername,
+      lenderId,
       loanAmount,
       coverage,
       dueDate,
@@ -101,27 +103,58 @@ export const handler: Handlers<
       managramMessage,
       institution,
       commentId,
-      dryRun = false, // NEW: Extract dryRun from body, default to false
+      dryRun = false,
     } = body;
+
+    // --- Validation: Mutually exclusive username/userId and presence check ---
+    let actualBorrowerUsername: string | undefined;
+    let actualBorrowerId: string | undefined;
+    let actualLenderUsername: string | undefined;
+    let actualLenderId: string | undefined;
+
+    if (borrowerUsername && borrowerId) {
+      return handleError(
+        "Please provide either 'borrowerUsername' or 'borrowerId', but not both.",
+        400,
+      );
+    } else if (!borrowerUsername && !borrowerId) {
+      return handleError(
+        "Missing required parameter: 'borrowerUsername' or 'borrowerId'.",
+        400,
+      );
+    } else if (borrowerUsername) {
+      actualBorrowerUsername = borrowerUsername;
+    } else if (borrowerId) {
+      actualBorrowerId = borrowerId;
+    }
+
+    if (lenderUsername && lenderId) {
+      return handleError(
+        "Please provide either 'lenderUsername' or 'lenderId', but not both.",
+        400,
+      );
+    } else if (!lenderUsername && !lenderId) {
+      return handleError(
+        "Missing required parameter: 'lenderUsername' or 'lenderId'.",
+        400,
+      );
+    } else if (lenderUsername) {
+      actualLenderUsername = lenderUsername;
+    } else if (lenderId) {
+      actualLenderId = lenderId;
+    }
+    // --- END Validation ---
 
     // API Key is only strictly required for non-dryRun requests
     if (!apiKey && !dryRun) {
-      return handleError(
-        "API key is required for non-dryRun POST requests",
-        401,
-      );
+      return handleError("API key is required for non-dryRun POST requests", 401);
     }
     if (
-      !borrowerUsername || !lenderUsername || !loanAmount || !coverage ||
-      !dueDate
+      !loanAmount || !coverage || !dueDate
     ) {
-      return handleError("Missing required parameters in POST body", 400);
+      return handleError("Missing required parameters in POST body (loanAmount, coverage, dueDate)", 400);
     }
-    // Only validate institution/commentId if not in dryRun mode or if institution is actually provided
-    if (
-      !dryRun && institution &&
-      !["IMF", "BANK", "RISK", "OFFSHORE"].includes(institution)
-    ) { // Added OFFSHORE as valid
+    if (!dryRun && institution && !["IMF", "BANK", "RISK", "OFFSHORE"].includes(institution)) {
       return handleError("Invalid institution specified", 400);
     }
     if (!dryRun && institution && !commentId) {
@@ -134,8 +167,10 @@ export const handler: Handlers<
     try {
       // Recalculate on the server to ensure data integrity
       const calcResult = await calculateInsuranceDetails({
-        borrowerUsername,
-        lenderUsername,
+        borrowerUsername: actualBorrowerUsername,
+        borrowerId: actualBorrowerId,
+        lenderUsername: actualLenderUsername,
+        lenderId: actualLenderId,
         loanAmount,
         coverage,
         dueDate,
@@ -145,7 +180,7 @@ export const handler: Handlers<
 
       if (
         !calcResult.success || !calcResult.feeDetails ||
-        !calcResult.borrowerProfile
+        !calcResult.borrowerProfile || !calcResult.lenderProfile
       ) {
         return handleError(
           calcResult.error ||
@@ -154,22 +189,37 @@ export const handler: Handlers<
         );
       }
 
+      const finalBorrowerUsername = calcResult.borrowerProfile.username;
+      const finalBorrowerId = calcResult.borrowerProfile.userId;
+      const finalLenderUsername = calcResult.lenderProfile.username;
+
       const executionResult = await executeInsuranceTransaction(apiKey, {
-        borrowerUserId: calcResult.borrowerProfile.userId,
-        borrowerUsername,
-        lenderUsername,
+        borrowerUserId: finalBorrowerId,
+        borrowerUsername: finalBorrowerUsername,
+        lenderUsername: finalLenderUsername,
         loanAmount,
         coverage,
         dueDate,
         finalFee: calcResult.feeDetails.finalFee,
-        riskBaseFee: calcResult.borrowerProfile.riskBaseFee,
-        durationFee: calcResult.feeDetails.durationFee,
-        discountApplied: calcResult.feeDetails.discountApplied,
-        lenderFee: calcResult.lenderFeeMana || 0,
+        riskBaseFee: calcResult.borrowerProfile.riskBaseFee, // Needed for receipt
+        durationFee: calcResult.feeDetails.durationFee, // Needed for receipt
+        discountApplied: calcResult.feeDetails.discountApplied, // Needed for receipt
+        lenderFee: calcResult.lenderFeeMana || 0, // Needed for managram message
         managramMessage,
         institution,
         commentId,
-        dryRun, // NEW: Pass the dryRun flag
+        dryRun,
+        // The following are the *output* values which are passed explicitly
+        // to populate TransactionExecutionResult's response. No duplication here.
+        totalFee: Math.round(calcResult.feeDetails.finalFee),
+        totalFeeBeforeDiscount: Math.round(calcResult.feeDetails.totalInitialFee),
+        baseFee: Math.round(calcResult.feeDetails.riskFee),
+        coverageFee: Math.round(calcResult.feeDetails.coverageFee),
+        // durationFee: Math.round(calcResult.feeDetails.durationFee), // REMOVED THIS DUPLICATE LINE
+        discountCodeSuccessful: calcResult.feeDetails.discountApplied,
+        discountMessage: calcResult.feeDetails.discountApplied
+          ? "25% off applied to order"
+          : "No discount applied",
       });
 
       if (!executionResult.success) {

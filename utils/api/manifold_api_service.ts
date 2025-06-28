@@ -7,6 +7,7 @@ import {
   MarketData,
   UserPortfolio,
 } from "./manifold_types.ts";
+import { BetPayload, ManifoldBetResponse } from "./manifold_types.ts";
 
 const MANIFOLD_API_BASE_URL = "https://api.manifold.markets/v0";
 
@@ -146,6 +147,7 @@ export async function postComment(
   );
 }
 
+// fetchUserData expects a string username
 export async function fetchUserData(
   username: string,
 ): Promise<{
@@ -199,6 +201,73 @@ export async function fetchUserData(
       }`,
     );
     return { userData: null, fetchSuccess: false, userDeleted };
+  }
+}
+
+// fetchUserDataLiteById expects a string userId
+export async function fetchUserDataLiteById(
+  userId: string,
+): Promise<{
+  userData: { id: string; username: string; avatarUrl: string | null } | null;
+  fetchSuccess: boolean;
+}> {
+  const { response, success, error } = await fetchWithRetries(
+    `${MANIFOLD_API_BASE_URL}/user/by-id/${userId}/lite`,
+  );
+
+  if (!success || !response) {
+    console.warn(
+      `fetchUserDataLiteById: Failed for userId '${userId}' after retries. Error: ${
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : String(error)
+      }`,
+    );
+    return { userData: null, fetchSuccess: false };
+  }
+
+  if (response.status === 404) {
+    console.info(`fetchUserDataLiteById: User with ID '${userId}' not found (404).`);
+    return { userData: null, fetchSuccess: false };
+  }
+
+  if (!response.ok) {
+    console.warn(
+      `fetchUserDataLiteById: Received non-OK status ${response.status} for userId '${userId}' after retries.`,
+    );
+    return { userData: null, fetchSuccess: false };
+  }
+
+  try {
+    const userDataLite = await response.json();
+    // Ensure the response structure is as expected and has the critical username field
+    if (
+      userDataLite && typeof userDataLite.id === "string" &&
+      typeof userDataLite.username === "string"
+    ) {
+      return {
+        userData: {
+          id: userDataLite.id,
+          username: userDataLite.username,
+          avatarUrl: userDataLite.avatarUrl || null,
+        },
+        fetchSuccess: true,
+      };
+    }
+    console.warn(
+      `fetchUserDataLiteById: Malformed lite user data for ID '${userId}'. Missing ID or username.`,
+    );
+    return { userData: null, fetchSuccess: false }; // Malformed lite data
+  } catch (jsonError) {
+    console.error(
+      `fetchUserDataLiteById: Error parsing JSON for userId '${userId}': ${
+        typeof jsonError === "object" && jsonError !== null &&
+          "message" in jsonError
+          ? (jsonError as { message: string }).message
+          : String(jsonError)
+      }`,
+    );
+    return { userData: null, fetchSuccess: false };
   }
 }
 
@@ -420,16 +489,16 @@ export async function getMarketDataBySlug(
 
 export async function getCommentsForContract(
   contractId: string,
-  userId?: string, // Added optional userId parameter
+  userId?: string,
 ): Promise<
   { success: boolean; data: ManifoldComment[] | null; error: string | null }
 > {
   let url = `${MANIFOLD_API_BASE_URL}/comments?contractId=${contractId}`;
   if (userId) {
-    url += `&userId=${userId}`; // Add userId to URL if provided
+    url += `&userId=${userId}`;
   }
-  url += `&order=newest`; // Order by newest by default for relevance
-  url += `&limit=1000`; // Ensure we get enough comments
+  url += `&order=newest`;
+  url += `&limit=1000`;
 
   const { response, success, error } = await fetchWithRetries(url);
 
@@ -472,5 +541,73 @@ export async function getCommentsForContract(
       }`,
     );
     return { success: false, data: null, error: "Error parsing comments data" };
+  }
+}
+
+export async function placeManifoldBet(
+  apiKey: string,
+  betData: BetPayload,
+): Promise<{ data: ManifoldBetResponse | null; error: string | null }> {
+  try {
+    const response = await fetch("https://api.manifold.markets/v0/bet", {
+      method: "POST",
+      headers: {
+        "Authorization": `Key ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(betData),
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      return {
+        data: null,
+        error: responseData.message || "Manifold API returned an error",
+      };
+    }
+    return { data: responseData as ManifoldBetResponse, error: null };
+  } catch (e) {
+    return {
+      data: null,
+      error: `Network/fetch error: ${
+        typeof e === "object" && e !== null && "message" in e
+          ? (e as { message: string }).message
+          : String(e)
+      }`,
+    };
+  }
+}
+
+export async function cancelManifoldBet(apiKey: string, betId: string) {
+  try {
+    const response = await fetch(
+      `https://api.manifold.markets/v0/bet/cancel/${betId}`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Key ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error(
+        `Failed to cancel bet ${betId}: ${JSON.stringify(errorData)}`,
+      );
+      return { success: false, error: errorData.message || "Failed to cancel" };
+    }
+    return { success: true, error: null };
+  } catch (e) {
+    console.error(`Network error canceling bet ${betId}: ${String(e)}`);
+    return {
+      success: false,
+      error: `Network error: ${
+        typeof e === "object" && e !== null && "message" in e
+          ? (e as { message: string }).message
+          : String(e)
+      }`,
+    };
   }
 }

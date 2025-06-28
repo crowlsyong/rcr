@@ -4,7 +4,8 @@ import {
   fetchLoanTransactions,
   fetchManaAndRecentRank,
   fetchTransactionCount,
-  fetchUserData,
+  fetchUserData, // KEEP this import (for username-based full profile)
+  fetchUserDataLiteById, // FIXED: Add fetchUserDataLiteById import (for ID-based lite profile)
   fetchUserPortfolio,
   postComment,
   sendManagram,
@@ -15,19 +16,19 @@ import {
   computeMMR,
   mapToCreditScore,
 } from "./score_calculation_logic.ts";
-import { ManaPaymentTransaction } from "./manifold_types.ts";
+import { ManaPaymentTransaction, ManifoldUser } from "./manifold_types.ts";
 
 export const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2";
 export const INSURANCE_MARKET_ID = "QEytQ5ch0P";
 export const CONTACT_USERNAME = "crowlsyong";
-const INSTITUTION_MARKETS = {
+const INSTITUTION_MARKETS: {
+  [key: string]: { id: string; name: string };
+} = {
   IMF: { id: "PdLcZARORc", name: "IMF" },
   BANK: { id: "tqQIAgd6EZ", name: "BANK" },
   RISK: { id: "QEytQ5ch0P", name: "RISK" },
-  OFFSHORE: { id: "CAQchupgyN", name: "OFFSHORE" }, // Added Offshore market
+  OFFSHORE: { id: "CAQchupgyN", name: "OFFSHORE" },
 };
-
-// --- Interfaces for structured data ---
 
 export interface InsuranceFeeDetails {
   riskFee: number;
@@ -66,31 +67,101 @@ export interface InsuranceCalculationResult {
 
 export interface TransactionExecutionResult {
   success: boolean;
-  message?: string; // Made optional
+  message?: string;
   error?: string;
-  loanTransactionId?: string; // Tx ID for the loan disbursement
-  insuranceTransactionId?: string; // Tx ID for the insurance fee payment
-  receiptCommentId?: string; // ID of the posted receipt comment
-  marketUrl?: string; // URL of the market where the receipt was posted
+  loanTransactionId?: string;
+  insuranceTransactionId?: string;
+  receiptCommentId?: string;
+  marketUrl?: string;
 
-  // NEW: Dry run specific fields
   dryRunMode?: boolean;
-  dryRunLoanTxId?: string; // Placeholder for simulated loan Tx ID
-  dryRunInsuranceTxId?: string; // Placeholder for simulated insurance Tx ID
-  // dryRunReceiptContent is intentionally omitted (undefined) as per user request
+  dryRunLoanTxId?: string;
+  dryRunInsuranceTxId?: string;
+
+  totalFee?: number;
+  totalFeeBeforeDiscount?: number;
+  baseFee?: number;
+  coverageFee?: number;
+  durationFee?: number;
+  discountCodeSuccessful?: boolean;
+  discountMessage?: string;
 }
 
-// --- Helper Functions ---
+// fetchUserIdentity now correctly handles resolution using either username or userId
+async function fetchUserIdentity(
+  identifier: { username?: string; userId?: string },
+): Promise<{
+  userData: ManifoldUser | null;
+  fetchSuccess: boolean;
+  userDeleted: boolean;
+}> {
+  console.log("DEBUG: fetchUserIdentity called with:", identifier);
+
+  if (identifier.username) {
+    // If username is provided, prioritize fetching by username (gives full profile directly)
+    const result = await fetchUserData(identifier.username);
+    console.log("DEBUG: fetchUserIdentity - fetched by username result:", result);
+    return result;
+  } else if (identifier.userId) {
+    // If only userId is provided, first get lite profile to resolve username, then full profile
+    const liteResult = await fetchUserDataLiteById(identifier.userId);
+    console.log("DEBUG: fetchUserIdentity - fetched lite by userId result:", liteResult);
+
+    if (liteResult.fetchSuccess && liteResult.userData?.username) {
+      // If username successfully resolved from lite endpoint, fetch the full profile
+      const fullProfileResult = await fetchUserData(
+        liteResult.userData.username,
+      );
+      console.log("DEBUG: fetchUserIdentity - fetched full profile from resolved username:", fullProfileResult);
+      return fullProfileResult;
+    } else {
+      console.log(
+        `DEBUG: fetchUserIdentity - Failed to resolve username from userId '${identifier.userId}' via lite endpoint.`,
+      );
+      // Return null data if lite fetch fails or doesn't provide a username
+      return { userData: null, fetchSuccess: false, userDeleted: false };
+    }
+  }
+
+  console.log("DEBUG: fetchUserIdentity returning null (no valid identifier provided).");
+  return { userData: null, fetchSuccess: false, userDeleted: false };
+}
 
 async function getUserScoreProfile(
-  username: string,
+  identifier: { username?: string; userId?: string },
 ): Promise<UserScoreProfile> {
-  const { userData, fetchSuccess, userDeleted } = await fetchUserData(username);
+  console.log("DEBUG: getUserScoreProfile called with:", identifier);
+  const identifierString = identifier.username || identifier.userId;
+  if (!identifierString) {
+    console.log(
+      "DEBUG: getUserScoreProfile returning early (no identifier string).",
+    );
+    return {
+      username: "",
+      userId: "",
+      creditScore: 0,
+      riskBaseFee: 1.60,
+      avatarUrl: null,
+      userExists: false,
+      userDeleted: false,
+    };
+  }
+
+  const { userData, fetchSuccess, userDeleted } = await fetchUserIdentity(
+    identifier,
+  );
+  console.log(
+    "DEBUG: getUserScoreProfile - fetchUserIdentity returned:",
+    { userData, fetchSuccess, userDeleted },
+  );
 
   if (!fetchSuccess || !userData) {
+    console.log(
+      `DEBUG: getUserScoreProfile - User '${identifierString}' not found or deleted (fetchSuccess: ${fetchSuccess}, userDeleted: ${userDeleted}).`,
+    );
     return {
-      username,
-      userId: "",
+      username: userData?.username || identifier.username || "",
+      userId: userData?.id || identifier.userId || "",
       creditScore: 0,
       riskBaseFee: 1.60,
       avatarUrl: null,
@@ -100,52 +171,127 @@ async function getUserScoreProfile(
   }
 
   const userId = userData.id;
-  const createdTime = userData.createdTime ?? Date.now();
-  const ageDays = (Date.now() - createdTime) / 86_400_000;
+  const username = userData.username;
 
-  const [
-    portfolioFetch,
-    rankData,
-    transactionData,
-    loanData,
-  ] = await Promise.all([
-    fetchUserPortfolio(userId),
-    fetchManaAndRecentRank(userId),
-    fetchTransactionCount(username),
-    fetchLoanTransactions(userId),
-  ]);
+  console.log(
+    `DEBUG: getUserScoreProfile - Processing user: ID=${userId}, Username=${username}.`,
+  );
 
-  if (!portfolioFetch.success || !portfolioFetch.portfolio) {
-    throw new Error(`Failed to fetch portfolio for '${username}'.`);
+  if (!username) {
+    console.warn(
+      `DEBUG: getUserScoreProfile: No username found for user ID '${userId}' after fetch. Cannot fetch transaction count. Returning profile with default high risk.`,
+    );
+    return {
+      username: userData.username, // This should have been set if fetch was successful
+      userId: userData.id,
+      creditScore: 0,
+      riskBaseFee: 1.60,
+      avatarUrl: userData.avatarUrl || null,
+      userExists: true,
+      userDeleted: !!userDeleted,
+    };
   }
 
-  const outstandingDebtImpact = calculateNetLoanBalance(
-    userId,
-    loanData.transactions,
-    MANIFOLD_USER_ID,
-  );
-  const calculatedProfit = portfolioFetch.portfolio.investmentValue +
-    portfolioFetch.portfolio.balance - portfolioFetch.portfolio.totalDeposits;
-  const rawMMR = computeMMR(
-    portfolioFetch.portfolio.balance,
-    calculatedProfit,
-    ageDays,
-    rankData.latestRank ?? 100,
-    transactionData.count,
-    outstandingDebtImpact,
-  );
-  const creditScore = mapToCreditScore(rawMMR);
-  const riskBaseFee = calculateriskBaseFee(creditScore);
+  try {
+    const createdTime = userData.createdTime ?? Date.now();
+    const ageDays = (Date.now() - createdTime) / 86_400_000;
+    console.log(`DEBUG: getUserScoreProfile - ageDays: ${ageDays}`);
 
-  return {
-    username: userData.username,
-    userId: userData.id,
-    creditScore,
-    riskBaseFee,
-    avatarUrl: userData.avatarUrl || null,
-    userExists: true,
-    userDeleted: !!userData.userDeleted,
-  };
+    const [
+      portfolioFetch,
+      rankData,
+      transactionData,
+      loanData,
+    ] = await Promise.all([
+      fetchUserPortfolio(userId),
+      fetchManaAndRecentRank(userId),
+      fetchTransactionCount(username),
+      fetchLoanTransactions(userId),
+    ]);
+
+    console.log(
+      "DEBUG: getUserScoreProfile - API fetches results:",
+      { portfolioFetch, rankData, transactionData, loanData },
+    );
+
+    if (!portfolioFetch.success || !portfolioFetch.portfolio) {
+      throw new Error(
+        `Failed to fetch portfolio for '${username}' (ID: ${userId}).`,
+      );
+    }
+    const safeLatestRank = rankData.latestRank ?? 100;
+    const safeTransactionCount = transactionData.count;
+    const safeLoanTransactions = loanData.transactions;
+
+    console.log(
+      "DEBUG: getUserScoreProfile - Data for MMR calculation:",
+      {
+        balance: portfolioFetch.portfolio.balance,
+        calculatedProfit: portfolioFetch.portfolio.investmentValue +
+          portfolioFetch.portfolio.balance -
+          portfolioFetch.portfolio.totalDeposits,
+        ageDays,
+        safeLatestRank,
+        safeTransactionCount,
+        outstandingDebtImpact: calculateNetLoanBalance(
+          userId,
+          safeLoanTransactions,
+          MANIFOLD_USER_ID,
+        ),
+      },
+    );
+
+    const outstandingDebtImpact = calculateNetLoanBalance(
+      userId,
+      safeLoanTransactions,
+      MANIFOLD_USER_ID,
+    );
+    const calculatedProfit = portfolioFetch.portfolio.investmentValue +
+      portfolioFetch.portfolio.balance - portfolioFetch.portfolio.totalDeposits;
+    const rawMMR = computeMMR(
+      portfolioFetch.portfolio.balance,
+      calculatedProfit,
+      ageDays,
+      safeLatestRank,
+      safeTransactionCount,
+      outstandingDebtImpact,
+    );
+    const creditScore = mapToCreditScore(rawMMR);
+    const riskBaseFee = calculateriskBaseFee(creditScore);
+
+    console.log(
+      "DEBUG: getUserScoreProfile - Final score profile:",
+      { username: userData.username, userId: userData.id, creditScore, riskBaseFee },
+    );
+
+    return {
+      username: userData.username,
+      userId: userData.id,
+      creditScore,
+      riskBaseFee,
+      avatarUrl: userData.avatarUrl || null,
+      userExists: true,
+      userDeleted: !!userData.userDeleted,
+    };
+  } catch (innerError) {
+    console.error(
+      `DEBUG: getUserScoreProfile - CRITICAL ERROR for '${username}' (ID: ${userId}): ${
+        typeof innerError === "object" && innerError !== null &&
+          "message" in innerError
+          ? (innerError as { message: string }).message
+          : String(innerError)
+      }. Returning profile with default high risk.`,
+    );
+    return {
+      username: username,
+      userId: userId,
+      creditScore: 0,
+      riskBaseFee: 1.60,
+      avatarUrl: userData.avatarUrl || null,
+      userExists: true,
+      userDeleted: !!userDeleted,
+    };
+  }
 }
 
 function calculateDurationFee(loanAmount: number, dueDate: string): number {
@@ -262,7 +408,6 @@ Risk Free 🦝RISK Fee Guarantee™️
 🦝RISK: Recovery Loan Insurance Kiosk`;
 }
 
-// New function for credit card specific receipt
 export function generateCreditCardReceiptMessage(
   details: {
     insuranceTxId: string;
@@ -329,7 +474,7 @@ Total Fee (to RISK): Ṁ${Math.round(details.finalInsuranceFee)}`;
 
 ### Terms
 
-By using this service, you agree to The Fine Print at the very bottom of our dashboard. This policy is for a credit card loan. 60% refund may be available if borrower repays on time and in full to the credit provider. No refund if borrower defaults, but insurance will cover the policy amount.
+By using this service, you adhere to The Fine Print at the bottom of our dashboard. This policy is for a credit card loan. A 60% refund may be available if the borrower repays on time and in full to the credit provider. No refund if the borrower defaults, but insurance will cover the policy amount.
 
 ---
 
@@ -345,12 +490,12 @@ Risk Free 🦝RISK Fee Guarantee™️
   return receiptContent;
 }
 
-// --- Main Exported Functions ---
-
 export async function calculateInsuranceDetails(
   params: {
-    borrowerUsername: string;
-    lenderUsername: string;
+    borrowerUsername?: string;
+    borrowerId?: string;
+    lenderUsername?: string;
+    lenderId?: string;
     loanAmount: number;
     coverage: number;
     dueDate: string;
@@ -359,23 +504,43 @@ export async function calculateInsuranceDetails(
   },
 ): Promise<InsuranceCalculationResult> {
   try {
-    const [borrowerProfile, lenderData] = await Promise.all([
-      getUserScoreProfile(params.borrowerUsername),
-      fetchUserData(params.lenderUsername),
+    const [borrowerProfile, lenderFetchResult] = await Promise.all([
+      getUserScoreProfile({
+        username: params.borrowerUsername,
+        userId: params.borrowerId,
+      }),
+      fetchUserIdentity({
+        username: params.lenderUsername,
+        userId: params.lenderId,
+      }),
     ]);
 
     if (!borrowerProfile.userExists || borrowerProfile.userDeleted) {
-      return { success: false, error: "Borrower not found or is deleted" };
+      return {
+        success: false,
+        error:
+          `Borrower '${
+            borrowerProfile.username || borrowerProfile.userId
+          }' not found or is deleted.`,
+      };
     }
     if (
-      !lenderData.fetchSuccess || !lenderData.userData || lenderData.userDeleted
+      !lenderFetchResult.fetchSuccess || !lenderFetchResult.userData ||
+      lenderFetchResult.userDeleted
     ) {
-      return { success: false, error: "Lender not found or is deleted" };
+      return {
+        success: false,
+        error:
+          `Lender '${
+            lenderFetchResult.userData?.username || lenderFetchResult.userData?.id ||
+            params.lenderUsername || params.lenderId
+          }' not found or is deleted.`,
+      };
     }
 
     const lenderProfile = {
-      username: lenderData.userData.username,
-      userId: lenderData.userData.id,
+      username: lenderFetchResult.userData.username,
+      userId: lenderFetchResult.userData.id,
       userExists: true,
       userDeleted: false,
     };
@@ -401,8 +566,6 @@ export async function calculateInsuranceDetails(
 
     let lenderFeeMana = 0;
     if (params.lenderFee) {
-      // Assuming fee is percentage if < 100, otherwise flat mana.
-      // A more robust API would have separate params like `lenderFeePercent` and `lenderFeeMana`.
       lenderFeeMana = params.lenderFee < 100
         ? params.loanAmount * (params.lenderFee / 100)
         : params.lenderFee;
@@ -420,7 +583,7 @@ export async function calculateInsuranceDetails(
     };
   } catch (e) {
     const error = e as Error;
-    return { success: false, error: error.message };
+    return { success: false, error: `Calculation error: ${error.message}` };
   }
 }
 
@@ -441,7 +604,13 @@ export async function executeInsuranceTransaction(
     managramMessage?: string;
     institution?: "IMF" | "BANK" | "RISK" | "OFFSHORE";
     commentId?: string;
-    dryRun: boolean; // NEW: dryRun parameter
+    dryRun: boolean;
+    totalFee: number;
+    totalFeeBeforeDiscount: number;
+    baseFee: number;
+    coverageFee: number;
+    discountCodeSuccessful: boolean;
+    discountMessage: string;
   },
 ): Promise<TransactionExecutionResult> {
   const roundedInsuranceFee = Math.round(params.finalFee);
@@ -449,24 +618,25 @@ export async function executeInsuranceTransaction(
     ? INSTITUTION_MARKETS[params.institution].id
     : INSURANCE_MARKET_ID;
 
-  if (params.dryRun) { // NEW: Dry Run Logic
-    const simulatedLoanTxId = `simulated-loan-TXN-ID-${
-      Date.now().toString().slice(-6)
-    }`;
-    const simulatedInsuranceTxId = `simulated-ins-TXN-ID-${
-      Date.now().toString().slice(-6)
-    }`;
+  if (params.dryRun) {
+    const simulatedLoanTxId = `simulated-loan-TXN-ID-${Date.now().toString().slice(-6)}`;
+    const simulatedInsuranceTxId = `simulated-ins-TXN-ID-${Date.now().toString().slice(-6)}`;
     return {
       success: true,
       message: "Dry run successful. No transactions were executed.",
       dryRunMode: true,
       dryRunLoanTxId: simulatedLoanTxId,
       dryRunInsuranceTxId: simulatedInsuranceTxId,
-      // receiptCommentId and marketUrl are omitted (undefined) as per user request
+      totalFee: params.totalFee,
+      totalFeeBeforeDiscount: params.totalFeeBeforeDiscount,
+      baseFee: params.baseFee,
+      coverageFee: params.coverageFee,
+      durationFee: params.durationFee,
+      discountCodeSuccessful: params.discountCodeSuccessful,
+      discountMessage: params.discountMessage,
     };
   }
 
-  // --- Original Live Transaction Logic Below ---
   let loanBountyResult: {
     success: boolean;
     data: ManaPaymentTransaction | null;
@@ -527,7 +697,6 @@ export async function executeInsuranceTransaction(
   const insuranceTxId =
     (insuranceBountyResult.data as ManaPaymentTransaction).id;
 
-  // For live transactions, always generate the full receipt message including terms
   const receiptMessage = generateReceiptMessage({
     loanTxId,
     insuranceTxId,
@@ -560,5 +729,12 @@ export async function executeInsuranceTransaction(
     insuranceTransactionId: insuranceTxId,
     receiptCommentId: postCommentResult.data?.id,
     marketUrl: `https://manifold.markets/market/${targetMarketId}`,
+    totalFee: params.totalFee,
+    totalFeeBeforeDiscount: params.totalFeeBeforeDiscount,
+    baseFee: params.baseFee,
+    coverageFee: params.coverageFee,
+    durationFee: params.durationFee,
+    discountCodeSuccessful: params.discountCodeSuccessful,
+    discountMessage: params.discountMessage,
   };
 }
