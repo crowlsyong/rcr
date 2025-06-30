@@ -154,7 +154,7 @@ export default function MenuBar() {
           </div>
           {/* Footer content remains fixed at the bottom */}
           <div class="pt-10 text-xs w-full text-center text-[10px] text-gray-500 mt-auto">
-            <p>v2.1.7 | this is a 3rd party app</p>
+            <p>v2.1.8 | this is a 3rd party app</p>
             <hr class="my-2 border-gray-600" />
             <div class="flex items-center justify-center gap-1.5">
               <span>built by</span>
