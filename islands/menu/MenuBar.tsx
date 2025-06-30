@@ -1,6 +1,6 @@
 // islands/menu/MenuBar.tsx
 import { useSignal } from "@preact/signals";
-import { useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks"; // Import useState
 import { ComponentType } from "preact";
 import { JSX } from "preact/jsx-runtime";
 import { TbExternalLink } from "@preact-icons/tb";
@@ -15,6 +15,7 @@ const ExternalLinkIcon = TbExternalLink as ComponentType<
 export default function MenuBar() {
   const isMenuOpen = useSignal(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [activePath, setActivePath] = useState(""); // NEW STATE: To store the current URL path
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -27,6 +28,23 @@ export default function MenuBar() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
+  }, []);
+
+  useEffect(() => {
+    // Set activePath on initial load
+    if (typeof window !== "undefined") {
+      setActivePath(globalThis.location.pathname);
+
+      // Optional: Listen for history changes if your app uses client-side routing
+      // This is less critical for Fresh's default page-based routing but good practice.
+      const handlePopState = () => {
+        setActivePath(globalThis.location.pathname);
+      };
+      globalThis.addEventListener("popstate", handlePopState);
+      return () => {
+        globalThis.removeEventListener("popstate", handlePopState);
+      };
+    }
   }, []);
 
   return (
@@ -113,21 +131,25 @@ export default function MenuBar() {
                     title="✨ Apps"
                     links={data.appsLinks}
                     isMenuOpen={isMenuOpen.value}
+                    activePath={activePath} // Pass activePath
                   />
                   <MenuDropdown
                     title="🏦 Banks"
                     links={data.banksLinks}
                     isMenuOpen={isMenuOpen.value}
+                    activePath={activePath} // Pass activePath
                   />
                   <MenuDropdown
                     title="🌐 Globular Conglomerate"
                     links={data.globularConglomerateLinks}
                     isMenuOpen={isMenuOpen.value}
+                    activePath={activePath} // Pass activePath
                   />
                   <MenuDropdown
                     title="🛠️ Services"
                     links={data.servicesLinks}
                     isMenuOpen={isMenuOpen.value}
+                    activePath={activePath} // Pass activePath
                   />
                 </>
               )}

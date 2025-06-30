@@ -1,6 +1,4 @@
 // islands/menu/MenuDropdown.tsx
-// islands/menu/MenuDropdown.tsx
-
 import { useSignal } from "@preact/signals";
 import { ComponentType } from "preact";
 import { JSX } from "preact/jsx-runtime";
@@ -25,9 +23,10 @@ interface Link {
 interface MenuDropdownProps {
   title: string;
   links: Link[];
-  isMenuOpen: boolean;
+  isMenuOpen: boolean; // Keep this prop for tabIndex and overall visibility control
   isSubmenu?: boolean;
   parentIsSpecialNestedDropdown?: boolean;
+  activePath: string;
 }
 
 export default function MenuDropdown(
@@ -37,16 +36,41 @@ export default function MenuDropdown(
     isMenuOpen,
     isSubmenu = false,
     parentIsSpecialNestedDropdown = false,
+    activePath,
   }: MenuDropdownProps,
 ) {
   const isOpen = useSignal(false);
-  const currentPath = useSignal("");
+
+  const containsActivePath = (linksToCheck: Link[]): boolean => {
+    return linksToCheck.some((link) => {
+      const normalizedLinkUrl = link.url && link.url !== "/"
+        ? link.url.replace(/\/$/, "")
+        : link.url;
+      const normalizedActivePath = activePath && activePath !== "/"
+        ? activePath.replace(/\/$/, "")
+        : activePath;
+
+      if (normalizedLinkUrl === normalizedActivePath) {
+        return true;
+      }
+      if (link.children && link.children.length > 0) {
+        return containsActivePath(link.children);
+      }
+      return false;
+    });
+  };
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      currentPath.value = globalThis.location.pathname;
+    // Determine if this dropdown should be open based on activePath, regardless of main menu state.
+    // If it contains the active path, set isOpen to true.
+    if (containsActivePath(links)) {
+      isOpen.value = true;
+    } else {
+      // Optionally close if active path is no longer within its children.
+      // This is important for navigating between active links within the same top-level dropdown.
+      isOpen.value = false;
     }
-  }, []);
+  }, [activePath]); // Re-evaluate whenever the activePath changes
 
   const shouldApplyOuterIndentation = isSubmenu &&
     !parentIsSpecialNestedDropdown;
@@ -88,10 +112,19 @@ export default function MenuDropdown(
                   isMenuOpen={isMenuOpen}
                   isSubmenu
                   parentIsSpecialNestedDropdown={link.isSpecialNestedDropdown}
+                  activePath={activePath}
                 />
               );
             } else {
-              const isActive = currentPath.value === link.url;
+              const normalizedLinkUrl = link.url && link.url !== "/"
+                ? link.url.replace(/\/$/, "")
+                : link.url;
+              const normalizedActivePath = activePath && activePath !== "/"
+                ? activePath.replace(/\/$/, "")
+                : activePath;
+
+              const isActive = normalizedLinkUrl === normalizedActivePath;
+
               const linkClasses =
                 `relative flex items-center justify-start border border-[#334155] text-white py-2 px-3 rounded-md transition-colors duration-200 text-sm ${
                   isActive ? "bg-blue-700" : "hover:bg-[#1E293B]"
