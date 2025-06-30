@@ -72,7 +72,7 @@ const globularConglomerateLinks: Link[] = [
         children: [
           {
             label: "Q2 Report",
-            url: "/reports/2025/q2/RISK_2025_Q2_REPORT.pdf",
+            url: "/reports/RISK_2025_Q2_REPORT.pdf",
             targetBlank: true,
           },
         ],
