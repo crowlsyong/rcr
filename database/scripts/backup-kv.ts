@@ -1,4 +1,4 @@
-// scripts/backup-kv.ts
+// database/scripts/backup-kv.ts
 /// <reference lib="deno.unstable" />
 
 // This script will manually load environment variables from .env if present.

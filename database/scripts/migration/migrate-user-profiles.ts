@@ -1,4 +1,4 @@
-// database/scripts/migrate-user-profiles.ts
+// database/scripts/migration/migrate-user-profiles.ts
 /// <reference lib="deno.unstable" />
 
 async function loadEnv() {

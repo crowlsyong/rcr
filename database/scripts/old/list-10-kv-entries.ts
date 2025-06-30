@@ -1,8 +1,8 @@
-// scripts/list-kv-entries.ts
+// database/scripts/old/list-kv-entries.ts
 /// <reference lib="deno.unstable" />
 
 // Adjust the path to your db.ts file if this script is not in 'scripts/'
-import db from "../db.ts";
+import db from "../../db.ts";
 
 /**
  * Lists the first N entries from the Deno KV database.

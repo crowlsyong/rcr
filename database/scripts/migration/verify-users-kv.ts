@@ -1,4 +1,4 @@
-// database/scripts/verify-users-kv.ts
+// database/scripts/migration/verify-users-kv.ts
 /// <reference lib="deno.unstable" />
 
 async function loadEnv() {
