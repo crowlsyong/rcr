@@ -1,4 +1,4 @@
-// islands/chart/TimeRangeSelector.tsx
+// islands/tools/chart/TimeRangeSelector.tsx
 interface TimeRangeSelectorProps {
   selectedRange: string;
   onRangeChange: (range: string) => void;

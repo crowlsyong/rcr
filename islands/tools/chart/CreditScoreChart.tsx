@@ -1,4 +1,4 @@
-// islands/chart/CreditScoreChart.tsx
+// islands/tools/chart/CreditScoreChart.tsx
 import { useEffect, useRef } from "preact/hooks";
 import { Chart, registerables } from "chart.js";
 import "npm:chartjs-adapter-date-fns";

@@ -14,7 +14,7 @@ export default function ChartButton({ username }: ChartButtonProps) {
   const handleClick = () => {
     // Navigate to the user's chart page
     // Corrected template literal syntax here
-    globalThis.location.href = `/chart/${username}`;
+    globalThis.location.href = `/chart?q=${encodeURIComponent(username)}`;
   };
 
   return (

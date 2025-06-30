@@ -1,6 +1,6 @@
 // islands/admin/AdjustmentForm.tsx
 import { useSignal } from "@preact/signals";
-import { useState, useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { OverrideEvent } from "../../routes/api/v0/credit-score/index.ts";
 import ScoreResult from "../tools/creditscore/ScoreResult.tsx";
 
@@ -82,7 +82,9 @@ export default function AdjustmentForm() {
 
     setIsLoadingUser(true);
     try {
-      const res = await fetch(`/api/v0/credit-score?username=${targetUsername}`);
+      const res = await fetch(
+        `/api/v0/credit-score?username=${targetUsername}`,
+      );
       const data = await res.json();
 
       if (!res.ok || !data.userExists) {
@@ -238,7 +240,10 @@ export default function AdjustmentForm() {
 
   const handleDelete = async (eventToDelete: OverrideEvent) => {
     if (!confirmDelete[eventToDelete.timestamp]) {
-      setConfirmDelete((prev) => ({ ...prev, [eventToDelete.timestamp]: true }));
+      setConfirmDelete((prev) => ({
+        ...prev,
+        [eventToDelete.timestamp]: true,
+      }));
       setTimeout(() => {
         setConfirmDelete((prev) => ({
           ...prev,
@@ -319,8 +324,9 @@ export default function AdjustmentForm() {
           type="text"
           placeholder="e.g., Tumbles"
           value={usernameInput.value}
-          onInput={(e) =>
-            (usernameInput.value = (e.target as HTMLInputElement).value)}
+          onInput={(
+            e,
+          ) => (usernameInput.value = (e.target as HTMLInputElement).value)}
           class="w-full p-2 bg-gray-800 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           disabled={isLoadingUser}
         />
@@ -403,7 +409,8 @@ export default function AdjustmentForm() {
                           <td class="px-4 py-2 whitespace-nowrap text-right text-xxs font-medium">
                             <button
                               type="button"
-                              onClick={() => handleModify(event)}
+                              onClick={() =>
+                                handleModify(event)}
                               class="text-blue-500 hover:text-blue-700 mr-2"
                               disabled={isSubmitting}
                             >
@@ -411,7 +418,8 @@ export default function AdjustmentForm() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => handleDelete(event)}
+                              onClick={() =>
+                                handleDelete(event)}
                               class={`font-medium py-1 px-2 rounded ${
                                 confirmDelete[event.timestamp]
                                   ? "bg-red-600 text-white"
@@ -563,7 +571,9 @@ export default function AdjustmentForm() {
               {submitMessage && (
                 <p
                   class={`mt-4 text-center text-sm ${
-                    submitMessageType === "error" ? "text-red-400" : "text-green-400"
+                    submitMessageType === "error"
+                      ? "text-red-400"
+                      : "text-green-400"
                   }`}
                 >
                   {submitMessage}
