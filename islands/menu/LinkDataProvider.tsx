@@ -72,8 +72,8 @@ const globularConglomerateLinks: Link[] = [
         children: [
           {
             label: "Q2 Report",
-            url: "/reports/2025/q2/RISK_2025_Q2_REPORT.pdf", // DIRECT STATIC PDF URL
-            targetBlank: true, // Open PDF in new tab
+            url: "/reports/2025/q2/RISK_2025_Q2_REPORT.pdf",
+            targetBlank: true,
           },
         ],
       },
@@ -96,6 +96,11 @@ const servicesLinks: Link[] = [
     label: "🏦 Payment Portal",
     url: "https://manifold.markets/crowlsyong/risk-payment-portal",
     targetBlank: true,
+  },
+  {
+    label: "📖 API Docs", // NEW: API Docs link
+    url: "/docs/api",
+    targetBlank: false,
   },
 ];
 
