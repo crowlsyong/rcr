@@ -1,7 +1,6 @@
 import { type PageProps } from "$fresh/server.ts";
-import MenuBar from "../islands/menu/MenuBar.tsx"; // Import the MenuBar
+import MenuBar from "../islands/menu/MenuBar.tsx";
 
-//Conditionally show MenuBar based on the route
 export default function App({ Component, url }: PageProps) {
   const showMenuBar = !url.pathname.startsWith("/iframe") &&
     !url.pathname.startsWith("/old-ext") &&
@@ -30,9 +29,8 @@ export default function App({ Component, url }: PageProps) {
           property="og:description"
           content="Check a Manifold Markets user's credit risk instantly."
         />
-        <meta property="og:image" content="/risk-logo-manifold-seo.png" />{" "}
-        {/* Optional if you have a social preview image */}
-        <meta property="og:url" content="https://risk.markets" />{" "}
+        <meta property="og:image" content="/risk-logo-manifold-seo.png" />
+        <meta property="og:url" content="https://risk.markets" />
         <meta property="og:type" content="website" />
 
         <meta name="twitter:card" content="summary_large_image" />
@@ -41,14 +39,12 @@ export default function App({ Component, url }: PageProps) {
           name="twitter:description"
           content="Analyze Manifold Markets' users in seconds. Credit risk scores."
         />
-        <meta name="twitter:image" content="/risk-logo-manifold-seo.png" />{" "}
-        {/* Optional */}
+        <meta name="twitter:image" content="/risk-logo-manifold-seo.png" />
 
         <link rel="canonical" href="https://risk.markets" />
         <link rel="stylesheet" href="/styles.css" />
       </head>
       <body>
-        {/* Conditionally render the MenuBar based on route */}
         {showMenuBar && <MenuBar />}
         <Component />
       </body>

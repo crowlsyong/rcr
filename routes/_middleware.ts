@@ -18,14 +18,10 @@ export async function handler(
   ctx.state.isAdmin = false;
   ctx.state.githubLogin = null;
 
-  // --- Bypass Auth for Localhost ---
   if (url.hostname === "localhost" && url.port === "8000") {
-    // For local development, grant admin access without authentication.
-    // In a production environment, this block should NOT be present.
     ctx.state.isAdmin = true;
-    ctx.state.githubLogin = "localhost_admin"; // Placeholder for local development
+    ctx.state.githubLogin = "localhost_admin";
   } else {
-    // --- Authentication Check and State Setting (only for non-localhost) ---
     const cookies = getCookies(req.headers);
     const adminSessionId = cookies["session"];
 
@@ -41,7 +37,6 @@ export async function handler(
         return resp;
       }
     }
-    // --- End Auth Check ---
   }
 
   const resp = await ctx.next();
@@ -65,13 +60,13 @@ export async function handler(
     scriptSrc: [
       "'self'",
       "https://manifold.markets",
-      "'unsafe-eval'", // Consider refining this if possible, it's a broad directive
-      "'unsafe-inline'", // Consider refining this if possible, it's a broad directive
+      "'unsafe-eval'",
+      "'unsafe-inline'",
     ],
     styleSrc: [
       "'self'",
       "https://manifold.markets",
-      "'unsafe-inline'", // Consider refining this if possible
+      "'unsafe-inline'",
     ],
     imgSrc: [
       "'self'",
@@ -80,7 +75,7 @@ export async function handler(
       "data:",
       "https://www.notion.so",
       "https://notion.site",
-      "https://atom-club-701.notion.site", // Specific Notion subdomain for images
+      "https://atom-club-701.notion.site",
     ],
     fontSrc: ["'self'", "https://manifold.markets"],
     connectSrc: [
@@ -89,19 +84,21 @@ export async function handler(
       "https://api.manifold.markets",
       "https://www.notion.so",
       "https://notion.site",
-      "https://atom-club-701.notion.site", // Specific Notion subdomain for connections
+      "https://atom-club-701.notion.site",
     ],
     frameSrc: [
       "'self'",
       "https://notion.site",
       "https://www.notion.so",
-      "https://atom-club-701.notion.site", // Specific Notion subdomain for iframes
+      "https://atom-club-701.notion.site",
+      "https://docs.google.com", // Added for Google Docs iframes
     ],
     childSrc: [
       "'self'",
       "https://notion.site",
       "https://www.notion.so",
-      "https://atom-club-701.notion.site", // Specific Notion subdomain for child frames (including iframes)
+      "https://atom-club-701.notion.site",
+      "https://docs.google.com", // Added for Google Docs iframes
     ],
   };
 
