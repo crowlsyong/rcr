@@ -1,6 +1,6 @@
 // islands/menu/MenuBar.tsx
 import { useSignal } from "@preact/signals";
-import { useEffect, useRef, useState } from "preact/hooks"; // Import useState
+import { useEffect, useRef, useState } from "preact/hooks";
 import { ComponentType } from "preact";
 import { JSX } from "preact/jsx-runtime";
 import { TbExternalLink } from "@preact-icons/tb";
@@ -15,7 +15,8 @@ const ExternalLinkIcon = TbExternalLink as ComponentType<
 export default function MenuBar() {
   const isMenuOpen = useSignal(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const [activePath, setActivePath] = useState(""); // NEW STATE: To store the current URL path
+  const scrollableContentRef = useRef<HTMLDivElement>(null);
+  const [activePath, setActivePath] = useState("");
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -31,12 +32,9 @@ export default function MenuBar() {
   }, []);
 
   useEffect(() => {
-    // Set activePath on initial load
     if (typeof window !== "undefined") {
       setActivePath(globalThis.location.pathname);
 
-      // Optional: Listen for history changes if your app uses client-side routing
-      // This is less critical for Fresh's default page-based routing but good practice.
       const handlePopState = () => {
         setActivePath(globalThis.location.pathname);
       };
@@ -123,7 +121,10 @@ export default function MenuBar() {
             />
           </div>
 
-          <div class="space-y-2 mt-10 flex-grow overflow-y-auto hide-scrollbar pb-10">
+          <div
+            ref={scrollableContentRef}
+            class="space-y-2 mt-10 flex-grow overflow-y-auto hide-scrollbar pb-10"
+          >
             <LinkDataProvider>
               {(data) => (
                 <>
@@ -131,25 +132,25 @@ export default function MenuBar() {
                     title="✨ Apps"
                     links={data.appsLinks}
                     isMenuOpen={isMenuOpen.value}
-                    activePath={activePath} // Pass activePath
+                    activePath={activePath}
                   />
                   <MenuDropdown
                     title="🏦 Banks"
                     links={data.banksLinks}
                     isMenuOpen={isMenuOpen.value}
-                    activePath={activePath} // Pass activePath
+                    activePath={activePath}
                   />
                   <MenuDropdown
                     title="🌐 Globular Conglomerate"
                     links={data.globularConglomerateLinks}
                     isMenuOpen={isMenuOpen.value}
-                    activePath={activePath} // Pass activePath
+                    activePath={activePath}
                   />
                   <MenuDropdown
                     title="🛠️ Services"
                     links={data.servicesLinks}
                     isMenuOpen={isMenuOpen.value}
-                    activePath={activePath} // Pass activePath
+                    activePath={activePath}
                   />
                 </>
               )}
@@ -170,6 +171,7 @@ export default function MenuBar() {
               </a>
             </div>
           </div>
+
           <div class="pt-10 text-xs w-full text-center text-[10px] text-gray-500 mt-auto">
             <p>v2.1.8 | this is a 3rd party app</p>
             <hr class="my-2 border-gray-600" />
