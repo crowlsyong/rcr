@@ -1,13 +1,15 @@
 // islands/admin/UserAdjustmentSearch.tsx
-import { useEffect, useState } from "preact/hooks"; // Removed useRef
+import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import { OverrideEvent, UserScoreOverview } from "./AdjustmentFormFields.tsx";
 import ScoreResult from "../tools/creditscore/ScoreResult.tsx";
+import ExistingOverridesTable from "./ExistingOverridesTable.tsx";
 
 interface UserAdjustmentSearchProps {
   debouncedUsername: string;
   onUserOverviewFetched: (user: UserScoreOverview | null) => void;
   isLoadingParent: boolean;
   refreshTrigger: number;
+  onTableRefreshNeeded: () => void; // <--- THIS IS THE CRUCIAL LINE IN THE INTERFACE
 }
 
 export default function UserAdjustmentSearch({
@@ -15,6 +17,7 @@ export default function UserAdjustmentSearch({
   onUserOverviewFetched,
   isLoadingParent,
   refreshTrigger,
+  onTableRefreshNeeded, // <--- THIS IS THE PROP BEING DESTRUCTURED
 }: UserAdjustmentSearchProps) {
   const [isLoadingUser, setIsLoadingUser] = useState(false);
   const [userOverview, setUserOverview] = useState<UserScoreOverview | null>(
@@ -22,20 +25,83 @@ export default function UserAdjustmentSearch({
   );
   const [userError, setUserError] = useState<string | null>(null);
 
-  const [confirmDelete, setConfirmDelete] = useState<Record<number, boolean>>(
-    {},
-  );
+  const hasMounted = useRef(false);
 
-  // REMOVED: hasMounted ref and the useEffect block for URL synchronization.
+  useEffect(() => {
+    if (hasMounted.current) {
+      if (typeof window !== "undefined") {
+        const url = new URL(globalThis.location.href);
+        if (debouncedUsername) {
+          url.searchParams.set("q", debouncedUsername);
+        } else {
+          url.searchParams.delete("q");
+        }
+        globalThis.history.replaceState(null, "", url.toString());
+      }
+    } else {
+      hasMounted.current = true;
+    }
+  }, [debouncedUsername]);
+
+  const fetchAndSetUserData = useCallback(async (targetUsername: string) => {
+    setUserOverview(null);
+    setUserError(null);
+    setIsLoadingUser(true);
+    console.log("[UserAdjustmentSearch] Fetching data for:", targetUsername);
+
+    try {
+      const res = await fetch(
+        `/api/v0/credit-score?username=${targetUsername}`,
+      );
+      const data = await res.json();
+
+      if (!res.ok || !data.userExists) {
+        const errorMessage = data.error || `User @${targetUsername} not found.`;
+        setUserError(errorMessage);
+        onUserOverviewFetched(null);
+        console.error(
+          "[UserAdjustmentSearch] Fetch failed:",
+          targetUsername,
+          errorMessage,
+        );
+        return;
+      }
+
+      const overview: UserScoreOverview = {
+        userExists: data.userExists,
+        fetchSuccess: data.fetchSuccess,
+        userId: data.userId,
+        username: data.username,
+        avatarUrl: data.avatarUrl,
+        creditScore: data.creditScore,
+        riskBaseFee: data.riskBaseFee,
+        userDeleted: data.userDeleted,
+        existingOverrideEvents: data.overrideEvents || [],
+      };
+      setUserOverview(overview);
+      onUserOverviewFetched(overview);
+      console.log("[UserAdjustmentSearch] User data fetched:", overview);
+    } catch (err) {
+      const errorMessage = `Error fetching user data: ${
+        typeof err === "object" && err !== null && "message" in err
+          ? (err as { message: string }).message
+          : String(err)
+      }`;
+      setUserError(errorMessage);
+      onUserOverviewFetched(null);
+      console.error("[UserAdjustmentSearch] Fetch error:", err);
+    } finally {
+      setIsLoadingUser(false);
+    }
+  }, [onUserOverviewFetched]);
 
   useEffect(() => {
     console.log(
-      "[UserAdjustmentSearch] Effect triggered. Debounced username:",
+      "[UserAdjustmentSearch] Data fetch effect triggered. Debounced username:",
       debouncedUsername,
       "Refresh Trigger:",
       refreshTrigger,
     );
-
     if (!debouncedUsername) {
       setUserOverview(null);
       setUserError(null);
@@ -43,116 +109,25 @@ export default function UserAdjustmentSearch({
       setIsLoadingUser(false);
       return;
     }
-
-    const fetchAndSetUserData = async (targetUsername: string) => {
-      setUserOverview(null);
-      setUserError(null);
-      setIsLoadingUser(true);
-      console.log("[UserAdjustmentSearch] Fetching data for:", targetUsername);
-
-      try {
-        const res = await fetch(
-          `/api/v0/credit-score?username=${targetUsername}`,
-        );
-        const data = await res.json();
-
-        if (!res.ok || !data.userExists) {
-          const errorMessage = data.error ||
-            `User @${targetUsername} not found.`;
-          setUserError(errorMessage);
-          onUserOverviewFetched(null);
-          console.error(
-            "[UserAdjustmentSearch] Fetch failed:",
-            targetUsername,
-            errorMessage,
-          );
-          return;
-        }
-
-        const overview: UserScoreOverview = {
-          userExists: data.userExists,
-          fetchSuccess: data.fetchSuccess,
-          userId: data.userId,
-          username: data.username,
-          avatarUrl: data.avatarUrl,
-          creditScore: data.creditScore,
-          riskBaseFee: data.riskBaseFee,
-          userDeleted: data.userDeleted,
-          existingOverrideEvents: data.overrideEvents || [],
-        };
-        setUserOverview(overview);
-        onUserOverviewFetched(overview);
-        console.log("[UserAdjustmentSearch] User data fetched:", overview);
-      } catch (err) {
-        const errorMessage = `Error fetching user data: ${
-          typeof err === "object" && err !== null && "message" in err
-            ? (err as { message: string }).message
-            : String(err)
-        }`;
-        setUserError(errorMessage);
-        onUserOverviewFetched(null);
-        console.error("[UserAdjustmentSearch] Fetch error:", err);
-      } finally {
-        setIsLoadingUser(false);
-      }
-    };
-
     fetchAndSetUserData(debouncedUsername);
-  }, [debouncedUsername, refreshTrigger, onUserOverviewFetched]);
+  }, [debouncedUsername, refreshTrigger, fetchAndSetUserData]);
 
-  const handleDelete = async (eventToDelete: OverrideEvent) => {
-    if (!userOverview) return;
+  const handleOverridesTableDeleteSuccess = useCallback(() => {
+    console.log(
+      "[UserAdjustmentSearch] Override deletion successful. Notifying parent to refresh.",
+    );
+    onTableRefreshNeeded();
+  }, [onTableRefreshNeeded]);
 
-    if (!confirmDelete[eventToDelete.timestamp]) {
-      setConfirmDelete((prev) => ({
-        ...prev,
-        [eventToDelete.timestamp]: true,
-      }));
-      setTimeout(() => {
-        setConfirmDelete((prev) => ({
-          ...prev,
-          [eventToDelete.timestamp]: false,
-        }));
-      }, 3000);
-      return;
-    }
-
-    console.log("[UserAdjustmentSearch] Deleting override:", eventToDelete);
-    try {
-      const response = await fetch("/api/v0/admin/delete-override", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: userOverview.userId,
-          timestamp: eventToDelete.timestamp,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || "Failed to delete adjustment.");
-      }
-      console.log("[UserAdjustmentSearch] Override deleted successfully.");
-      if (userOverview.username) {
-        onUserOverviewFetched({ ...userOverview });
-      }
-      setConfirmDelete({});
-    } catch (err) {
-      console.error(
-        `[UserAdjustmentSearch] Error deleting override: ${
-          typeof err === "object" && err !== null && "message" in err
-            ? (err as { message: string }).message
-            : String(err)
-        }`,
+  const handleOverridesTableModify = useCallback((event: OverrideEvent) => {
+    if (userOverview) {
+      onUserOverviewFetched(
+        { ...userOverview, modifyingEvent: event } as UserScoreOverview & {
+          modifyingEvent: OverrideEvent;
+        },
       );
     }
-  };
-
-  const formatTimestampToDate = (timestamp: number) => {
-    if (!timestamp) return "N/A";
-    return new Date(timestamp).toLocaleDateString();
-  };
+  }, [userOverview, onUserOverviewFetched]);
 
   return (
     <>
@@ -180,96 +155,14 @@ export default function UserAdjustmentSearch({
             />
           </div>
 
-          {userOverview.existingOverrideEvents.length > 0 && (
-            <div class="p-4 bg-gray-800 rounded-lg shadow-inner border border-gray-700">
-              <h4 class="text-md font-semibold text-white mb-4">
-                Existing Overrides:
-              </h4>
-              <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-700">
-                  <thead class="bg-gray-700">
-                    <tr>
-                      <th class="px-4 py-2 text-left text-xxs font-medium text-gray-300 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th class="px-4 py-2 text-left text-xxs font-medium text-gray-300 uppercase tracking-wider">
-                        Modifier
-                      </th>
-                      <th class="px-4 py-2 text-left text-xxs font-medium text-gray-300 uppercase tracking-wider">
-                        Notes
-                      </th>
-                      <th class="px-4 py-2 text-left text-xxs font-medium text-gray-300 uppercase tracking-wider">
-                        URL
-                      </th>
-                      <th class="px-4 py-2 text-center text-xxs font-medium text-gray-300 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-800">
-                    {userOverview.existingOverrideEvents.map((event) => (
-                      <tr key={event.timestamp} class="hover:bg-gray-700">
-                        <td class="px-4 py-2 text-xxs text-gray-200">
-                          {formatTimestampToDate(event.dateOfInfraction)}
-                        </td>
-                        <td class="px-4 py-2 text-xxs text-gray-200">
-                          {event.modifier > 0
-                            ? `+${event.modifier}`
-                            : event.modifier}
-                        </td>
-                        <td class="px-4 py-2 text-xxs text-gray-300 max-w-[200px] truncate">
-                          {event.description}
-                        </td>
-                        <td class="px-4 py-2 text-xxs text-blue-400 hover:underline">
-                          <a
-                            href={event.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Link
-                          </a>
-                        </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-right text-xxs font-medium">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              onUserOverviewFetched(
-                                {
-                                  ...userOverview,
-                                  modifyingEvent: event,
-                                } as UserScoreOverview & {
-                                  modifyingEvent: OverrideEvent;
-                                },
-                              );
-                            }}
-                            class="text-blue-500 hover:text-blue-700 mr-2"
-                            disabled={isLoadingParent}
-                          >
-                            Modify
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleDelete(event)}
-                            class={`font-medium py-1 px-2 rounded ${
-                              confirmDelete[event.timestamp]
-                                ? "bg-red-600 text-white"
-                                : "text-red-500 hover:text-red-700"
-                            }`}
-                            disabled={isLoadingParent}
-                          >
-                            {confirmDelete[event.timestamp]
-                              ? "Are you sure?"
-                              : "Delete"}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          <ExistingOverridesTable
+            overrideEvents={userOverview.existingOverrideEvents}
+            userId={userOverview.userId}
+            username={userOverview.username}
+            isLoadingParent={isLoadingParent}
+            onDeleteSuccess={handleOverridesTableDeleteSuccess}
+            onModify={handleOverridesTableModify}
+          />
         </>
       )}
     </>

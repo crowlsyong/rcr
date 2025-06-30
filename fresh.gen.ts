@@ -48,6 +48,7 @@ import * as $InfoHover from "./islands/InfoHover.tsx";
 import * as $PasswordGate from "./islands/PasswordGate.tsx";
 import * as $admin_AdjustmentForm from "./islands/admin/AdjustmentForm.tsx";
 import * as $admin_AdjustmentFormFields from "./islands/admin/AdjustmentFormFields.tsx";
+import * as $admin_ExistingOverridesTable from "./islands/admin/ExistingOverridesTable.tsx";
 import * as $admin_UserAdjustmentDisplay from "./islands/admin/UserAdjustmentDisplay.tsx";
 import * as $admin_UserAdjustmentSearch from "./islands/admin/UserAdjustmentSearch.tsx";
 import * as $buttons_Button from "./islands/buttons/Button.tsx";
@@ -165,6 +166,7 @@ const manifest = {
     "./islands/PasswordGate.tsx": $PasswordGate,
     "./islands/admin/AdjustmentForm.tsx": $admin_AdjustmentForm,
     "./islands/admin/AdjustmentFormFields.tsx": $admin_AdjustmentFormFields,
+    "./islands/admin/ExistingOverridesTable.tsx": $admin_ExistingOverridesTable,
     "./islands/admin/UserAdjustmentDisplay.tsx": $admin_UserAdjustmentDisplay,
     "./islands/admin/UserAdjustmentSearch.tsx": $admin_UserAdjustmentSearch,
     "./islands/buttons/Button.tsx": $buttons_Button,

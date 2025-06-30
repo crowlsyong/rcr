@@ -33,7 +33,6 @@ export default function AdjustmentForm() {
 
   const [refreshDisplayTrigger, setRefreshDisplayTrigger] = useState(0);
 
-  // NEW: Effect to manage URL search params based on debouncedSearchUsername
   useEffect(() => {
     if (typeof window !== "undefined") {
       const url = new URL(globalThis.location.href);
@@ -44,7 +43,7 @@ export default function AdjustmentForm() {
       }
       globalThis.history.replaceState(null, "", url.toString());
     }
-  }, [debouncedSearchUsername]); // This effect depends only on debouncedSearchUsername
+  }, [debouncedSearchUsername]);
 
   const handleDebouncedUsernameChange = useCallback((value: string) => {
     console.log(
@@ -152,6 +151,11 @@ export default function AdjustmentForm() {
     setRefreshDisplayTrigger((prev) => prev + 1);
   }, []);
 
+  const handleUserDisplayRefreshNeeded = useCallback(() => {
+    console.log("[AdjustmentForm] User display requested refresh.");
+    setRefreshDisplayTrigger((prev) => prev + 1);
+  }, []);
+
   const handleFormFieldError = useCallback((message: string) => {
     console.error("[AdjustmentForm] Form fields reported error:", message);
     setSubmitMessage(message);
@@ -174,6 +178,7 @@ export default function AdjustmentForm() {
             onUserOverviewFetched={handleUserOverviewFetched}
             isLoadingParent={isSubmitting}
             refreshTrigger={refreshDisplayTrigger}
+            onTableRefreshNeeded={handleUserDisplayRefreshNeeded} // THIS PROP IS NOW HERE
           />
         </div>
 
