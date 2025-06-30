@@ -5,7 +5,10 @@ import {
   generateCreditCardReceiptMessage,
   INSURANCE_MARKET_ID,
 } from "../../../utils/api/insurance_calculator_logic.ts";
-import { addBounty, postComment } from "../../../utils/api/manifold_api_service.ts";
+import {
+  addBounty,
+  postComment,
+} from "../../../utils/api/manifold_api_service.ts";
 import { ManaPaymentTransaction } from "../../../utils/api/manifold_types.ts";
 
 interface CreditInsuranceRequestBody {
@@ -130,12 +133,18 @@ export const handler: Handlers<CreditInsuranceResponse | null> = {
     if (
       !amount || !policy || !loanDue
     ) {
-      return handleError("Missing required parameters: amount, policy, loanDue", 400);
+      return handleError(
+        "Missing required parameters: amount, policy, loanDue",
+        400,
+      );
     }
 
     const coverage = getCoverageValueFromPolicy(policy);
     if (coverage === null) {
-      return handleError("Invalid policy value. Must be C25, C50, C75, or C100.", 400);
+      return handleError(
+        "Invalid policy value. Must be C25, C50, C75, or C100.",
+        400,
+      );
     }
     if (amount <= 0) {
       return handleError("Loan amount must be greater than zero.", 400);
@@ -146,7 +155,10 @@ export const handler: Handlers<CreditInsuranceResponse | null> = {
     today.setHours(0, 0, 0, 0); // Normalize today to start of day
 
     if (isNaN(loanDueDate.getTime()) || loanDueDate <= today) {
-      return handleError("Loan due date must be a valid future date (Unix timestamp).", 400);
+      return handleError(
+        "Loan due date must be a valid future date (Unix timestamp).",
+        400,
+      );
     }
 
     // Convert loanDue date object back to YYYY-MM-DD string for calculation logic
@@ -166,15 +178,24 @@ export const handler: Handlers<CreditInsuranceResponse | null> = {
         lenderFee: 0, // No lender fee for the loan itself in this flow
       });
 
-      if (!calcResult.success || !calcResult.feeDetails || !calcResult.borrowerProfile || !calcResult.lenderProfile) {
+      if (
+        !calcResult.success || !calcResult.feeDetails ||
+        !calcResult.borrowerProfile || !calcResult.lenderProfile
+      ) {
         return handleError(
           calcResult.error || "Failed to calculate insurance details.",
           500,
         );
       }
 
-      const { finalFee, riskFee, coverageFee, durationFee, discountApplied, totalInitialFee } =
-        calcResult.feeDetails;
+      const {
+        finalFee,
+        riskFee,
+        coverageFee,
+        durationFee,
+        discountApplied,
+        totalInitialFee,
+      } = calcResult.feeDetails;
 
       const roundedInsuranceFee = Math.round(finalFee);
       const policyEndDate = new Date(loanDueDate);
@@ -194,7 +215,8 @@ export const handler: Handlers<CreditInsuranceResponse | null> = {
 
       if (dryRun) {
         insuranceActivated = false;
-        _dryRunInsuranceTxId = "simulated-TXN-ID-" + Date.now().toString().slice(-6);
+        _dryRunInsuranceTxId = "simulated-TXN-ID-" +
+          Date.now().toString().slice(-6);
         receiptStatus = "no receipt in dryRun mode";
       } else {
         // 3. Process Actual Insurance Payment
@@ -207,10 +229,13 @@ export const handler: Handlers<CreditInsuranceResponse | null> = {
 
         if (insuranceBountyResult.success && insuranceBountyResult.data) {
           insuranceActivated = true;
-          insuranceTxId = (insuranceBountyResult.data as ManaPaymentTransaction).id;
+          insuranceTxId =
+            (insuranceBountyResult.data as ManaPaymentTransaction).id;
         } else {
           return handleError(
-            `Failed to pay insurance fee: ${insuranceBountyResult.error || "Unknown error"}`,
+            `Failed to pay insurance fee: ${
+              insuranceBountyResult.error || "Unknown error"
+            }`,
             500,
           );
         }
@@ -245,7 +270,8 @@ export const handler: Handlers<CreditInsuranceResponse | null> = {
           console.warn(
             `Credit insurance payment successful but failed to post receipt comment: ${postCommentResult.error}`,
           );
-          receiptStatus = "Payment successful, but receipt could not be posted.";
+          receiptStatus =
+            "Payment successful, but receipt could not be posted.";
         }
       }
 

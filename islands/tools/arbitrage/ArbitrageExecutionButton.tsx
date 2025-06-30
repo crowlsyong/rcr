@@ -1,5 +1,4 @@
 // islands/tools/arbitrage/ArbitrageExecutionButton.tsx
-
 import { useEffect, useState } from "preact/hooks";
 import { ArbitrageCalculation } from "../../../utils/arbitrage_calculator.ts";
 
@@ -9,16 +8,10 @@ interface ArbitrageExecutionButtonProps {
   budgetPercentage: number;
 }
 
-// Define the expected structure of the success response from the API route.
-// This interface reflects what the API is currently returning.
 interface PlaceBetsApiResponse {
-  message?: string; // For base success message
-  error?: string; // For error messages
-  betA?: { id: string; amount: number; shares: number };
-  betB?: { id: string; amount: number; shares: number };
-  // The API still returns these, even if we don't strictly use their 'slug' for linking
-  marketAInfo?: { slug: string; question: string };
-  marketBInfo?: { slug: string; question: string };
+  success: boolean;
+  message?: string;
+  error?: string;
   betDetails?: Array<{ market: string; status: string; amount?: number }>;
 }
 
@@ -27,9 +20,8 @@ export default function ArbitrageExecutionButton(
 ) {
   const [isPlacing, setIsPlacing] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
-  const [message, setMessage] = useState<string | null>(null); // For success messages
-  const [error, setError] = useState<string | null>(null); // For error messages
-  // This state will store the API's full response data, but we'll use calculation.url for links
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [apiResponseData, setApiResponseData] = useState<
     PlaceBetsApiResponse | null
   >(null);
@@ -46,12 +38,10 @@ export default function ArbitrageExecutionButton(
     setIsPlacing(true);
     setMessage(null);
     setError(null);
-    setApiResponseData(null); // Clear previous response data
+    setApiResponseData(null);
 
     const scale = budgetPercentage / 100;
 
-    // Construct body exactly as the API expects it,
-    // including marketInfo with slug (as API expects it)
     const body = {
       apiKey,
       betA: {
@@ -64,34 +54,22 @@ export default function ArbitrageExecutionButton(
         amount: calculation.betAmountB * scale,
         outcome: calculation.betOutcomeB,
       },
-      // Pass the market info that the API is set up to receive and return
-      marketAInfo: {
-        slug: calculation.marketA.slug,
-        question: calculation.marketA.question,
-      },
-      marketBInfo: {
-        slug: calculation.marketB.slug,
-        question: calculation.marketB.question,
-      },
     };
 
     try {
-      const response = await fetch("/api/v0/place-arbitrage-bets", {
+      const response = await fetch("/api/v0/arbitrage/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      const data: PlaceBetsApiResponse = await response.json(); // Type the response
+      const data: PlaceBetsApiResponse = await response.json();
 
-      if (!response.ok) {
-        // API returns error in 'error' property on failure, or 'message'
-        throw new Error(
-          data.error || data.message || "An unknown error occurred",
-        );
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "An unknown error occurred");
       }
 
-      setApiResponseData(data); // Store the full API response
-      setMessage(data.message || "Arbitrage bets placed successfully!"); // Use API's message
+      setApiResponseData(data);
+      setMessage(data.message || "Arbitrage bets placed successfully!");
     } catch (e) {
       setError(
         typeof e === "object" && e !== null && "message" in e
@@ -121,50 +99,46 @@ export default function ArbitrageExecutionButton(
       return <p class="mt-2 text-red-400 text-xs">Error: {error}</p>;
     }
     if (message) {
-      // Access betDetails from apiResponseData if available (assuming API provides it now)
       const betDetails = apiResponseData?.betDetails;
 
       return (
-        <p class="mt-2 text-green-400 text-xs">
-          {message}
-          {betDetails && ( // Render bet details if provided by the API
-            <ul>
+        <div class="mt-2 text-green-400 text-xs">
+          <p>{message}</p>
+          {betDetails && (
+            <ul class="list-disc list-inside text-gray-400 text-xxs mt-1">
               {betDetails.map((detail, index) => (
                 <li key={index}>
-                  {detail.market}: {detail.status} {detail.amount !== undefined
-                    ? ` (M${detail.amount.toFixed(2)})`
+                  {detail.market}: {detail.status}{" "}
+                  {detail.amount !== undefined && detail.status === "placed"
+                    ? `(M${detail.amount.toFixed(0)})`
                     : ""}
                 </li>
               ))}
             </ul>
           )}
-          {
-            /* CRITICAL FIX: Use calculation.marketA.url and calculation.marketB.url
-              These are available on the frontend and are the correct full URLs. */
-          }
           {calculation.marketA.url && calculation.marketB.url && (
-            <>
-              {" View "}
+            <p class="mt-1">
+              {"View on Manifold: "}
               <a
                 href={calculation.marketA.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 class="underline text-blue-400 hover:text-blue-300"
               >
-                {calculation.marketA.question}
+                Market A
               </a>{" "}
-              and{" "}
+              &{" "}
               <a
                 href={calculation.marketB.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 class="underline text-blue-400 hover:text-blue-300"
               >
-                {calculation.marketB.question}
+                Market B
               </a>
-            </>
+            </p>
           )}
-        </p>
+        </div>
       );
     }
     return null;

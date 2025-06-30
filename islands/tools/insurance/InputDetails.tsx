@@ -7,13 +7,13 @@ import PolicyDetailsSection from "./PolicyDetailsSection.tsx";
 import FinancialSummary from "./FinancialSummary.tsx";
 import OptionalFeatures from "./OptionalFeatures.tsx";
 import { fetchUserData } from "../../../utils/api/manifold_api_service.ts";
-import { RISK_LEVEL_DATA } from "../../../utils/score_utils.ts";
 
 interface CreditScoreData {
   username: string;
   creditScore: number;
   riskBaseFee: number;
   avatarUrl: string | null;
+  userId: string;
 }
 
 interface InputDetailsProps {
@@ -94,17 +94,10 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
   const inputRef = useRef<HTMLInputElement>(null);
   const durationFeePercentage = useSignal<number>(0);
 
-  const getriskBaseFeeFromScore = (score: number): number => {
-    const foundLevel = RISK_LEVEL_DATA.find(
-      (level) => score >= level.scoreMin && score <= level.scoreMax,
-    );
-    return foundLevel ? foundLevel.feeMultiplier : 0;
-  };
-
   const calculateDurationFeePercentage = (days: number): number => {
-    const a = 0.00001379; // FIXED: Changed 'a' constant for 50% cap at ~3 years
+    const a = 0.00001379;
     const b = 1.5;
-    return parseFloat(Math.min(a * Math.pow(days, b), 0.50).toFixed(4)); // FIXED: Changed cap to 0.50 (50%)
+    return parseFloat(Math.min(a * Math.pow(days, b), 0.50).toFixed(4));
   };
 
   const calculateDaysBetween = (startDate: Date, endDate: Date): number => {
@@ -146,11 +139,18 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
       return;
     }
     try {
-      const { userData, fetchSuccess, userDeleted } = await fetchUserData(user);
+      const res = await fetch(`/api/v0/credit-score?username=${user}`);
+      const data = await res.json();
 
-      if (!fetchSuccess || !userData || userDeleted) {
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      if (!data.userExists || data.userDeleted) {
         scoreData.value = null;
-        borrowerUsernameError.value = "Borrower username not found or deleted.";
+        borrowerUsernameError.value = data.userDeleted
+          ? `User @${user} is deleted`
+          : `User @${user} not found`;
         isBorrowerUsernameValid.value = false;
         setriskBaseFee(0);
         setInsuranceFee(null);
@@ -158,30 +158,16 @@ export default function InputDetails(props: InputDetailsProps): JSX.Element {
         return;
       }
 
-      const res = await fetch(`/api/v0/score?username=${user}`);
-      const data = await res.json();
-
-      if (data.error) {
-        scoreData.value = null;
-        borrowerUsernameError.value = `Error fetching score: ${data.error}`;
-        isBorrowerUsernameValid.value = true;
-        setriskBaseFee(0);
-        setInsuranceFee(null);
-        setInitialInsuranceFeeBeforeDiscount(null);
-      } else {
-        scoreData.value = {
-          username: data.username,
-          creditScore: data.creditScore,
-          riskBaseFee: getriskBaseFeeFromScore(data.creditScore),
-          avatarUrl: data.avatarUrl,
-        };
-        const derivedriskBaseFee = getriskBaseFeeFromScore(
-          data.creditScore,
-        );
-        setriskBaseFee(derivedriskBaseFee);
-        borrowerUsernameError.value = "";
-        isBorrowerUsernameValid.value = true;
-      }
+      scoreData.value = {
+        username: data.username,
+        creditScore: data.creditScore,
+        riskBaseFee: data.riskBaseFee,
+        avatarUrl: data.avatarUrl,
+        userId: data.userId,
+      };
+      setriskBaseFee(data.riskBaseFee);
+      borrowerUsernameError.value = "";
+      isBorrowerUsernameValid.value = true;
     } catch (err) {
       borrowerUsernameError.value = `Network/fetch error: ${
         typeof err === "object" && err !== null && "message" in err

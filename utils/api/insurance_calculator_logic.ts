@@ -97,17 +97,26 @@ async function fetchUserIdentity(
   console.log("DEBUG: fetchUserIdentity called with:", identifier); // Keep for general debugging
   if (identifier.username) {
     const result = await fetchUserData(identifier.username);
-    console.log("DEBUG: fetchUserIdentity - fetched by username result:", result); // Keep
+    console.log(
+      "DEBUG: fetchUserIdentity - fetched by username result:",
+      result,
+    ); // Keep
     return result;
   } else if (identifier.userId) {
     const liteResult = await fetchUserDataLiteById(identifier.userId);
-    console.log("DEBUG: fetchUserIdentity - fetched lite by userId result:", liteResult); // Keep
+    console.log(
+      "DEBUG: fetchUserIdentity - fetched lite by userId result:",
+      liteResult,
+    ); // Keep
 
     if (liteResult.fetchSuccess && liteResult.userData?.username) {
       const fullProfileResult = await fetchUserData(
         liteResult.userData.username,
       );
-      console.log("DEBUG: fetchUserIdentity - fetched full profile from resolved username:", fullProfileResult); // Keep
+      console.log(
+        "DEBUG: fetchUserIdentity - fetched full profile from resolved username:",
+        fullProfileResult,
+      ); // Keep
       return fullProfileResult;
     } else {
       console.log(
@@ -117,7 +126,9 @@ async function fetchUserIdentity(
     }
   }
 
-  console.log("DEBUG: fetchUserIdentity returning null (no valid identifier provided)."); // Keep
+  console.log(
+    "DEBUG: fetchUserIdentity returning null (no valid identifier provided).",
+  ); // Keep
   return { userData: null, fetchSuccess: false, userDeleted: false };
 }
 
@@ -255,7 +266,12 @@ async function getUserScoreProfile(
 
     console.log(
       "DEBUG: getUserScoreProfile - Final score profile:",
-      { username: userData.username, userId: userData.id, creditScore, riskBaseFee },
+      {
+        username: userData.username,
+        userId: userData.id,
+        creditScore,
+        riskBaseFee,
+      },
     ); // Keep this focused final log
 
     return {
@@ -512,10 +528,9 @@ export async function calculateInsuranceDetails(
     if (!borrowerProfile.userExists || borrowerProfile.userDeleted) {
       return {
         success: false,
-        error:
-          `Borrower '${
-            borrowerProfile.username || borrowerProfile.userId
-          }' not found or is deleted.`,
+        error: `Borrower '${
+          borrowerProfile.username || borrowerProfile.userId
+        }' not found or is deleted.`,
       };
     }
     if (
@@ -524,11 +539,11 @@ export async function calculateInsuranceDetails(
     ) {
       return {
         success: false,
-        error:
-          `Lender '${
-            lenderFetchResult.userData?.username || lenderFetchResult.userData?.id ||
-            params.lenderUsername || params.lenderId
-          }' not found or is deleted.`,
+        error: `Lender '${
+          lenderFetchResult.userData?.username ||
+          lenderFetchResult.userData?.id ||
+          params.lenderUsername || params.lenderId
+        }' not found or is deleted.`,
       };
     }
 
@@ -613,8 +628,12 @@ export async function executeInsuranceTransaction(
     : INSURANCE_MARKET_ID;
 
   if (params.dryRun) {
-    const simulatedLoanTxId = `simulated-loan-TXN-ID-${Date.now().toString().slice(-6)}`;
-    const simulatedInsuranceTxId = `simulated-ins-TXN-ID-${Date.now().toString().slice(-6)}`;
+    const simulatedLoanTxId = `simulated-loan-TXN-ID-${
+      Date.now().toString().slice(-6)
+    }`;
+    const simulatedInsuranceTxId = `simulated-ins-TXN-ID-${
+      Date.now().toString().slice(-6)
+    }`;
     return {
       success: true,
       message: "Dry run successful. No transactions were executed.",

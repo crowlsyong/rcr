@@ -12,21 +12,6 @@ interface DirectExecutionProps {
   expirationSettings: ExpirationSettings;
 }
 
-interface ApiOrder {
-  amount: number;
-  outcome: "YES" | "NO";
-  limitProb: number;
-}
-
-interface BetPlacementBody {
-  apiKey: string;
-  contractId: string;
-  answerId?: string;
-  orders: ApiOrder[];
-  expiresMillisAfter?: number;
-  expiresAt?: number;
-}
-
 export default function DirectExecution(props: DirectExecutionProps) {
   const [placingOrders, setPlacingOrders] = useState(false);
   const [placementMessage, setPlacementMessage] = useState<string | null>(null);
@@ -46,56 +31,47 @@ export default function DirectExecution(props: DirectExecutionProps) {
     setPlacementMessage(null);
     setPlacementError(null);
 
-    const apiOrders: ApiOrder[] = props.orders.flatMap((order) => {
-      const bets: ApiOrder[] = [];
+    const apiOrders = props.orders.flatMap((order) => {
+      const bets = [];
       if (order.yesAmount >= 1) {
         bets.push({
           amount: order.yesAmount,
-          outcome: "YES",
+          outcome: "YES" as const,
           limitProb: order.yesProb,
         });
       }
       if (order.noAmount >= 1) {
         bets.push({
           amount: order.noAmount,
-          outcome: "NO",
+          outcome: "NO" as const,
           limitProb: order.noProb,
         });
       }
       return bets;
     });
 
-    const body: BetPlacementBody = {
+    const body = {
       apiKey: props.apiKey,
       contractId: props.contractId,
       orders: apiOrders,
+      ...(props.answerId && { answerId: props.answerId }),
+      ...(props.expirationSettings.type === "duration" &&
+        props.expirationSettings.value &&
+        { expiresMillisAfter: props.expirationSettings.value }),
+      ...(props.expirationSettings.type === "date" &&
+        props.expirationSettings.value &&
+        { expiresAt: props.expirationSettings.value }),
     };
 
-    if (props.answerId) {
-      body.answerId = props.answerId;
-    }
-
-    if (
-      props.expirationSettings.type === "duration" &&
-      props.expirationSettings.value
-    ) {
-      body.expiresMillisAfter = props.expirationSettings.value;
-    } else if (
-      props.expirationSettings.type === "date" &&
-      props.expirationSettings.value
-    ) {
-      body.expiresAt = props.expirationSettings.value;
-    }
-
     try {
-      const response = await fetch("/api/v0/place-limit-orders", {
+      const response = await fetch("/api/v0/limits/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
 
       const data = await response.json();
-      if (!response.ok) {
+      if (!response.ok || !data.success) {
         setPlacementError(data.error || "Failed to place orders");
       } else {
         setPlacementMessage(data.message || "Orders placed successfully!");
