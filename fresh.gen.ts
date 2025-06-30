@@ -9,6 +9,7 @@ import * as $admin_index from "./routes/admin/index.tsx";
 import * as $api_v0_middleware from "./routes/api/v0/_middleware.ts";
 import * as $api_v0_arbitrage_execute from "./routes/api/v0/arbitrage/execute.ts";
 import * as $api_v0_credit_score_index from "./routes/api/v0/credit-score/index.ts";
+import * as $api_v0_credit_score_lite from "./routes/api/v0/credit-score/lite.ts";
 import * as $api_v0_creditcard from "./routes/api/v0/creditcard.ts";
 import * as $api_v0_history from "./routes/api/v0/history.ts";
 import * as $api_v0_insurance from "./routes/api/v0/insurance.ts";
@@ -113,6 +114,7 @@ const manifest = {
     "./routes/api/v0/_middleware.ts": $api_v0_middleware,
     "./routes/api/v0/arbitrage/execute.ts": $api_v0_arbitrage_execute,
     "./routes/api/v0/credit-score/index.ts": $api_v0_credit_score_index,
+    "./routes/api/v0/credit-score/lite.ts": $api_v0_credit_score_lite,
     "./routes/api/v0/creditcard.ts": $api_v0_creditcard,
     "./routes/api/v0/history.ts": $api_v0_history,
     "./routes/api/v0/insurance.ts": $api_v0_insurance,
