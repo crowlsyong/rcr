@@ -1,8 +1,9 @@
 // islands/admin/AdjustmentForm.tsx
-import { useCallback, useEffect, useState } from "preact/hooks";
+import { useState, useCallback, useEffect } from "preact/hooks";
 import UsernameInput from "../shared/UsernameInput.tsx";
-import UserAdjustmentDisplay from "./UserAdjustmentDisplay.tsx";
+import UserAdjustmentDisplay from "./UserAdjustmentDisplay.tsx"; // Will now only display score/error
 import AdjustmentFormFields from "./AdjustmentFormFields.tsx";
+import ExistingOverridesTable from "./ExistingOverridesTable.tsx"; // NEW: Import the table here directly
 import { OverrideEvent, UserScoreOverview } from "./AdjustmentFormFields.tsx";
 
 function getInitialUsernameFromUrl(): string {
@@ -56,26 +57,21 @@ export default function AdjustmentForm() {
     setSubmitMessageType("");
   }, []);
 
-  const handleUserOverviewFetched = useCallback(
-    (user: UserScoreOverview | null) => {
-      console.log("[AdjustmentForm] User overview fetched:", user);
-      if (
-        user && (user as UserScoreOverview & { modifyingEvent?: OverrideEvent })
-          .modifyingEvent
-      ) {
-        setModifyingEvent(
-          (user as UserScoreOverview & { modifyingEvent: OverrideEvent })
-            .modifyingEvent,
-        );
-      } else {
-        setModifyingEvent(null);
-      }
-      setSelectedUserOverview(user);
-      setSubmitMessage(null);
-      setSubmitMessageType("");
-    },
-    [],
-  );
+  const handleUserOverviewFetched = useCallback((user: UserScoreOverview | null) => {
+    console.log("[AdjustmentForm] User overview fetched:", user);
+    if (user && (user as UserScoreOverview & { modifyingEvent?: OverrideEvent })
+        .modifyingEvent) {
+      setModifyingEvent(
+        (user as UserScoreOverview & { modifyingEvent: OverrideEvent })
+          .modifyingEvent,
+      );
+    } else {
+      setModifyingEvent(null);
+    }
+    setSelectedUserOverview(user);
+    setSubmitMessage(null);
+    setSubmitMessageType("");
+  }, []);
 
   const handleFormSubmit = async (
     payload: {
@@ -164,24 +160,30 @@ export default function AdjustmentForm() {
 
   return (
     <div class="bg-gray-900 p-6 rounded-lg shadow-xl border border-gray-700">
-      <h2 class="text-xl font-bold mb-6 text-white">Adjust User Score</h2>
+      <h2 class="text-xl font-bold mb-6 text-white">Admin Panel - Adjust User Scores</h2>
 
+      <div class="mb-6">
+        <UsernameInput
+          initialValue={initialUsername}
+          onDebouncedChange={handleDebouncedUsernameChange}
+          isFetching={isSubmitting}
+        />
+      </div>
+
+      {/* Main layout grid for Current User Status + Adjustment Form */}
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Column: Current User Status Display */}
         <div>
-          <UsernameInput
-            initialValue={initialUsername}
-            onDebouncedChange={handleDebouncedUsernameChange}
-            isFetching={isSubmitting}
-          />
           <UserAdjustmentDisplay
             debouncedUsername={debouncedSearchUsername}
             onUserOverviewFetched={handleUserOverviewFetched}
             isLoadingParent={isSubmitting}
             refreshTrigger={refreshDisplayTrigger}
-            onTableRefreshNeeded={handleUserDisplayRefreshNeeded} // THIS PROP IS NOW HERE
+            onTableRefreshNeeded={handleUserDisplayRefreshNeeded}
           />
         </div>
 
+        {/* Right Column: Adjustment Form Fields */}
         {selectedUserOverview && !selectedUserOverview.userDeleted
           ? (
             <AdjustmentFormFields
@@ -197,21 +199,53 @@ export default function AdjustmentForm() {
             />
           )
           : (
-            <div class="flex items-center justify-center bg-gray-800 p-6 rounded-lg border border-gray-700">
+            <div class="flex items-center justify-center bg-gray-800 p-6 rounded-lg border border-gray-700 h-full">
               <p class="text-gray-400 text-center">
                 Search for a user on the left to add or modify adjustments.
               </p>
             </div>
           )}
+      </div>
+
+      {/* NEW: Full-width row for Existing Overrides Table */}
+      {selectedUserOverview && !selectedUserOverview.userDeleted &&
+          selectedUserOverview.existingOverrideEvents.length > 0
+        ? (
+          <div class="mt-6 w-full"> {/* mt-6 for spacing from previous section */}
+            <ExistingOverridesTable
+              overrideEvents={selectedUserOverview.existingOverrideEvents}
+              userId={selectedUserOverview.userId}
+              username={selectedUserOverview.username}
+              isLoadingParent={isSubmitting}
+              onDeleteSuccess={handleUserDisplayRefreshNeeded} // Calls the central refresh trigger
+              onModify={(event) =>
+                handleUserOverviewFetched(
+                  { ...selectedUserOverview, modifyingEvent: event } as UserScoreOverview & {
+                    modifyingEvent: OverrideEvent;
+                  },
+                )}
+            />
+          </div>
+        )
+        : selectedUserOverview && !selectedUserOverview.userDeleted &&
+            selectedUserOverview.existingOverrideEvents.length === 0
+        ? (
+          <div class="mt-6 w-full p-4 bg-gray-800 rounded-lg shadow-inner border border-gray-700">
+            <h4 class="text-md font-semibold text-white mb-4">
+              Existing Overrides for @{selectedUserOverview.username}:
+            </h4>
+            <p class="text-gray-400 text-sm">No existing overrides for this user.</p>
+          </div>
+        )
+        : null}
         {selectedUserOverview?.userDeleted && (
-          <div class="flex items-center justify-center bg-yellow-900/20 p-6 rounded-lg border border-yellow-700">
+          <div class="mt-6 w-full flex items-center justify-center bg-yellow-900/20 p-6 rounded-lg border border-yellow-700">
             <p class="text-yellow-400 text-center">
-              User {selectedUserOverview.username}{" "}
-              is deleted and cannot be adjusted.
+              User {selectedUserOverview.username} is deleted and cannot be
+              adjusted.
             </p>
           </div>
         )}
-      </div>
     </div>
   );
 }

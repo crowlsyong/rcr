@@ -7,7 +7,6 @@ import { OverrideEvent } from "../../../routes/api/v0/credit-score/index.ts";
 
 Chart.register(...registerables);
 
-// ADD 'export' KEYWORD HERE
 export interface CreditScoreDataPoint {
   userId: string;
   username: string;
@@ -203,8 +202,14 @@ export default function CreditScoreChart({
                 if (context.dataset.type === "bar") {
                   const eventDetails = context.raw as InfractionBarDataPoint;
                   if (eventDetails) {
+                    const defaultMessage =
+                      `@${eventDetails.eventDetails.username} didn't pay a loan back.`;
+                    const description = eventDetails.eventDetails.description;
+
                     return [
-                      `@${eventDetails.eventDetails.username} didn't pay a loan back.`,
+                      description && description.trim() !== ""
+                        ? description
+                        : defaultMessage,
                       `Modifier: ${eventDetails.eventDetails.modifier}`,
                     ];
                   }

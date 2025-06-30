@@ -1,24 +1,20 @@
 // islands/admin/UserAdjustmentDisplay.tsx
-import { useCallback, useEffect, useRef, useState } from "preact/hooks";
-import { OverrideEvent, UserScoreOverview } from "./AdjustmentFormFields.tsx";
+import { useEffect, useState, useCallback, useRef } from "preact/hooks";
+import { UserScoreOverview } from "./AdjustmentFormFields.tsx";
 import ScoreResult from "../tools/creditscore/ScoreResult.tsx";
-import ExistingOverridesTable from "./ExistingOverridesTable.tsx";
 
-// THIS INTERFACE IS THE KEY. IT MUST INCLUDE onTableRefreshNeeded.
 interface UserAdjustmentDisplayProps {
   debouncedUsername: string;
   onUserOverviewFetched: (user: UserScoreOverview | null) => void;
   isLoadingParent: boolean;
   refreshTrigger: number;
-  onTableRefreshNeeded: () => void; // <--- THIS IS THE LINE
+  onTableRefreshNeeded: () => void;
 }
 
 export default function UserAdjustmentDisplay({
   debouncedUsername,
   onUserOverviewFetched,
-  isLoadingParent,
-  refreshTrigger,
-  onTableRefreshNeeded, // <-- Destructure it here
+    refreshTrigger,
 }: UserAdjustmentDisplayProps) {
   const [isLoadingUser, setIsLoadingUser] = useState(false);
   const [userOverview, setUserOverview] = useState<UserScoreOverview | null>(
@@ -113,22 +109,9 @@ export default function UserAdjustmentDisplay({
     fetchAndSetUserData(debouncedUsername);
   }, [debouncedUsername, refreshTrigger, fetchAndSetUserData]);
 
-  const handleOverridesTableDeleteSuccess = useCallback(() => {
-    console.log(
-      "[UserAdjustmentDisplay] Override deletion successful. Notifying parent to refresh.",
-    );
-    onTableRefreshNeeded(); // <-- Call the new prop
-  }, [onTableRefreshNeeded]);
-
-  const handleOverridesTableModify = useCallback((event: OverrideEvent) => {
-    if (userOverview) {
-      onUserOverviewFetched(
-        { ...userOverview, modifyingEvent: event } as UserScoreOverview & {
-          modifyingEvent: OverrideEvent;
-        },
-      );
-    }
-  }, [userOverview, onUserOverviewFetched]);
+  // Removed handleDelete, handleOverridesTableDeleteSuccess, handleOverridesTableModify
+  // These responsibilities (delete/modify ops) now reside in the ExistingOverridesTable
+  // or are passed through onTableRefreshNeeded directly from AdjustmentForm.
 
   return (
     <>
@@ -138,34 +121,24 @@ export default function UserAdjustmentDisplay({
       {userError && <p class="text-red-400 text-sm mt-2">{userError}</p>}
 
       {userOverview && !userError && (
-        <>
-          <div class="p-4 bg-gray-800 rounded-lg border border-gray-700">
-            <h3 class="text-lg font-semibold text-white mb-2">
-              Current User Status:
-            </h3>
-            <ScoreResult
-              username={userOverview.username}
-              creditScore={userOverview.creditScore}
-              riskBaseFee={userOverview.riskBaseFee}
-              avatarUrl={userOverview.avatarUrl}
-              isWaiting={false}
-              userExists={userOverview.userExists}
-              fetchSuccess={userOverview.fetchSuccess}
-              isEmptyInput={false}
-              userDeleted={userOverview.userDeleted}
-            />
-          </div>
-
-          <ExistingOverridesTable
-            overrideEvents={userOverview.existingOverrideEvents}
-            userId={userOverview.userId}
+        <div class="p-4 bg-gray-800 rounded-lg border border-gray-700">
+          <h3 class="text-lg font-semibold text-white mb-2">
+            Current User Status:
+          </h3>
+          <ScoreResult
             username={userOverview.username}
-            isLoadingParent={isLoadingParent}
-            onDeleteSuccess={handleOverridesTableDeleteSuccess}
-            onModify={handleOverridesTableModify}
+            creditScore={userOverview.creditScore}
+            riskBaseFee={userOverview.riskBaseFee}
+            avatarUrl={userOverview.avatarUrl}
+            isWaiting={false}
+            userExists={userOverview.userExists}
+            fetchSuccess={userOverview.fetchSuccess}
+            isEmptyInput={false}
+            userDeleted={userOverview.userDeleted}
           />
-        </>
+        </div>
       )}
+      {/* ExistingOverridesTable is no longer rendered here */}
     </>
   );
 }
