@@ -1,5 +1,4 @@
 // islands/menu/MenuBar.tsx
-
 import { useSignal } from "@preact/signals";
 import { useEffect, useRef } from "preact/hooks";
 import { ComponentType } from "preact";
@@ -34,15 +33,13 @@ export default function MenuBar() {
     <>
       <style>
         {`
-          /* For Webkit browsers (Chrome, Safari) */
           .hide-scrollbar::-webkit-scrollbar {
             display: none;
           }
 
-          /* For IE, Edge and Firefox */
           .hide-scrollbar {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
+            -ms-overflow-style: none;
+            scrollbar-width: none;
           }
         `}
       </style>
@@ -108,7 +105,6 @@ export default function MenuBar() {
             />
           </div>
 
-          {/* Added flex-grow and overflow-y-auto to allow scrolling of content */}
           <div class="space-y-2 mt-10 flex-grow overflow-y-auto hide-scrollbar pb-10">
             <LinkDataProvider>
               {(data) => (
@@ -152,7 +148,6 @@ export default function MenuBar() {
               </a>
             </div>
           </div>
-          {/* Footer content remains fixed at the bottom */}
           <div class="pt-10 text-xs w-full text-center text-[10px] text-gray-500 mt-auto">
             <p>v2.1.8 | this is a 3rd party app</p>
             <hr class="my-2 border-gray-600" />

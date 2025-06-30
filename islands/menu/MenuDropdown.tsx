@@ -1,10 +1,11 @@
 // islands/menu/MenuDropdown.tsx
+// islands/menu/MenuDropdown.tsx
 
 import { useSignal } from "@preact/signals";
 import { ComponentType } from "preact";
 import { JSX } from "preact/jsx-runtime";
 import { TbChevronDown, TbExternalLink } from "@preact-icons/tb";
-import { useEffect } from "preact/hooks"; // Import useEffect
+import { useEffect } from "preact/hooks";
 
 const ChevronDownIcon = TbChevronDown as ComponentType<
   JSX.IntrinsicElements["svg"]
@@ -15,35 +16,51 @@ const ExternalLinkIcon = TbExternalLink as ComponentType<
 
 interface Link {
   label: string;
-  url: string;
-  targetBlank: boolean;
+  url?: string;
+  targetBlank?: boolean;
+  children?: Link[];
+  isSpecialNestedDropdown?: boolean;
 }
 
 interface MenuDropdownProps {
   title: string;
   links: Link[];
   isMenuOpen: boolean;
+  isSubmenu?: boolean;
+  parentIsSpecialNestedDropdown?: boolean;
 }
 
 export default function MenuDropdown(
-  { title, links, isMenuOpen }: MenuDropdownProps,
+  {
+    title,
+    links,
+    isMenuOpen,
+    isSubmenu = false,
+    parentIsSpecialNestedDropdown = false,
+  }: MenuDropdownProps,
 ) {
   const isOpen = useSignal(false);
-  const currentPath = useSignal(""); // New signal to hold the current path
+  const currentPath = useSignal("");
 
   useEffect(() => {
-    // Set currentPath only on the client side
     if (typeof window !== "undefined") {
       currentPath.value = globalThis.location.pathname;
     }
   }, []);
 
+  const shouldApplyOuterIndentation = isSubmenu &&
+    !parentIsSpecialNestedDropdown;
+
   return (
-    <div>
+    <div
+      class={shouldApplyOuterIndentation
+        ? "pl-4 border-l-2 border-gray-700/50"
+        : ""}
+    >
       <button
         type="button"
         onClick={() => (isOpen.value = !isOpen.value)}
-        class="w-full flex items-center justify-between border border-[#334155] text-white py-2 px-3 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-sm"
+        class={`w-full flex items-center justify-between border border-[#334155] text-white py-2 px-3 rounded-md hover:bg-[#1E293B] transition-colors duration-200 text-sm`}
         tabIndex={isMenuOpen ? 0 : -1}
       >
         <span>{title}</span>
@@ -62,28 +79,40 @@ export default function MenuDropdown(
       >
         <div class="space-y-2 pl-4 border-l-2 border-gray-700/50">
           {links.map((link) => {
-            // Determine if the link is active
-            const isActive = currentPath.value === link.url;
-            const linkClasses =
-              `relative flex items-center justify-start border border-[#334155] text-white py-2 px-3 rounded-md transition-colors duration-200 text-sm ${
-                isActive ? "bg-blue-700" : "hover:bg-[#1E293B]"
-              }`; // Added active styling
+            if (link.children && link.children.length > 0) {
+              return (
+                <MenuDropdown
+                  key={`${link.label}-submenu`}
+                  title={link.label}
+                  links={link.children}
+                  isMenuOpen={isMenuOpen}
+                  isSubmenu
+                  parentIsSpecialNestedDropdown={link.isSpecialNestedDropdown}
+                />
+              );
+            } else {
+              const isActive = currentPath.value === link.url;
+              const linkClasses =
+                `relative flex items-center justify-start border border-[#334155] text-white py-2 px-3 rounded-md transition-colors duration-200 text-sm ${
+                  isActive ? "bg-blue-700" : "hover:bg-[#1E293B]"
+                }`;
 
-            return (
-              <a
-                key={`${link.label}-${link.url}`}
-                href={link.url}
-                target={link.targetBlank ? "_blank" : "_self"}
-                rel={link.targetBlank ? "noopener noreferrer" : undefined}
-                class={linkClasses}
-                tabIndex={isMenuOpen ? 0 : -1}
-              >
-                <span>{link.label}</span>
-                {link.targetBlank && typeof window !== "undefined" && (
-                  <ExternalLinkIcon class="absolute right-3 w-4 h-4 opacity-70" />
-                )}
-              </a>
-            );
+              return (
+                <a
+                  key={`${link.label}-${link.url}`}
+                  href={link.url}
+                  target={link.targetBlank ? "_blank" : "_self"}
+                  rel={link.targetBlank ? "noopener noreferrer" : undefined}
+                  class={linkClasses}
+                  tabIndex={isMenuOpen ? 0 : -1}
+                >
+                  <span>{link.label}</span>
+                  {link.targetBlank && typeof window !== "undefined" && (
+                    <ExternalLinkIcon class="absolute right-3 w-4 h-4 opacity-70" />
+                  )}
+                </a>
+              );
+            }
           })}
         </div>
       </div>

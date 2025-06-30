@@ -39,8 +39,6 @@ import * as $insurance from "./routes/insurance.tsx";
 import * as $limits from "./routes/limits.tsx";
 import * as $old_ext_username_ from "./routes/old-ext/[username].tsx";
 import * as $qr_string_ from "./routes/qr/[string].tsx";
-import * as $report_year_quarter_ from "./routes/report/[year]/[quarter].tsx";
-import * as $report_year_layout from "./routes/report/[year]/_layout.tsx";
 import * as $u_username_ from "./routes/u/[username].tsx";
 import * as $InfoHover from "./islands/InfoHover.tsx";
 import * as $PasswordGate from "./islands/PasswordGate.tsx";
@@ -147,8 +145,6 @@ const manifest = {
     "./routes/limits.tsx": $limits,
     "./routes/old-ext/[username].tsx": $old_ext_username_,
     "./routes/qr/[string].tsx": $qr_string_,
-    "./routes/report/[year]/[quarter].tsx": $report_year_quarter_,
-    "./routes/report/[year]/_layout.tsx": $report_year_layout,
     "./routes/u/[username].tsx": $u_username_,
   },
   islands: {

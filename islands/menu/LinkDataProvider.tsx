@@ -1,10 +1,12 @@
 // islands/menu/LinkDataProvider.tsx
-
 import { JSX } from "preact/jsx-runtime";
+
 interface Link {
   label: string;
-  url: string;
-  targetBlank: boolean;
+  url?: string;
+  targetBlank?: boolean;
+  children?: Link[];
+  isSpecialNestedDropdown?: boolean;
 }
 
 interface LinkData {
@@ -60,6 +62,22 @@ const globularConglomerateLinks: Link[] = [
     label: "🦝 RISKBLOG",
     url: "https://manifold.markets/news/risk",
     targetBlank: true,
+  },
+  {
+    label: "📈 Reports",
+    isSpecialNestedDropdown: true,
+    children: [
+      {
+        label: "2025 Reports",
+        children: [
+          {
+            label: "Q2 Report",
+            url: "/reports/2025/q2/RISK_2025_Q2_REPORT.pdf", // DIRECT STATIC PDF URL
+            targetBlank: true, // Open PDF in new tab
+          },
+        ],
+      },
+    ],
   },
 ];
 
