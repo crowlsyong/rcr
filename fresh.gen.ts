@@ -12,9 +12,9 @@ import * as $api_v0_admin_adjust_score from "./routes/api/v0/admin/adjust-score.
 import * as $api_v0_admin_delete_override from "./routes/api/v0/admin/delete-override.ts";
 import * as $api_v0_admin_update_override from "./routes/api/v0/admin/update-override.ts";
 import * as $api_v0_arbitrage_execute from "./routes/api/v0/arbitrage/execute.ts";
+import * as $api_v0_credit_card from "./routes/api/v0/credit-card.ts";
 import * as $api_v0_credit_score_index from "./routes/api/v0/credit-score/index.ts";
 import * as $api_v0_credit_score_lite from "./routes/api/v0/credit-score/lite.ts";
-import * as $api_v0_creditcard from "./routes/api/v0/creditcard.ts";
 import * as $api_v0_history from "./routes/api/v0/history.ts";
 import * as $api_v0_insurance from "./routes/api/v0/insurance.ts";
 import * as $api_v0_insurance_execute from "./routes/api/v0/insurance/execute.ts";
@@ -127,9 +127,9 @@ const manifest = {
     "./routes/api/v0/admin/delete-override.ts": $api_v0_admin_delete_override,
     "./routes/api/v0/admin/update-override.ts": $api_v0_admin_update_override,
     "./routes/api/v0/arbitrage/execute.ts": $api_v0_arbitrage_execute,
+    "./routes/api/v0/credit-card.ts": $api_v0_credit_card,
     "./routes/api/v0/credit-score/index.ts": $api_v0_credit_score_index,
     "./routes/api/v0/credit-score/lite.ts": $api_v0_credit_score_lite,
-    "./routes/api/v0/creditcard.ts": $api_v0_creditcard,
     "./routes/api/v0/history.ts": $api_v0_history,
     "./routes/api/v0/insurance.ts": $api_v0_insurance,
     "./routes/api/v0/insurance/execute.ts": $api_v0_insurance_execute,

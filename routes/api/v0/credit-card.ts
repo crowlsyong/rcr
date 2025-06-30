@@ -1,4 +1,4 @@
-// routes/api/v0/creditcard.ts
+// routes/api/v0/credit-card.ts
 import { Handlers } from "$fresh/server.ts";
 import {
   calculateInsuranceDetails,
