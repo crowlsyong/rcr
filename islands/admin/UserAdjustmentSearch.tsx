@@ -1,28 +1,21 @@
 // islands/admin/UserAdjustmentSearch.tsx
-import { useSignal } from "@preact/signals";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks"; // Removed useRef
 import { OverrideEvent, UserScoreOverview } from "./AdjustmentFormFields.tsx";
 import ScoreResult from "../tools/creditscore/ScoreResult.tsx";
 
 interface UserAdjustmentSearchProps {
-  onUserSelected: (user: UserScoreOverview | null) => void;
+  debouncedUsername: string;
+  onUserOverviewFetched: (user: UserScoreOverview | null) => void;
   isLoadingParent: boolean;
+  refreshTrigger: number;
 }
 
-function getInitialUsernameFromUrl(): string {
-  if (typeof window === "undefined") {
-    return "";
-  }
-  const params = new URLSearchParams(globalThis.location.search);
-  return params.get("q") || "";
-}
-
-export default function UserAdjustmentSearch(
-  { onUserSelected, isLoadingParent }: UserAdjustmentSearchProps,
-) {
-  const initialUsername = getInitialUsernameFromUrl();
-  const usernameInput = useSignal(initialUsername); // This holds the raw input value
-  const [debouncedUsername, setDebouncedUsername] = useState(initialUsername); // This holds the debounced value
+export default function UserAdjustmentSearch({
+  debouncedUsername,
+  onUserOverviewFetched,
+  isLoadingParent,
+  refreshTrigger,
+}: UserAdjustmentSearchProps) {
   const [isLoadingUser, setIsLoadingUser] = useState(false);
   const [userOverview, setUserOverview] = useState<UserScoreOverview | null>(
     null,
@@ -33,80 +26,79 @@ export default function UserAdjustmentSearch(
     {},
   );
 
-  // Effect for debouncing raw usernameInput.value to debouncedUsername
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedUsername(usernameInput.value);
-    }, 200); // 200ms debounce
-    return () => clearTimeout(timer);
-  }, [usernameInput.value]); // Depends only on raw input value
+  // REMOVED: hasMounted ref and the useEffect block for URL synchronization.
 
-  // Effect for fetching data AND updating URL based on debouncedUsername
   useEffect(() => {
-    if (debouncedUsername) {
-      fetchAndSetUserData(debouncedUsername);
-      // Only update URL when debouncedUsername is stable and present
-      if (typeof window !== "undefined") {
-        const url = new URL(globalThis.location.href);
-        url.searchParams.set("q", debouncedUsername);
-        globalThis.history.replaceState(null, "", url.toString());
-      }
-    } else {
-      // Clear state and URL params if input is empty
+    console.log(
+      "[UserAdjustmentSearch] Effect triggered. Debounced username:",
+      debouncedUsername,
+      "Refresh Trigger:",
+      refreshTrigger,
+    );
+
+    if (!debouncedUsername) {
       setUserOverview(null);
       setUserError(null);
-      onUserSelected(null);
-      if (typeof window !== "undefined") {
-        const url = new URL(globalThis.location.href);
-        url.searchParams.delete("q");
-        globalThis.history.replaceState(null, "", url.toString());
-      }
+      onUserOverviewFetched(null);
+      setIsLoadingUser(false);
+      return;
     }
-  }, [debouncedUsername]); // Depends only on debouncedUsername
 
-  const fetchAndSetUserData = async (targetUsername: string) => {
-    setUserOverview(null);
-    setUserError(null);
-    setIsLoadingUser(true); // Moved inside so it's only active during actual fetch
+    const fetchAndSetUserData = async (targetUsername: string) => {
+      setUserOverview(null);
+      setUserError(null);
+      setIsLoadingUser(true);
+      console.log("[UserAdjustmentSearch] Fetching data for:", targetUsername);
 
-    try {
-      const res = await fetch(
-        `/api/v0/credit-score?username=${targetUsername}`,
-      );
-      const data = await res.json();
+      try {
+        const res = await fetch(
+          `/api/v0/credit-score?username=${targetUsername}`,
+        );
+        const data = await res.json();
 
-      if (!res.ok || !data.userExists) {
-        setUserError(data.error || `User @${targetUsername} not found.`);
-        onUserSelected(null);
-        return;
-      }
+        if (!res.ok || !data.userExists) {
+          const errorMessage = data.error ||
+            `User @${targetUsername} not found.`;
+          setUserError(errorMessage);
+          onUserOverviewFetched(null);
+          console.error(
+            "[UserAdjustmentSearch] Fetch failed:",
+            targetUsername,
+            errorMessage,
+          );
+          return;
+        }
 
-      const overview: UserScoreOverview = {
-        userExists: data.userExists,
-        fetchSuccess: data.fetchSuccess,
-        userId: data.userId,
-        username: data.username,
-        avatarUrl: data.avatarUrl,
-        creditScore: data.creditScore,
-        riskBaseFee: data.riskBaseFee,
-        userDeleted: data.userDeleted,
-        existingOverrideEvents: data.overrideEvents || [],
-      };
-      setUserOverview(overview);
-      onUserSelected(overview);
-    } catch (err) {
-      setUserError(
-        `Error fetching user data: ${
+        const overview: UserScoreOverview = {
+          userExists: data.userExists,
+          fetchSuccess: data.fetchSuccess,
+          userId: data.userId,
+          username: data.username,
+          avatarUrl: data.avatarUrl,
+          creditScore: data.creditScore,
+          riskBaseFee: data.riskBaseFee,
+          userDeleted: data.userDeleted,
+          existingOverrideEvents: data.overrideEvents || [],
+        };
+        setUserOverview(overview);
+        onUserOverviewFetched(overview);
+        console.log("[UserAdjustmentSearch] User data fetched:", overview);
+      } catch (err) {
+        const errorMessage = `Error fetching user data: ${
           typeof err === "object" && err !== null && "message" in err
             ? (err as { message: string }).message
             : String(err)
-        }`,
-      );
-      onUserSelected(null);
-    } finally {
-      setIsLoadingUser(false);
-    }
-  };
+        }`;
+        setUserError(errorMessage);
+        onUserOverviewFetched(null);
+        console.error("[UserAdjustmentSearch] Fetch error:", err);
+      } finally {
+        setIsLoadingUser(false);
+      }
+    };
+
+    fetchAndSetUserData(debouncedUsername);
+  }, [debouncedUsername, refreshTrigger, onUserOverviewFetched]);
 
   const handleDelete = async (eventToDelete: OverrideEvent) => {
     if (!userOverview) return;
@@ -125,6 +117,7 @@ export default function UserAdjustmentSearch(
       return;
     }
 
+    console.log("[UserAdjustmentSearch] Deleting override:", eventToDelete);
     try {
       const response = await fetch("/api/v0/admin/delete-override", {
         method: "POST",
@@ -140,12 +133,14 @@ export default function UserAdjustmentSearch(
       if (!response.ok || !result.success) {
         throw new Error(result.error || "Failed to delete adjustment.");
       }
-
-      await fetchAndSetUserData(userOverview.username);
+      console.log("[UserAdjustmentSearch] Override deleted successfully.");
+      if (userOverview.username) {
+        onUserOverviewFetched({ ...userOverview });
+      }
       setConfirmDelete({});
     } catch (err) {
       console.error(
-        `Error deleting override: ${
+        `[UserAdjustmentSearch] Error deleting override: ${
           typeof err === "object" && err !== null && "message" in err
             ? (err as { message: string }).message
             : String(err)
@@ -160,30 +155,11 @@ export default function UserAdjustmentSearch(
   };
 
   return (
-    <div class="space-y-6">
-      <div class="mb-6">
-        <label
-          htmlFor="username-search"
-          class="block text-sm font-medium text-gray-300 mb-2"
-        >
-          Search User by Username:
-        </label>
-        <input
-          id="username-search"
-          type="text"
-          placeholder="e.g., Tumbles"
-          value={usernameInput.value}
-          onInput={(
-            e,
-          ) => (usernameInput.value = (e.target as HTMLInputElement).value)}
-          class="w-full p-2 bg-gray-800 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          disabled={isLoadingUser || isLoadingParent}
-        />
-        {isLoadingUser && (
-          <p class="text-gray-400 text-sm mt-2">Loading user data...</p>
-        )}
-        {userError && <p class="text-red-400 text-sm mt-2">{userError}</p>}
-      </div>
+    <>
+      {isLoadingUser && (
+        <p class="text-gray-400 text-sm mt-2">Loading user data...</p>
+      )}
+      {userError && <p class="text-red-400 text-sm mt-2">{userError}</p>}
 
       {userOverview && !userError && (
         <>
@@ -257,12 +233,14 @@ export default function UserAdjustmentSearch(
                           <button
                             type="button"
                             onClick={() => {
-                              onUserSelected({
-                                ...userOverview,
-                                modifyingEvent: event,
-                              } as UserScoreOverview & {
-                                modifyingEvent: OverrideEvent;
-                              });
+                              onUserOverviewFetched(
+                                {
+                                  ...userOverview,
+                                  modifyingEvent: event,
+                                } as UserScoreOverview & {
+                                  modifyingEvent: OverrideEvent;
+                                },
+                              );
                             }}
                             class="text-blue-500 hover:text-blue-700 mr-2"
                             disabled={isLoadingParent}
@@ -294,6 +272,6 @@ export default function UserAdjustmentSearch(
           )}
         </>
       )}
-    </div>
+    </>
   );
 }

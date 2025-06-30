@@ -56,7 +56,8 @@ export default function UserAdjustmentDisplay({
         const data = await res.json();
 
         if (!res.ok || !data.userExists) {
-          const errorMessage = data.error || `User @${targetUsername} not found.`;
+          const errorMessage = data.error ||
+            `User @${targetUsername} not found.`;
           setUserError(errorMessage);
           onUserOverviewFetched(null);
           console.error(
@@ -233,12 +234,14 @@ export default function UserAdjustmentDisplay({
                           <button
                             type="button"
                             onClick={() => {
-                              onUserOverviewFetched({
-                                ...userOverview,
-                                modifyingEvent: event,
-                              } as UserScoreOverview & {
-                                modifyingEvent: OverrideEvent;
-                              });
+                              onUserOverviewFetched(
+                                {
+                                  ...userOverview,
+                                  modifyingEvent: event,
+                                } as UserScoreOverview & {
+                                  modifyingEvent: OverrideEvent;
+                                },
+                              );
                             }}
                             class="text-blue-500 hover:text-blue-700 mr-2"
                             disabled={isLoadingParent}

@@ -1,6 +1,6 @@
 // islands/shared/UsernameInput.tsx
 import { useSignal } from "@preact/signals";
-import { useEffect, type Ref } from "preact/hooks";
+import { type Ref, useEffect } from "preact/hooks";
 
 interface UsernameInputProps {
   initialValue: string;
@@ -30,8 +30,10 @@ export default function UsernameInput({
   }, [username.value, debounceTime, onDebouncedChange]);
 
   useEffect(() => {
-    if (inputRef && inputRef.current && !isFetching &&
-        document.activeElement !== inputRef.current) {
+    if (
+      inputRef && inputRef.current && !isFetching &&
+      document.activeElement !== inputRef.current
+    ) {
       inputRef.current.focus();
     }
   }, [isFetching, inputRef]);

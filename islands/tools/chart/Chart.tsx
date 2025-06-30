@@ -1,5 +1,5 @@
 // islands/tools/charts/Chart.tsx
-import { useEffect, useState, useCallback, useRef } from "preact/hooks";
+import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import { OverrideEvent } from "../../../routes/api/v0/credit-score/index.ts";
 import ScoreResult from "../../tools/creditscore/ScoreResult.tsx";
 import CreditScoreChart from "./CreditScoreChart.tsx";
@@ -172,8 +172,10 @@ export default function Chart() {
   // Keep the re-focusing effect as a fallback, though it might not be strictly needed now
   // that input is not disabled. It ensures focus returns if something else shifts it.
   useEffect(() => {
-    if (!isLoading && debouncedChartUsername && inputRef.current &&
-        document.activeElement !== inputRef.current) {
+    if (
+      !isLoading && debouncedChartUsername && inputRef.current &&
+      document.activeElement !== inputRef.current
+    ) {
       inputRef.current.focus();
     }
   }, [isLoading, debouncedChartUsername]);

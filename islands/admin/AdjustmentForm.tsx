@@ -1,5 +1,5 @@
 // islands/admin/AdjustmentForm.tsx
-import { useState, useCallback } from "preact/hooks";
+import { useCallback, useEffect, useState } from "preact/hooks";
 import UsernameInput from "../shared/UsernameInput.tsx";
 import UserAdjustmentDisplay from "./UserAdjustmentDisplay.tsx";
 import AdjustmentFormFields from "./AdjustmentFormFields.tsx";
@@ -33,6 +33,19 @@ export default function AdjustmentForm() {
 
   const [refreshDisplayTrigger, setRefreshDisplayTrigger] = useState(0);
 
+  // NEW: Effect to manage URL search params based on debouncedSearchUsername
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const url = new URL(globalThis.location.href);
+      if (debouncedSearchUsername) {
+        url.searchParams.set("q", debouncedSearchUsername);
+      } else {
+        url.searchParams.delete("q");
+      }
+      globalThis.history.replaceState(null, "", url.toString());
+    }
+  }, [debouncedSearchUsername]); // This effect depends only on debouncedSearchUsername
+
   const handleDebouncedUsernameChange = useCallback((value: string) => {
     console.log(
       "[AdjustmentForm] Debounced username received from UsernameInput:",
@@ -44,21 +57,26 @@ export default function AdjustmentForm() {
     setSubmitMessageType("");
   }, []);
 
-  const handleUserOverviewFetched = useCallback((user: UserScoreOverview | null) => {
-    console.log("[AdjustmentForm] User overview fetched:", user);
-    if (user && (user as UserScoreOverview & { modifyingEvent?: OverrideEvent })
-        .modifyingEvent) {
-      setModifyingEvent(
-        (user as UserScoreOverview & { modifyingEvent: OverrideEvent })
-          .modifyingEvent,
-      );
-    } else {
-      setModifyingEvent(null);
-    }
-    setSelectedUserOverview(user);
-    setSubmitMessage(null);
-    setSubmitMessageType("");
-  }, []);
+  const handleUserOverviewFetched = useCallback(
+    (user: UserScoreOverview | null) => {
+      console.log("[AdjustmentForm] User overview fetched:", user);
+      if (
+        user && (user as UserScoreOverview & { modifyingEvent?: OverrideEvent })
+          .modifyingEvent
+      ) {
+        setModifyingEvent(
+          (user as UserScoreOverview & { modifyingEvent: OverrideEvent })
+            .modifyingEvent,
+        );
+      } else {
+        setModifyingEvent(null);
+      }
+      setSelectedUserOverview(user);
+      setSubmitMessage(null);
+      setSubmitMessageType("");
+    },
+    [],
+  );
 
   const handleFormSubmit = async (
     payload: {
@@ -149,7 +167,7 @@ export default function AdjustmentForm() {
           <UsernameInput
             initialValue={initialUsername}
             onDebouncedChange={handleDebouncedUsernameChange}
-            isFetching={isSubmitting} // Changed isDisabled to isFetching
+            isFetching={isSubmitting}
           />
           <UserAdjustmentDisplay
             debouncedUsername={debouncedSearchUsername}
@@ -183,8 +201,8 @@ export default function AdjustmentForm() {
         {selectedUserOverview?.userDeleted && (
           <div class="flex items-center justify-center bg-yellow-900/20 p-6 rounded-lg border border-yellow-700">
             <p class="text-yellow-400 text-center">
-              User {selectedUserOverview.username} is deleted and cannot be
-              adjusted.
+              User {selectedUserOverview.username}{" "}
+              is deleted and cannot be adjusted.
             </p>
           </div>
         )}

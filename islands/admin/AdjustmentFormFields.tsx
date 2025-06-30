@@ -223,8 +223,7 @@ export default function AdjustmentFormFields(
           id="url"
           type="url"
           value={urlInput.value}
-          onInput={(e) =>
-            urlInput.value = (e.target as HTMLInputElement).value}
+          onInput={(e) => urlInput.value = (e.target as HTMLInputElement).value}
           placeholder="https://manifold.markets/..."
           class="w-full p-2 bg-gray-900 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
@@ -282,9 +281,7 @@ export default function AdjustmentFormFields(
       {submitMessage && (
         <p
           class={`mt-4 text-center text-sm ${
-            submitMessageType === "error"
-              ? "text-red-400"
-              : "text-green-400"
+            submitMessageType === "error" ? "text-red-400" : "text-green-400"
           }`}
         >
           {submitMessage}
