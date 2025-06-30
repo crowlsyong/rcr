@@ -1,0 +1,24 @@
+{
+  "Y3ZEdMHLtoUXwiXGHaT6pj2Zj123": [
+    {
+      "username": "Spin",
+      "modifier": -50,
+      "url": "https://manifold.markets/crowlsyong/risk-payment-portal#i7shjqgh8rb",
+      "timestamp": 1719748800000
+    },
+    {
+      "username": "Spin",
+      "modifier": -50,
+      "url": "https://manifold.markets/crowlsyong/risk-payment-portal#6br457g7nti",
+      "timestamp": 1719835200000
+    }
+  ],
+  "AnotherUserIdHere": [
+    {
+      "username": "AnotherUser",
+      "modifier": -100,
+      "url": "https://example.com/another-default",
+      "timestamp": 1719921600000
+    }
+  ]
+}

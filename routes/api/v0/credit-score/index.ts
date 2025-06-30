@@ -27,6 +27,39 @@ import db from "../../../../database/db.ts";
 
 const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2";
 
+interface OverrideEvent {
+  username: string;
+  modifier: number;
+  url: string;
+  timestamp: number;
+}
+
+interface CreditScoreOverrides {
+  [userId: string]: OverrideEvent[];
+}
+
+let creditScoreOverrides: CreditScoreOverrides = {};
+let overridesLoaded = false;
+
+async function loadCreditScoreOverrides() {
+  if (overridesLoaded) {
+    return;
+  }
+  try {
+    const jsonPath = "./database/credit_score_overrides.json";
+
+    const jsonString = await Deno.readTextFile(jsonPath);
+    creditScoreOverrides = JSON.parse(jsonString);
+    overridesLoaded = true;
+    console.log("Credit score overrides loaded successfully.");
+  } catch (error) {
+    console.error(`Failed to load credit score overrides:`, error);
+    creditScoreOverrides = {};
+  }
+}
+
+await loadCreditScoreOverrides();
+
 const getErrorMessage = (e: unknown): string => {
   return typeof e === "object" && e !== null && "message" in e
     ? (e as { message: string }).message
@@ -174,7 +207,20 @@ export const handler: Handlers = {
         outstandingDebtImpact,
       );
 
-      const creditScore = mapToCreditScore(rawMMR);
+      let creditScore = mapToCreditScore(rawMMR);
+
+      const overrideEvents = creditScoreOverrides[userId];
+      if (Array.isArray(overrideEvents) && overrideEvents.length > 0) {
+        let totalModifier = 0;
+        for (const event of overrideEvents) {
+          totalModifier += event.modifier;
+        }
+        console.log(
+          `Applying total credit score modifier for user ${finalUsername} (ID: ${userId}): ${totalModifier}`,
+        );
+        creditScore = Math.max(0, Math.min(1000, creditScore + totalModifier));
+      }
+
       const risk = calculateriskBaseFee(creditScore);
 
       if (shouldSaveHistoricalData && !userDeleted) {
