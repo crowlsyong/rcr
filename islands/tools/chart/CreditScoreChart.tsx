@@ -331,7 +331,6 @@ export default function CreditScoreChart({
 
   return (
     <div class="bg-gray-900 p-4 md:p-6 rounded-lg shadow-inner">
-      <h2 class="text-xl font-semibold mb-4 text-gray-100">Score History</h2>
       {historicalData.length === 0
         ? (
           <p class="text-gray-400 text-sm text-center py-4">
