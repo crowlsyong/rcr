@@ -1,10 +1,8 @@
 // islands/admin/AdjustmentForm.tsx
 import { useSignal } from "@preact/signals";
-import { useEffect, useRef, useState } from "preact/hooks";
-import { CreditScoreDataPoint } from "../tools/chart/CreditScoreChart.tsx";
+import { useState, useEffect, useRef } from "preact/hooks";
 import { OverrideEvent } from "../../routes/api/v0/credit-score/index.ts";
 import ScoreResult from "../tools/creditscore/ScoreResult.tsx";
-import CreditScoreChart from "../tools/chart/CreditScoreChart.tsx";
 
 interface UserScoreOverview {
   userExists: boolean;
@@ -15,7 +13,6 @@ interface UserScoreOverview {
   creditScore: number;
   riskBaseFee: number;
   userDeleted: boolean;
-  allHistoricalData: CreditScoreDataPoint[];
   existingOverrideEvents: OverrideEvent[];
 }
 
@@ -29,7 +26,7 @@ export default function AdjustmentForm() {
   const [userError, setUserError] = useState<string | null>(null);
 
   const modifierInput = useSignal<number | null>(null);
-  const dateInput = useSignal(""); // Stores YYYY-MM-DD string
+  const dateInput = useSignal("");
   const urlInput = useSignal("");
   const descriptionInput = useSignal("");
 
@@ -48,20 +45,17 @@ export default function AdjustmentForm() {
 
   const dateInputRef = useRef<HTMLInputElement>(null);
 
-  // --- Part 1: URL Syncing for Username Search ---
-  // Read username from URL on initial load
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(globalThis.location.search);
       const q = params.get("q");
       if (q && q !== usernameInput.value) {
         usernameInput.value = q;
-        setDebouncedUsername(q); // Trigger fetch if URL has query
+        setDebouncedUsername(q);
       }
     }
   }, []);
 
-  // Update URL when usernameInput changes (debounced)
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedUsername(usernameInput.value);
@@ -78,7 +72,6 @@ export default function AdjustmentForm() {
     return () => clearTimeout(timer);
   }, [usernameInput.value]);
 
-  // Unified function to fetch and update user data
   const fetchAndSetUserData = async (targetUsername: string) => {
     setUserOverview(null);
     setUserError(null);
@@ -89,25 +82,12 @@ export default function AdjustmentForm() {
 
     setIsLoadingUser(true);
     try {
-      const res = await fetch(
-        `/api/v0/credit-score?username=${targetUsername}`,
-      );
+      const res = await fetch(`/api/v0/credit-score?username=${targetUsername}`);
       const data = await res.json();
 
       if (!res.ok || !data.userExists) {
         setUserError(data.error || `User @${targetUsername} not found.`);
         return;
-      }
-
-      const historyRes = await fetch(`/api/v0/history?userId=${data.userId}`);
-      let historicalData: CreditScoreDataPoint[] = [];
-      if (historyRes.ok) {
-        historicalData = await historyRes.json();
-      } else {
-        console.error(
-          "Failed to fetch historical data for chart:",
-          historyRes.statusText,
-        );
       }
 
       setUserOverview({
@@ -119,7 +99,6 @@ export default function AdjustmentForm() {
         creditScore: data.creditScore,
         riskBaseFee: data.riskBaseFee,
         userDeleted: data.userDeleted,
-        allHistoricalData: historicalData,
         existingOverrideEvents: data.overrideEvents || [],
       });
     } catch (err) {
@@ -136,7 +115,7 @@ export default function AdjustmentForm() {
   };
 
   useEffect(() => {
-    fetchAndSetUserData(debouncedUsername); // Call the unified fetch function
+    fetchAndSetUserData(debouncedUsername);
   }, [debouncedUsername]);
 
   useEffect(() => {
@@ -259,10 +238,7 @@ export default function AdjustmentForm() {
 
   const handleDelete = async (eventToDelete: OverrideEvent) => {
     if (!confirmDelete[eventToDelete.timestamp]) {
-      setConfirmDelete((prev) => ({
-        ...prev,
-        [eventToDelete.timestamp]: true,
-      }));
+      setConfirmDelete((prev) => ({ ...prev, [eventToDelete.timestamp]: true }));
       setTimeout(() => {
         setConfirmDelete((prev) => ({
           ...prev,
@@ -343,9 +319,8 @@ export default function AdjustmentForm() {
           type="text"
           placeholder="e.g., Tumbles"
           value={usernameInput.value}
-          onInput={(
-            e,
-          ) => (usernameInput.value = (e.target as HTMLInputElement).value)}
+          onInput={(e) =>
+            (usernameInput.value = (e.target as HTMLInputElement).value)}
           class="w-full p-2 bg-gray-800 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           disabled={isLoadingUser}
         />
@@ -357,7 +332,7 @@ export default function AdjustmentForm() {
 
       {userOverview && !userError && (
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Column: ScoreResult & Chart */}
+          {/* Left Column: Current User Status & Existing Overrides */}
           <div class="space-y-6">
             <div class="p-4 bg-gray-800 rounded-lg border border-gray-700">
               <h3 class="text-lg font-semibold text-white mb-2">
@@ -375,29 +350,87 @@ export default function AdjustmentForm() {
                 userDeleted={userOverview.userDeleted}
               />
             </div>
-            {/* Conditional rendering for the chart itself */}
-            {userOverview.allHistoricalData.length === 0 &&
-                userOverview.existingOverrideEvents.length === 0
-              ? (
-                <div class="bg-gray-900 p-4 md:p-6 rounded-lg shadow-inner border border-gray-700">
-                  <h2 class="text-xl font-semibold mb-4 text-gray-100">
-                    Score History
-                  </h2>
-                  <p class="text-gray-400 text-sm text-center py-4">
-                    No historical score or override data to display yet.
-                  </p>
+
+            {userOverview.existingOverrideEvents.length > 0 && (
+              <div class="p-4 bg-gray-800 rounded-lg shadow-inner border border-gray-700">
+                <h4 class="text-md font-semibold text-white mb-4">
+                  Existing Overrides:
+                </h4>
+                <div class="overflow-x-auto">
+                  <table class="min-w-full divide-y divide-gray-700">
+                    <thead class="bg-gray-700">
+                      <tr>
+                        <th class="px-4 py-2 text-left text-xxs font-medium text-gray-300 uppercase tracking-wider">
+                          Date
+                        </th>
+                        <th class="px-4 py-2 text-left text-xxs font-medium text-gray-300 uppercase tracking-wider">
+                          Modifier
+                        </th>
+                        <th class="px-4 py-2 text-left text-xxs font-medium text-gray-300 uppercase tracking-wider">
+                          Notes
+                        </th>
+                        <th class="px-4 py-2 text-left text-xxs font-medium text-gray-300 uppercase tracking-wider">
+                          URL
+                        </th>
+                        <th class="px-4 py-2 text-center text-xxs font-medium text-gray-300 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-800">
+                      {userOverview.existingOverrideEvents.map((event) => (
+                        <tr key={event.timestamp} class="hover:bg-gray-700">
+                          <td class="px-4 py-2 text-xxs text-gray-200">
+                            {formatTimestampToDate(event.dateOfInfraction)}
+                          </td>
+                          <td class="px-4 py-2 text-xxs text-gray-200">
+                            {event.modifier > 0
+                              ? `+${event.modifier}`
+                              : event.modifier}
+                          </td>
+                          <td class="px-4 py-2 text-xxs text-gray-300 max-w-[200px] truncate">
+                            {event.description}
+                          </td>
+                          <td class="px-4 py-2 text-xxs text-blue-400 hover:underline">
+                            <a
+                              href={event.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Link
+                            </a>
+                          </td>
+                          <td class="px-4 py-2 whitespace-nowrap text-right text-xxs font-medium">
+                            <button
+                              type="button"
+                              onClick={() => handleModify(event)}
+                              class="text-blue-500 hover:text-blue-700 mr-2"
+                              disabled={isSubmitting}
+                            >
+                              Modify
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(event)}
+                              class={`font-medium py-1 px-2 rounded ${
+                                confirmDelete[event.timestamp]
+                                  ? "bg-red-600 text-white"
+                                  : "text-red-500 hover:text-red-700"
+                              }`}
+                              disabled={isSubmitting}
+                            >
+                              {confirmDelete[event.timestamp]
+                                ? "Are you sure?"
+                                : "Delete"}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              )
-              : (
-                <CreditScoreChart
-                  username={userOverview.username}
-                  historicalData={userOverview.allHistoricalData}
-                  selectedTimeRange="ALL" // Show all data for admin purposes
-                  isLoading={false}
-                  error={null}
-                  overrideEvents={userOverview.existingOverrideEvents}
-                />
-              )}
+              </div>
+            )}
           </div>
 
           {/* Right Column: Adjustment Form */}
@@ -514,8 +547,8 @@ export default function AdjustmentForm() {
                 <button
                   type="button"
                   onClick={() => {
-                    setModifyingEvent(null); // Exit modify mode
-                    modifierInput.value = null; // Clear form
+                    setModifyingEvent(null);
+                    modifierInput.value = null;
                     dateInput.value = new Date().toISOString().split("T")[0];
                     urlInput.value = "";
                     descriptionInput.value = "";
@@ -530,9 +563,7 @@ export default function AdjustmentForm() {
               {submitMessage && (
                 <p
                   class={`mt-4 text-center text-sm ${
-                    submitMessageType === "error"
-                      ? "text-red-400"
-                      : "text-green-400"
+                    submitMessageType === "error" ? "text-red-400" : "text-green-400"
                   }`}
                 >
                   {submitMessage}
@@ -542,95 +573,6 @@ export default function AdjustmentForm() {
           </div>
         </div>
       )}
-
-      {/* Full-width row for Existing Overrides */}
-      {userOverview && !userError &&
-        userOverview.existingOverrideEvents.length >
-          0 &&
-        (
-          <div class="mt-8 pt-8 border-t border-gray-700">
-            <div class="mt-6 p-4 bg-gray-800 rounded-lg shadow-inner border border-gray-700">
-              <h4 class="text-md font-semibold text-white mb-4">
-                Existing Overrides:
-              </h4>
-              <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-700">
-                  <thead class="bg-gray-700">
-                    <tr>
-                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Modifier
-                      </th>
-                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Description
-                      </th>
-                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        URL
-                      </th>
-                      <th class="px-4 py-2 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-800">
-                    {userOverview.existingOverrideEvents.map((event) => (
-                      <tr key={event.timestamp} class="hover:bg-gray-700">
-                        <td class="px-4 py-2 text-sm text-gray-200">
-                          {formatTimestampToDate(event.dateOfInfraction)}
-                        </td>
-                        <td class="px-4 py-2 text-sm text-gray-200">
-                          {event.modifier > 0
-                            ? `+${event.modifier}`
-                            : event.modifier}
-                        </td>
-                        <td class="px-4 py-2 text-sm text-gray-300 max-w-[200px] truncate">
-                          {event.description}
-                        </td>
-                        <td class="px-4 py-2 text-sm text-blue-400 hover:underline">
-                          <a
-                            href={event.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Link
-                          </a>
-                        </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleModify(event)}
-                            class="text-blue-500 hover:text-blue-700 mr-2"
-                            disabled={isSubmitting}
-                          >
-                            Modify
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleDelete(event)}
-                            class={`font-medium py-1 px-2 rounded ${
-                              confirmDelete[event.timestamp]
-                                ? "bg-red-600 text-white"
-                                : "text-red-500 hover:text-red-700"
-                            }`}
-                            disabled={isSubmitting}
-                          >
-                            {confirmDelete[event.timestamp]
-                              ? "Are you sure?"
-                              : "Delete"}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
     </div>
   );
 }
