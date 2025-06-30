@@ -47,6 +47,9 @@ import * as $u_username_ from "./routes/u/[username].tsx";
 import * as $InfoHover from "./islands/InfoHover.tsx";
 import * as $PasswordGate from "./islands/PasswordGate.tsx";
 import * as $admin_AdjustmentForm from "./islands/admin/AdjustmentForm.tsx";
+import * as $admin_AdjustmentFormFields from "./islands/admin/AdjustmentFormFields.tsx";
+import * as $admin_UserAdjustmentDisplay from "./islands/admin/UserAdjustmentDisplay.tsx";
+import * as $admin_UserAdjustmentSearch from "./islands/admin/UserAdjustmentSearch.tsx";
 import * as $buttons_Button from "./islands/buttons/Button.tsx";
 import * as $buttons_ChartButton from "./islands/buttons/ChartButton.tsx";
 import * as $buttons_ShareButton from "./islands/buttons/ShareButton.tsx";
@@ -54,6 +57,7 @@ import * as $buttons_ShareURL from "./islands/buttons/ShareURL.tsx";
 import * as $menu_LinkDataProvider from "./islands/menu/LinkDataProvider.tsx";
 import * as $menu_MenuBar from "./islands/menu/MenuBar.tsx";
 import * as $menu_MenuDropdown from "./islands/menu/MenuDropdown.tsx";
+import * as $shared_UsernameInput from "./islands/shared/UsernameInput.tsx";
 import * as $tools_GameShowCreditScore from "./islands/tools/GameShowCreditScore.tsx";
 import * as $tools_InfoIcon from "./islands/tools/InfoIcon.tsx";
 import * as $tools_arbitrage_ArbitrageCalculator from "./islands/tools/arbitrage/ArbitrageCalculator.tsx";
@@ -160,6 +164,9 @@ const manifest = {
     "./islands/InfoHover.tsx": $InfoHover,
     "./islands/PasswordGate.tsx": $PasswordGate,
     "./islands/admin/AdjustmentForm.tsx": $admin_AdjustmentForm,
+    "./islands/admin/AdjustmentFormFields.tsx": $admin_AdjustmentFormFields,
+    "./islands/admin/UserAdjustmentDisplay.tsx": $admin_UserAdjustmentDisplay,
+    "./islands/admin/UserAdjustmentSearch.tsx": $admin_UserAdjustmentSearch,
     "./islands/buttons/Button.tsx": $buttons_Button,
     "./islands/buttons/ChartButton.tsx": $buttons_ChartButton,
     "./islands/buttons/ShareButton.tsx": $buttons_ShareButton,
@@ -167,6 +174,7 @@ const manifest = {
     "./islands/menu/LinkDataProvider.tsx": $menu_LinkDataProvider,
     "./islands/menu/MenuBar.tsx": $menu_MenuBar,
     "./islands/menu/MenuDropdown.tsx": $menu_MenuDropdown,
+    "./islands/shared/UsernameInput.tsx": $shared_UsernameInput,
     "./islands/tools/GameShowCreditScore.tsx": $tools_GameShowCreditScore,
     "./islands/tools/InfoIcon.tsx": $tools_InfoIcon,
     "./islands/tools/arbitrage/ArbitrageCalculator.tsx":

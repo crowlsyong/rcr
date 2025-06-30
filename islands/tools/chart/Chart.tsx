@@ -1,11 +1,10 @@
 // islands/tools/charts/Chart.tsx
-import { useEffect, useState } from "preact/hooks";
-import { useSignal } from "@preact/signals";
+import { useEffect, useState, useCallback, useRef } from "preact/hooks";
 import { OverrideEvent } from "../../../routes/api/v0/credit-score/index.ts";
 import ScoreResult from "../../tools/creditscore/ScoreResult.tsx";
 import CreditScoreChart from "./CreditScoreChart.tsx";
 import TimeRangeSelector from "./TimeRangeSelector.tsx";
-// REMOVED IMPORTS: ShareButton, ChartButton
+import UsernameInput from "../../shared/UsernameInput.tsx";
 
 interface UserScoreData {
   username: string;
@@ -73,12 +72,9 @@ function filterDataByTimeRange(
 
 export default function Chart() {
   const initialUsername = getInitialUsernameFromUrl();
-  const username = useSignal(initialUsername);
-
-  const [searchTriggerUsername, setSearchTriggerUsername] = useState(
+  const [debouncedChartUsername, setDebouncedChartUsername] = useState(
     initialUsername,
   );
-
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scoreData, setScoreData] = useState<UserScoreData | null>(null);
@@ -87,11 +83,32 @@ export default function Chart() {
   >([]);
   const [selectedTimeRange, setSelectedTimeRange] = useState("30D");
 
-  useEffect(() => {
-    if (initialUsername) {
-      setSearchTriggerUsername(initialUsername);
-    }
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const hasMounted = useRef(false);
+
+  const handleDebouncedUsernameChange = useCallback((value: string) => {
+    setDebouncedChartUsername(value);
+    setScoreData(null);
+    setAllHistoricalData([]);
+    setError(null);
   }, []);
+
+  useEffect(() => {
+    if (hasMounted.current) {
+      if (typeof window !== "undefined") {
+        const url = new URL(globalThis.location.href);
+        if (debouncedChartUsername) {
+          url.searchParams.set("q", debouncedChartUsername);
+        } else {
+          url.searchParams.delete("q");
+        }
+        globalThis.history.replaceState(null, "", url.toString());
+      }
+    } else {
+      hasMounted.current = true;
+    }
+  }, [debouncedChartUsername]);
 
   useEffect(() => {
     async function fetchChartData(user: string) {
@@ -99,16 +116,6 @@ export default function Chart() {
       setError(null);
       setScoreData(null);
       setAllHistoricalData([]);
-
-      if (typeof window !== "undefined") {
-        const url = new URL(globalThis.location.href);
-        if (user) {
-          url.searchParams.set("q", user);
-        } else {
-          url.searchParams.delete("q");
-        }
-        globalThis.history.replaceState(null, "", url.toString());
-      }
 
       if (!user) {
         setIsLoading(false);
@@ -159,80 +166,55 @@ export default function Chart() {
       }
     }
 
-    fetchChartData(searchTriggerUsername);
-  }, [searchTriggerUsername]);
+    fetchChartData(debouncedChartUsername);
+  }, [debouncedChartUsername]);
+
+  // Keep the re-focusing effect as a fallback, though it might not be strictly needed now
+  // that input is not disabled. It ensures focus returns if something else shifts it.
+  useEffect(() => {
+    if (!isLoading && debouncedChartUsername && inputRef.current &&
+        document.activeElement !== inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isLoading, debouncedChartUsername]);
 
   const filteredHistoricalData = filterDataByTimeRange(
     allHistoricalData,
     selectedTimeRange,
   );
 
-  const isWaiting = isLoading && !!searchTriggerUsername;
-
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === "Enter") {
-      setSearchTriggerUsername(username.value);
-    }
-  };
-
-  const handleSearchClick = () => {
-    setSearchTriggerUsername(username.value);
-  };
+  const isWaiting = isLoading && !!debouncedChartUsername;
 
   return (
     <div class="bg-gray-900 p-6 rounded-lg shadow-xl border border-gray-700">
       <h1 class="text-2xl font-bold mb-6 text-white">Credit Score Chart</h1>
 
-      <div class="mb-6 flex items-end space-x-2">
+      <div class="flex items-end space-x-2">
         <div class="flex-grow">
-          <label
-            htmlFor="username-input"
-            class="block text-sm font-medium text-gray-300 mb-2"
-          >
-            Enter Manifold Username:
-          </label>
-          <input
-            id="username-input"
-            type="text"
-            placeholder="e.g., Alice"
-            value={username.value}
-            onInput={(
-              e,
-            ) => (username.value = (e.target as HTMLInputElement).value)}
-            onKeyDown={handleKeyDown}
-            class="w-full p-2 bg-gray-800 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled={isLoading}
+          <UsernameInput
+            initialValue={initialUsername}
+            onDebouncedChange={handleDebouncedUsernameChange}
+            isFetching={isLoading} // Changed prop name
+            inputRef={inputRef}
           />
         </div>
-        <button
-          type="button"
-          onClick={handleSearchClick}
-          disabled={isLoading}
-          class={`px-4 py-2 rounded-md font-semibold text-white transition-colors duration-200 ${
-            isLoading
-              ? "bg-gray-600 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700"
-          }`}
-        >
-          Search
-        </button>
       </div>
 
       {isWaiting && (
         <p class="text-center text-gray-400 py-8">Loading data...</p>
       )}
 
-      {error && searchTriggerUsername && (
+      {error && debouncedChartUsername && (
         <p class="text-center text-red-500 py-8">{error}</p>
       )}
 
-      {!searchTriggerUsername && !isWaiting && !error && (
+      {!debouncedChartUsername && !isWaiting && !error && (
         <p class="text-center text-gray-400 py-8">
           Enter a username above to see their credit score chart.
         </p>
       )}
 
-      {searchTriggerUsername && !isWaiting && !error && scoreData &&
+      {debouncedChartUsername && !isWaiting && !error && scoreData &&
           scoreData.userExists
         ? (
           <>
@@ -243,8 +225,6 @@ export default function Chart() {
               avatarUrl={scoreData.avatarUrl}
               isWaiting={false}
             />
-
-            {/* REMOVED ChartButton and ShareButton from here */}
 
             <div class="mt-6">
               <div class="bg-gray-900 p-4 md:p-6 rounded-lg shadow-inner">
@@ -261,7 +241,7 @@ export default function Chart() {
                 </div>
 
                 <CreditScoreChart
-                  username={searchTriggerUsername}
+                  username={debouncedChartUsername}
                   historicalData={filteredHistoricalData}
                   selectedTimeRange={selectedTimeRange}
                   isLoading={false}
