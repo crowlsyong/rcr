@@ -110,47 +110,23 @@ export default function CreditScoreChart({
       y: dp.creditScore,
     }));
 
-    // FIXED: Corrected hardcoded timestamps to be in milliseconds
-    const hardcodedInfractionData: InfractionBarDataPoint[] = [
-      {
-        x: 1751133639000, // June 29, 2025, 00:00:39 UTC in milliseconds
-        y: 500,
-        eventDetails: {
-          username: 'HardcodedUser1', modifier: -50,
-          url: 'https://manifold.markets/test/june29-infraction', timestamp: 1751133639000,
-          dateOfInfraction: 1751133639000,
-        },
-      },
-      {
-        x: 1751220039000, // June 30, 2025, 00:00:39 UTC in milliseconds
-        y: 700,
-        eventDetails: {
-          username: 'HardcodedUser2', modifier: -75,
-          url: 'https://manifold.markets/test/june30-infraction', timestamp: 1751220039000,
-          dateOfInfraction: 1751220039000,
-        },
-      },
-    ];
-
-    const combinedInfractionData: InfractionBarDataPoint[] = [
-      ...hardcodedInfractionData,
-      ...overrideEvents.map(event => {
-        let closestScore = 0;
-        let minDiff = Infinity;
-        historicalData.forEach(dp => {
-          const diff = Math.abs(dp.timestamp - event.dateOfInfraction);
-          if (diff < minDiff) {
-            minDiff = diff;
-            closestScore = dp.creditScore;
-          }
-        });
-        return {
-          x: event.dateOfInfraction,
-          y: closestScore === 0 ? 1 : closestScore,
-          eventDetails: event,
-        };
-      })
-    ];
+    // Data for infraction bars
+    const infractionBarData: InfractionBarDataPoint[] = overrideEvents.map(event => {
+      let closestScore = 0;
+      let minDiff = Infinity;
+      historicalData.forEach(dp => {
+        const diff = Math.abs(dp.timestamp - event.dateOfInfraction);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestScore = dp.creditScore;
+        }
+      });
+      return {
+        x: event.dateOfInfraction,
+        y: closestScore === 0 ? 1 : closestScore,
+        eventDetails: event,
+      };
+    });
 
 
     const tickConfig = getOptimalTickConfiguration(
@@ -180,7 +156,7 @@ export default function CreditScoreChart({
         {
           type: "bar",
           label: "Infraction",
-          data: combinedInfractionData,
+          data: infractionBarData,
           backgroundColor: 'rgba(255, 99, 132, 0.5)',
           borderColor: 'rgba(255, 99, 132, 0.8)',
           borderWidth: 1,
@@ -225,7 +201,8 @@ export default function CreditScoreChart({
                 if (context.dataset.type === 'bar') {
                   const eventDetails = context.raw as InfractionBarDataPoint; 
                   if (eventDetails) {
-                    return [`@${eventDetails.eventDetails.username} didn't pay a loan back.`, `More info here: ${eventDetails.eventDetails.url}`];
+                    // FIXED: Removed URL from tooltip, only show message
+                    return [`@${eventDetails.eventDetails.username} didn't pay a loan back.`, `Modifier: ${eventDetails.eventDetails.modifier}`];
                   }
                   return 'Infraction event';
                 } else {
@@ -302,7 +279,37 @@ export default function CreditScoreChart({
       plugins: [],
     });
 
+    // --- NEW: Add Click Event Listener for bars ---
+    const handleClick = (event: MouseEvent) => {
+      if (!chartInstanceRef.current) return;
+
+      // Get elements at the event position, filtering for bars
+      const elements = chartInstanceRef.current.getElementsAtEventForMode(
+        event,
+        'nearest', // 'nearest' mode finds the closest element
+        { intersect: true }, // Must intersect the element
+        true // Use dataset order for priority
+      );
+
+      // Filter for bar elements (dataset type 'bar')
+      const clickedBar = elements.find(el => chartInstanceRef.current?.data.datasets[el.datasetIndex].type === 'bar');
+
+      if (clickedBar) {
+        const datasetIndex = clickedBar.datasetIndex;
+        const dataIndex = clickedBar.index;
+        const rawDataPoint = chartInstanceRef.current.data.datasets[datasetIndex].data[dataIndex] as InfractionBarDataPoint;
+        
+        if (rawDataPoint && rawDataPoint.eventDetails && rawDataPoint.eventDetails.url) {
+          globalThis.open(rawDataPoint.eventDetails.url, '_blank'); // Open URL in a new tab
+        }
+      }
+    };
+
+    currentCanvas.addEventListener('click', handleClick);
+
     return () => {
+      // Cleanup: Remove event listener and destroy chart
+      currentCanvas.removeEventListener('click', handleClick);
       if (chartInstanceRef.current) {
         chartInstanceRef.current.destroy();
         chartInstanceRef.current = null;
