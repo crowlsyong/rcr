@@ -1,5 +1,5 @@
 // routes/api/v0/credit-score/lite.ts
-import { Handlers, FreshContext } from "$fresh/server.ts";
+import { FreshContext, Handlers } from "$fresh/server.ts";
 import {
   fetchUserData,
   fetchUserDataLiteById,
@@ -9,12 +9,15 @@ import {
   computeMMR,
   mapToCreditScore,
 } from "../../../../utils/api/score_calculation_logic.ts";
-import { ManifoldUser, UserPortfolio } from "../../../../utils/api/manifold_types.ts";
 import {
+  ManifoldUser,
+  UserPortfolio,
+} from "../../../../utils/api/manifold_types.ts";
+import {
+  fetchLoanTransactions,
   fetchManaAndRecentRank,
   fetchTransactionCount,
   fetchUserPortfolio,
-  fetchLoanTransactions,
 } from "../../../../utils/api/manifold_api_service.ts";
 
 const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2";
@@ -152,4 +155,3 @@ export const handler: Handlers = {
     }
   },
 };
-
