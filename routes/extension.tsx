@@ -7,8 +7,8 @@ export default function RiskExtensionPage() {
       <Head>
         <title>RISK Chrome Extension</title>
       </Head>
-      <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white min-h-screen flex items-center justify-center p-4">
-        <section className="max-w-3xl mx-auto text-center py-10 px-6 bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg shadow-2xl border border-gray-700 relative overflow-hidden">
+      <div className="bg-[#0F1729] text-white min-h-screen flex items-center justify-center p-4">
+        <section className="max-w-3xl mx-auto text-center py-10 px-6 bg-[#0F1729] rounded-lg shadow-2xl border border-gray-700 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400">
           </div>
           <p className="text-xl sm:text-2xl text-gray-400 mb-2">
