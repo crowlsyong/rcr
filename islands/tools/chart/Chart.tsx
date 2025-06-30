@@ -1,10 +1,9 @@
-/// <reference lib="deno.unstable" />
 // islands/Chart.tsx
-
 import { useEffect, useState } from "preact/hooks";
 import ScoreResult from "../../tools/creditscore/ScoreResult.tsx";
 import CreditScoreChart from "../chart/CreditScoreChart.tsx";
 import TimeRangeSelector from "../chart/TimeRangeSelector.tsx";
+import { OverrideEvent } from "../../../routes/api/v0/credit-score/index.ts";
 
 interface UserScoreData {
   username: string;
@@ -12,13 +11,18 @@ interface UserScoreData {
   riskBaseFee: number;
   avatarUrl: string | null;
   userExists: boolean;
-  latestRank: number | null;
-  outstandingDebtImpact: number;
-  calculatedProfit: number;
-  balance: number;
-  rawMMR: number;
+  fetchSuccess: boolean;
+  details: {
+    latestRank: number | null;
+    outstandingDebtImpact: number;
+    calculatedProfit: number;
+    balance: number;
+    rawMMR: number;
+  };
   historicalDataSaved: boolean;
   userId: string;
+  userDeleted: boolean;
+  overrideEvents: OverrideEvent[];
 }
 
 interface HistoricalDataPoint {
@@ -83,7 +87,7 @@ export default function Chart({ username }: ChartProps) {
       }
 
       try {
-        const scoreRes = await fetch(`/api/v0/score?username=${username}`);
+        const scoreRes = await fetch(`/api/v0/credit-score?username=${username}`);
         if (!scoreRes.ok) {
           setError(
             `Failed to fetch current score data: ${scoreRes.statusText}`,
@@ -93,6 +97,7 @@ export default function Chart({ username }: ChartProps) {
         }
         const currentScoreData: UserScoreData = await scoreRes.json();
         setScoreData(currentScoreData);
+        console.log("Frontend Chart: Received overrideEvents from API:", currentScoreData.overrideEvents); // LOG 2
 
         if (!currentScoreData.userExists) {
           setError(`User '${username}' not found on Manifold Markets.`);
@@ -131,7 +136,6 @@ export default function Chart({ username }: ChartProps) {
     fetchData();
   }, [username]);
 
-  // Filter data based on time range for display
   const filteredHistoricalData = filterDataByTimeRange(
     allHistoricalData,
     selectedTimeRange,
@@ -183,6 +187,7 @@ export default function Chart({ username }: ChartProps) {
             selectedTimeRange={selectedTimeRange}
             isLoading={false}
             error={null}
+            overrideEvents={scoreData?.overrideEvents || []}
           />
         </div>
       </div>
@@ -200,18 +205,18 @@ export default function Chart({ username }: ChartProps) {
                 </p>
                 <p class="text-sm md:text-base">
                   Latest League Rank:{" "}
-                  <strong>{scoreData.latestRank ?? "N/A"}</strong>
+                  <strong>{scoreData.details?.latestRank ?? "N/A"}</strong>
                 </p>
                 <p class="text-sm md:text-base">
-                  Debt: <strong>{scoreData.outstandingDebtImpact}</strong>
+                  Debt: <strong>{scoreData.details?.outstandingDebtImpact}</strong>
                 </p>
                 <p class="text-sm md:text-base">
                   Calculated Profit:{" "}
-                  <strong>{Math.round(scoreData.calculatedProfit)}</strong>
+                  <strong>{Math.round(scoreData.details?.calculatedProfit)}</strong>
                 </p>
                 <p class="text-sm md:text-base">
                   Approximate Balance:{" "}
-                  <strong>{Math.round(scoreData.balance)}</strong>
+                  <strong>{Math.round(scoreData.details?.balance)}</strong>
                 </p>
               </>
             )

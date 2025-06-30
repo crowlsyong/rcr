@@ -1,6 +1,9 @@
 // islands/chart/CreditScoreChart.tsx
-import { useEffect } from "preact/hooks";
+import { useEffect, useRef } from "preact/hooks";
 import { Chart, registerables } from "chart.js";
+import 'npm:chartjs-adapter-date-fns';
+import type { Chart as ChartJsType, TooltipItem } from "chart.js";
+import { OverrideEvent } from "../../../routes/api/v0/credit-score/index.ts";
 
 Chart.register(...registerables);
 
@@ -11,28 +14,32 @@ interface HistoricalDataPoint {
   timestamp: number;
 }
 
+interface InfractionBarDataPoint {
+  x: number; // Timestamp
+  y: number; // Credit Score (height of the bar)
+  eventDetails: OverrideEvent; // The attached event details
+}
+
 interface CreditScoreChartProps {
   username: string;
   historicalData: HistoricalDataPoint[];
   selectedTimeRange: string;
   isLoading: boolean;
   error: string | null;
+  overrideEvents: OverrideEvent[];
 }
 
 function getOptimalTickConfiguration(dataLength: number, timeRange: string) {
-  // Calculate optimal number of ticks based on data length and time range
   if (timeRange === "7D") return { maxTicksLimit: 7, stepSize: undefined };
   if (timeRange === "30D") return { maxTicksLimit: 8, stepSize: undefined };
   if (timeRange === "90D") return { maxTicksLimit: 10, stepSize: undefined };
-  if (timeRange === "6M") return { maxTicksLimit: 12, stepSize: undefined };
-
-  // For "ALL" time, be more aggressive about limiting ticks
-  if (dataLength > 100) return { maxTicksLimit: 15, stepSize: undefined };
+  if (timeRange === "6M") return { maxTicksLimit: 12, stepSize: undefined }; 
+  if (dataLength > 100) return { maxTicksLimit: 15, stepSize: undefined }; 
   if (dataLength > 50) return { maxTicksLimit: 12, stepSize: undefined };
   return { maxTicksLimit: 10, stepSize: undefined };
 }
 
-function formatDateLabel(timestamp: number, timeRange: string): string {
+function _formatDateLabel(timestamp: number, timeRange: string): string {
   const date = new Date(timestamp);
 
   switch (timeRange) {
@@ -68,50 +75,119 @@ export default function CreditScoreChart({
   selectedTimeRange,
   isLoading,
   error,
+  overrideEvents,
 }: CreditScoreChartProps) {
+  const chartInstanceRef = useRef<ChartJsType | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
   useEffect(() => {
     if (historicalData.length === 0 || isLoading || error) {
+      if (chartInstanceRef.current) {
+        chartInstanceRef.current.destroy();
+        chartInstanceRef.current = null;
+      }
       return;
     }
 
-    const canvas = document.getElementById(`creditScoreChart-${username}`) as
-      | HTMLCanvasElement
-      | null;
-    const ctx = canvas?.getContext("2d");
-    if (!ctx) return;
-
-    // Keep ALL data points for smooth chart resolution
-    const labels = historicalData.map((dp) =>
-      formatDateLabel(dp.timestamp, selectedTimeRange)
-    );
-    const dataPoints = historicalData.map((dp) => dp.creditScore);
-
-    const existingChart = Chart.getChart(ctx);
-    if (existingChart) {
-      existingChart.destroy();
+    const currentCanvas = canvasRef.current;
+    if (!currentCanvas) {
+      console.warn("Chart: Canvas element is not available in DOM yet. Will retry on next render.");
+      return; 
     }
+
+    const ctx = currentCanvas.getContext("2d");
+    if (!ctx) {
+      console.error("Chart: Failed to get 2D context for chart canvas.");
+      return;
+    }
+
+    if (chartInstanceRef.current) {
+      chartInstanceRef.current.destroy();
+    }
+
+    const chartDataPoints = historicalData.map((dp) => ({
+      x: dp.timestamp,
+      y: dp.creditScore,
+    }));
+
+    // FIXED: Corrected hardcoded timestamps to be in milliseconds
+    const hardcodedInfractionData: InfractionBarDataPoint[] = [
+      {
+        x: 1751133639000, // June 29, 2025, 00:00:39 UTC in milliseconds
+        y: 500,
+        eventDetails: {
+          username: 'HardcodedUser1', modifier: -50,
+          url: 'https://manifold.markets/test/june29-infraction', timestamp: 1751133639000,
+          dateOfInfraction: 1751133639000,
+        },
+      },
+      {
+        x: 1751220039000, // June 30, 2025, 00:00:39 UTC in milliseconds
+        y: 700,
+        eventDetails: {
+          username: 'HardcodedUser2', modifier: -75,
+          url: 'https://manifold.markets/test/june30-infraction', timestamp: 1751220039000,
+          dateOfInfraction: 1751220039000,
+        },
+      },
+    ];
+
+    const combinedInfractionData: InfractionBarDataPoint[] = [
+      ...hardcodedInfractionData,
+      ...overrideEvents.map(event => {
+        let closestScore = 0;
+        let minDiff = Infinity;
+        historicalData.forEach(dp => {
+          const diff = Math.abs(dp.timestamp - event.dateOfInfraction);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closestScore = dp.creditScore;
+          }
+        });
+        return {
+          x: event.dateOfInfraction,
+          y: closestScore === 0 ? 1 : closestScore,
+          eventDetails: event,
+        };
+      })
+    ];
+
 
     const tickConfig = getOptimalTickConfiguration(
       historicalData.length,
       selectedTimeRange,
     );
 
-    new Chart(ctx, {
+    chartInstanceRef.current = new Chart(ctx, {
       type: "line",
       data: {
-        labels,
+        labels: [],
         datasets: [{
+          type: "line",
           label: "Credit Score",
-          data: dataPoints,
+          data: chartDataPoints,
           fill: true,
           backgroundColor: "rgba(75, 192, 192, 0.2)",
           borderColor: "rgb(75, 192, 192)",
           tension: 0.4,
           pointHitRadius: 20,
-          pointRadius: historicalData.length > 50 ? 2 : 5, // Smaller points for lots of data
+          pointRadius: historicalData.length > 50 ? 2 : 5,
           pointHoverRadius: 7,
           pointBackgroundColor: "rgb(75, 192, 192)",
           pointBorderColor: "#fff",
+          order: 1,
+        },
+        {
+          type: "bar",
+          label: "Infraction",
+          data: combinedInfractionData,
+          backgroundColor: 'rgba(255, 99, 132, 0.5)',
+          borderColor: 'rgba(255, 99, 132, 0.8)',
+          borderWidth: 1,
+          barPercentage: 0.9,
+          categoryPercentage: 0.9,
+          minBarLength: 5,
+          order: 2,
         }],
       },
       options: {
@@ -136,10 +212,8 @@ export default function CreditScoreChart({
             caretPadding: 10,
             displayColors: false,
             callbacks: {
-              title: function (context) {
-                // Show full date in tooltip regardless of label format
-                const dataIndex = context[0].dataIndex;
-                const timestamp = historicalData[dataIndex].timestamp;
+              title: function (context: TooltipItem<'line' | 'bar'>[]) {
+                const timestamp = context[0].parsed.x as number;
                 return new Date(timestamp).toLocaleDateString(undefined, {
                   weekday: "long",
                   year: "numeric",
@@ -147,11 +221,37 @@ export default function CreditScoreChart({
                   day: "numeric",
                 });
               },
+              label: function (context: TooltipItem<'line' | 'bar'>) {
+                if (context.dataset.type === 'bar') {
+                  const eventDetails = context.raw as InfractionBarDataPoint; 
+                  if (eventDetails) {
+                    return [`@${eventDetails.eventDetails.username} didn't pay a loan back.`, `More info here: ${eventDetails.eventDetails.url}`];
+                  }
+                  return 'Infraction event';
+                } else {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  label += Math.round(context.parsed.y as number);
+                  return label;
+                }
+              },
             },
           },
         },
         scales: {
           x: {
+            type: 'time',
+            time: {
+              unit: selectedTimeRange === '7D' ? 'day' : (selectedTimeRange === '30D' ? 'day' : (selectedTimeRange === '90D' || selectedTimeRange === '6M' ? 'week' : 'month')),
+              tooltipFormat: 'MMM d, yyyy',
+              displayFormats: {
+                day: 'MMM d',
+                week: 'MMM d',
+                month: 'MMM yyyy',
+              },
+            },
             title: {
               display: false,
               text: "Date",
@@ -199,17 +299,35 @@ export default function CreditScoreChart({
           },
         },
       },
+      plugins: [],
     });
-  }, [historicalData, selectedTimeRange, isLoading, error, username]);
+
+    return () => {
+      if (chartInstanceRef.current) {
+        chartInstanceRef.current.destroy();
+        chartInstanceRef.current = null;
+      }
+    };
+  }, [historicalData, selectedTimeRange, isLoading, error, username, overrideEvents]);
 
   const canvasId = `creditScoreChart-${username}`;
 
   if (isLoading) {
-    return <p class="text-center text-gray-400 py-8">Loading chart data...</p>;
+    return (
+      <div class="bg-gray-900 p-4 md:p-6 rounded-lg shadow-inner">
+        <h2 class="text-xl font-semibold mb-4 text-gray-100">Score History</h2>
+        <p class="text-center text-gray-400 py-8">Loading chart data...</p>
+      </div>
+    );
   }
 
   if (error) {
-    return <p class="text-center text-red-500 py-8">{error}</p>;
+    return (
+      <div class="bg-gray-900 p-4 md:p-6 rounded-lg shadow-inner">
+        <h2 class="text-xl font-semibold mb-4 text-gray-100">Score History</h2>
+        <p class="text-center text-red-500 py-8">{error}</p>
+      </div>
+    );
   }
 
   return (
@@ -223,7 +341,7 @@ export default function CreditScoreChart({
         )
         : (
           <div style={{ position: "relative", width: "100%", height: "300px" }}>
-            <canvas id={canvasId}></canvas>
+            <canvas ref={canvasRef} id={canvasId}></canvas>
           </div>
         )}
     </div>

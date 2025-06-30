@@ -27,11 +27,12 @@ import db from "../../../../database/db.ts";
 
 const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2";
 
-interface OverrideEvent {
+export interface OverrideEvent {
   username: string;
   modifier: number;
   url: string;
   timestamp: number;
+  dateOfInfraction: number; // Make sure this is explicitly number and not optional
 }
 
 interface CreditScoreOverrides {
@@ -127,6 +128,7 @@ export const handler: Handlers = {
         fetchSuccess: true,
         historicalDataSaved: false,
         userDeleted: userDeleted,
+        overrideEvents: [],
       };
       return new Response(JSON.stringify(responsePayload), {
         headers: { "Content-Type": "application/json" },
@@ -178,6 +180,7 @@ export const handler: Handlers = {
             userExists: true,
             fetchSuccess: false,
             userDeleted,
+            overrideEvents: [],
           },
         );
       }
@@ -209,10 +212,12 @@ export const handler: Handlers = {
 
       let creditScore = mapToCreditScore(rawMMR);
 
-      const overrideEvents = creditScoreOverrides[userId];
-      if (Array.isArray(overrideEvents) && overrideEvents.length > 0) {
+      // IMPORTANT: Ensure overrideEventsForUser is indeed populating with `dateOfInfraction`
+      // from the JSON file. If JSON has it and interface has it, it should come through.
+      const overrideEventsForUser = creditScoreOverrides[userId]; 
+      if (Array.isArray(overrideEventsForUser) && overrideEventsForUser.length > 0) {
         let totalModifier = 0;
-        for (const event of overrideEvents) {
+        for (const event of overrideEventsForUser) {
           totalModifier += event.modifier;
         }
         console.log(
@@ -250,7 +255,10 @@ export const handler: Handlers = {
           rawMMR: rawMMR,
         },
         historicalDataSaved: shouldSaveHistoricalData && !userDeleted,
+        overrideEvents: overrideEventsForUser || [],
       };
+
+      console.log(`Backend API: Sending overrideEvents for ${finalUsername}:`, output.overrideEvents);
 
       return new Response(JSON.stringify(output), {
         headers: { "Content-Type": "application/json" },
@@ -265,6 +273,7 @@ export const handler: Handlers = {
           userExists: true,
           fetchSuccess: false,
           userDeleted,
+          overrideEvents: [],
         },
       );
     }
