@@ -1,5 +1,5 @@
 // islands/admin/AdjustmentForm.tsx
-import { useState, useCallback, useEffect } from "preact/hooks";
+import { useCallback, useEffect, useState } from "preact/hooks";
 import UsernameInput from "../shared/UsernameInput.tsx";
 import UserAdjustmentDisplay from "./UserAdjustmentDisplay.tsx"; // Will now only display score/error
 import AdjustmentFormFields from "./AdjustmentFormFields.tsx";
@@ -57,21 +57,26 @@ export default function AdjustmentForm() {
     setSubmitMessageType("");
   }, []);
 
-  const handleUserOverviewFetched = useCallback((user: UserScoreOverview | null) => {
-    console.log("[AdjustmentForm] User overview fetched:", user);
-    if (user && (user as UserScoreOverview & { modifyingEvent?: OverrideEvent })
-        .modifyingEvent) {
-      setModifyingEvent(
-        (user as UserScoreOverview & { modifyingEvent: OverrideEvent })
-          .modifyingEvent,
-      );
-    } else {
-      setModifyingEvent(null);
-    }
-    setSelectedUserOverview(user);
-    setSubmitMessage(null);
-    setSubmitMessageType("");
-  }, []);
+  const handleUserOverviewFetched = useCallback(
+    (user: UserScoreOverview | null) => {
+      console.log("[AdjustmentForm] User overview fetched:", user);
+      if (
+        user && (user as UserScoreOverview & { modifyingEvent?: OverrideEvent })
+          .modifyingEvent
+      ) {
+        setModifyingEvent(
+          (user as UserScoreOverview & { modifyingEvent: OverrideEvent })
+            .modifyingEvent,
+        );
+      } else {
+        setModifyingEvent(null);
+      }
+      setSelectedUserOverview(user);
+      setSubmitMessage(null);
+      setSubmitMessageType("");
+    },
+    [],
+  );
 
   const handleFormSubmit = async (
     payload: {
@@ -160,7 +165,9 @@ export default function AdjustmentForm() {
 
   return (
     <div class="bg-gray-900 p-6 rounded-lg shadow-xl border border-gray-700">
-      <h2 class="text-xl font-bold mb-6 text-white">Admin Panel - Adjust User Scores</h2>
+      <h2 class="text-xl font-bold mb-6 text-white">
+        Admin Panel - Adjust User Scores
+      </h2>
 
       <div class="mb-6">
         <UsernameInput
@@ -211,7 +218,8 @@ export default function AdjustmentForm() {
       {selectedUserOverview && !selectedUserOverview.userDeleted &&
           selectedUserOverview.existingOverrideEvents.length > 0
         ? (
-          <div class="mt-6 w-full"> {/* mt-6 for spacing from previous section */}
+          <div class="mt-6 w-full">
+            {/* mt-6 for spacing from previous section */}
             <ExistingOverridesTable
               overrideEvents={selectedUserOverview.existingOverrideEvents}
               userId={selectedUserOverview.userId}
@@ -220,9 +228,11 @@ export default function AdjustmentForm() {
               onDeleteSuccess={handleUserDisplayRefreshNeeded} // Calls the central refresh trigger
               onModify={(event) =>
                 handleUserOverviewFetched(
-                  { ...selectedUserOverview, modifyingEvent: event } as UserScoreOverview & {
-                    modifyingEvent: OverrideEvent;
-                  },
+                  { ...selectedUserOverview, modifyingEvent: event } as
+                    & UserScoreOverview
+                    & {
+                      modifyingEvent: OverrideEvent;
+                    },
                 )}
             />
           </div>
@@ -234,18 +244,20 @@ export default function AdjustmentForm() {
             <h4 class="text-md font-semibold text-white mb-4">
               Existing Overrides for @{selectedUserOverview.username}:
             </h4>
-            <p class="text-gray-400 text-sm">No existing overrides for this user.</p>
+            <p class="text-gray-400 text-sm">
+              No existing overrides for this user.
+            </p>
           </div>
         )
         : null}
-        {selectedUserOverview?.userDeleted && (
-          <div class="mt-6 w-full flex items-center justify-center bg-yellow-900/20 p-6 rounded-lg border border-yellow-700">
-            <p class="text-yellow-400 text-center">
-              User {selectedUserOverview.username} is deleted and cannot be
-              adjusted.
-            </p>
-          </div>
-        )}
+      {selectedUserOverview?.userDeleted && (
+        <div class="mt-6 w-full flex items-center justify-center bg-yellow-900/20 p-6 rounded-lg border border-yellow-700">
+          <p class="text-yellow-400 text-center">
+            User {selectedUserOverview.username}{" "}
+            is deleted and cannot be adjusted.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

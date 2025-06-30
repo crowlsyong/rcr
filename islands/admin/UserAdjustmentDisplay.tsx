@@ -1,5 +1,5 @@
 // islands/admin/UserAdjustmentDisplay.tsx
-import { useEffect, useState, useCallback, useRef } from "preact/hooks";
+import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import { UserScoreOverview } from "./AdjustmentFormFields.tsx";
 import ScoreResult from "../tools/creditscore/ScoreResult.tsx";
 
@@ -14,7 +14,7 @@ interface UserAdjustmentDisplayProps {
 export default function UserAdjustmentDisplay({
   debouncedUsername,
   onUserOverviewFetched,
-    refreshTrigger,
+  refreshTrigger,
 }: UserAdjustmentDisplayProps) {
   const [isLoadingUser, setIsLoadingUser] = useState(false);
   const [userOverview, setUserOverview] = useState<UserScoreOverview | null>(

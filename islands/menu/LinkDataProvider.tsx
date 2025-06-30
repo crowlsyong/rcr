@@ -18,9 +18,10 @@ interface LinkData {
 
 const appsLinks: Link[] = [
   { label: "⚖️ Arbitrage", url: "/arbitrage", targetBlank: false },
-  { label: "📈 Credit Score", url: "/", targetBlank: false },
+  { label: "📈 Chart", url: "/chart", targetBlank: false },
+  { label: "🔢 Credit Score", url: "/", targetBlank: false },
   { label: "📦 Extension", url: "/extension", targetBlank: false },
-  { label: "📊 Insurance", url: "/insurance", targetBlank: false },
+  { label: "🗃️ Insurance", url: "/insurance", targetBlank: false },
   { label: "🧮 Limits", url: "/limits", targetBlank: false },
 ];
 
