@@ -1,21 +1,12 @@
 // islands/insurance/InsuranceCalc.tsx
 import { useSignal } from "@preact/signals";
 import { useEffect, useState } from "preact/hooks";
-import {
-  addBounty,
-  fetchUserData,
-  postComment,
-  sendManagram,
-} from "../../../utils/api/manifold_api_service.ts";
-import { ManaPaymentTransaction } from "../../../utils/api/manifold_types.ts";
 import InputDetails from "./InputDetails.tsx";
 import PaymentAction from "./PaymentAction.tsx";
 import Institutions from "../../tools/insurance/Institutions.tsx";
 
-const INSURANCE_MARKET_ID = "QEytQ5ch0P";
 const INSURANCE_MARKET_URL =
   "https://manifold.markets/crowlsyong/risk-payment-portal";
-const CONTACT_USERNAME = "crowlsyong";
 
 export default function InsuranceCalc() {
   const username = useSignal("");
@@ -91,48 +82,6 @@ export default function InsuranceCalc() {
     return policyEnd.toISOString().split("T")[0];
   };
 
-  const handleSendMana = async (): Promise<
-    { success: boolean; error?: string }
-  > => {
-    try {
-      const { userData: borrowerData, fetchSuccess: borrowerFetchSuccess } =
-        await fetchUserData(username.value);
-
-      if (!borrowerFetchSuccess || !borrowerData?.id) {
-        return {
-          success: false,
-          error:
-            `Could not find borrower: ${username.value}. Please check username.`,
-        };
-      }
-      const borrowerId = borrowerData.id;
-
-      const sendManaResult = await sendManagram(
-        [borrowerId],
-        loanAmount.value,
-        managramMessage.value, // This is where managramMessage is used
-        apiKey.value,
-      );
-
-      if (!sendManaResult.success) {
-        return {
-          success: false,
-          error: sendManaResult.error || "Unknown error sending mana.",
-        };
-      }
-      return { success: true };
-    } catch (e: unknown) {
-      return {
-        success: false,
-        error: `Error sending mana: ${
-          typeof e === "object" && e !== null && "message" in e
-            ? (e as { message: string }).message
-            : String(e)
-        }`,
-      };
-    }
-  };
-
   const handleConfirmPayment = async () => {
     paymentMessage.value = "";
     paymentMessageType.value = "";
@@ -161,115 +110,35 @@ export default function InsuranceCalc() {
     isConfirming.value = false;
 
     try {
-      if (!useInstitution.value) {
-        const sendManaResult = await handleSendMana();
+      const body = {
+        apiKey: apiKey.value,
+        borrowerUsername: username.value,
+        lenderUsername: lenderUsername.value,
+        loanAmount: loanAmount.value,
+        coverage: selectedCoverage.value,
+        dueDate: loanDueDate.value,
+        partnerCode: partnerCodeInput.value,
+        lenderFee: lenderFeePercentage.value,
+        managramMessage: managramMessage.value,
+      };
 
-        if (!sendManaResult.success) {
-          throw new Error(
-            `Failed to send mana to borrower: ${sendManaResult.error}`,
-          );
-        }
+      const response = await fetch("/api/v0/insurance/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
 
-        const addBountyResult = await addBounty(
-          INSURANCE_MARKET_ID,
-          Math.round(insuranceFee!),
-          null,
-          apiKey.value,
-        );
+      const result = await response.json();
 
-        if (!addBountyResult.success) {
-          throw new Error(
-            `Failed to add bounty to market: ${
-              addBountyResult.error || "Unknown error."
-            }`,
-          );
-        }
-
-        const transactionId = (addBountyResult.data as ManaPaymentTransaction)
-          .id;
-
-        const policyStartDate = new Date().toISOString().split("T")[0];
-        const policyEndDate = getPolicyEndDate(loanDueDate.value);
-
-        const coveragePercentage = selectedCoverage.value;
-
-        let discountLine = "";
-        if (partnerCodeValid.value) {
-          discountLine = "\nDiscount Code Applied: 25%";
-        }
-
-        const localCoverageFees: { [key: number]: number } = {
-          25: 0.02,
-          50: 0.05,
-          75: 0.08,
-          100: 0.12,
-        };
-
-        const receiptMessage = `# 🦝RISK Insurance Receipt
-
-### Summary
-
-Transaction ID: ${transactionId}
-
-Coverage: C${coveragePercentage}
-
-Lender: @${lenderUsername.value}
-
-Borrower: @${username.value}
-
-Loan Amount: Ṁ${loanAmount.value}
-
-Date of Policy Start: ${policyStartDate}
-
-Loan Due Date: ${loanDueDate.value}
-
-Policy Ends: ${policyEndDate}
-
-### Fees
-
-Base Fee (risk multiplier): ${riskBaseFee * 100}%
-
-Coverage Fee: ${localCoverageFees[selectedCoverage.value!] * 100}%
-
-Duration Fee: Ṁ${durationFee}
-
-${discountLine}
-Total Fee: Ṁ${Math.round(insuranceFee!)}
-
-### Terms
-
-By using this service, you agree to The Fine Print at the very bottom of our dashboard. 60% refund may be available if borrower repays on time and in full. No refund if borrower defaults, but insurance will cover the policy amount.
-
----
-
-Have questions or need to activate coverage? Message @${CONTACT_USERNAME} and we’ll walk you through it.
-
-
-Risk Free 🦝RISK Fee Guarantee™️
-
-
-🦝RISK: Recovery Loan Insurance Kiosk`;
-
-        const postCommentResult = await postComment(
-          INSURANCE_MARKET_ID,
-          receiptMessage,
-          apiKey.value,
-        );
-
-        if (!postCommentResult.success) {
-          throw new Error(
-            `Failed to post insurance receipt comment: ${
-              postCommentResult.error || "Unknown error."
-            }`,
-          );
-        }
-
-        paymentMessage.value =
-          "Insurance policy successfully created and paid!";
-        paymentMessageType.value = "success";
-        paymentPortalLink.value = INSURANCE_MARKET_URL;
-        cooldownActive.value = true;
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "An unknown error occurred.");
       }
+
+      paymentMessage.value = result.message ||
+        "Insurance policy successfully created!";
+      paymentMessageType.value = "success";
+      paymentPortalLink.value = result.marketUrl || INSURANCE_MARKET_URL;
+      cooldownActive.value = true;
     } catch (e) {
       paymentMessage.value = `Payment failed: ${
         typeof e === "object" && e !== null && "message" in e
@@ -386,7 +255,7 @@ Risk Free 🦝RISK Fee Guarantee™️
           loanAmount={loanAmount}
           username={username}
           lenderUsername={lenderUsername}
-          managramMessage={managramMessage} // RE-ADDED: Pass managramMessage here
+          managramMessage={managramMessage}
           insuranceFee={insuranceFee}
           getPolicyEndDate={getPolicyEndDate}
           loanDueDate={loanDueDate}

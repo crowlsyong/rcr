@@ -98,7 +98,8 @@ export default function CreditScore() {
     error.value = "";
 
     try {
-      const res = await fetch(`/api/v0/score?username=${user}`);
+      // UPDATED: Point to the new, consolidated endpoint
+      const res = await fetch(`/api/v0/credit-score?username=${user}`);
       const data: CreditScoreData = await res.json();
 
       if (res.ok) {

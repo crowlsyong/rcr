@@ -2,7 +2,7 @@
 
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
-import ScoreResult from "./creditscore/ScoreResult.tsx";
+import ScoreResult from "../tools/creditscore/ScoreResult.tsx";
 
 interface CreditScoreData {
   username: string;
@@ -35,8 +35,9 @@ export default function GameShowCreditScore(
     errorSignal: typeof user1Error,
   ) {
     try {
+      // UPDATED: Point to the new, consolidated endpoint
       const res = await fetch(
-        `/api/score?username=${encodeURIComponent(user)}`,
+        `/api/v0/credit-score?username=${encodeURIComponent(user)}`,
       );
       const rawData = await res.json();
 
@@ -81,8 +82,8 @@ export default function GameShowCreditScore(
       if (usernames[1]) {
         await fetchScoreData(usernames[1], user2Data, user2Error);
       } else {
-        user2Data.value = null; // Corrected: This line was V.value = null;
-        user2Error.value = "No username provided for Contestant B."; // Changed from A to B for accuracy
+        user2Data.value = null;
+        user2Error.value = "No username provided for Contestant B.";
       }
       isLoading.value = false;
     };

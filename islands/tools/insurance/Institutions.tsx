@@ -3,13 +3,10 @@ import { Signal, useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 import { JSX } from "preact";
 import {
-  addBounty,
   fetchUserData,
   getCommentsForContract,
-  postComment,
 } from "../../../utils/api/manifold_api_service.ts";
 import {
-  ManaPaymentTransaction,
   ManifoldComment,
   TipTapContentBlock,
 } from "../../../utils/api/manifold_types.ts";
@@ -18,7 +15,7 @@ import { stripHtml } from "../../../utils/html_utils.ts";
 interface InstitutionsProps {
   apiKey: Signal<string>;
   loanAmount: Signal<number>;
-  username: Signal<string>; // Borrower username
+  username: Signal<string>;
   lenderUsername: Signal<string>;
   managramMessage: Signal<string>;
   insuranceFee: number | null;
@@ -28,42 +25,35 @@ interface InstitutionsProps {
   riskBaseFee: number;
   partnerCodeValid: Signal<boolean>;
   durationFee: number;
-
   isProcessingPayment: Signal<boolean>;
   paymentMessage: Signal<string>;
   paymentMessageType: Signal<"success" | "error" | "">;
   cooldownActive: Signal<boolean>;
   cooldownMessage: Signal<string>;
-
   institution: Signal<"BANK" | "IMF" | "RISK" | "OFFSHORE" | null>;
   useInstitution: Signal<boolean>;
 }
-
-const IMF_BOUNTY_MARKET_ID = "PdLcZARORc";
-const BANK_BOUNTY_MARKET_ID = "tqQIAgd6EZ";
-const RISK_BOUNTY_MARKET_ID = "QEytQ5ch0P";
-const OFFSHORE_BOUNTY_MARKET_ID = "CAQchupgyN"; // New Offshore Market ID
 
 const INSTITUTION_MARKETS: {
   [key: string]: { id: string; name: string; description: string };
 } = {
   IMF: {
-    id: IMF_BOUNTY_MARKET_ID,
+    id: "PdLcZARORc",
     name: "IMF",
     description: "Awards loan as bounty on the IMF market.",
   },
   BANK: {
-    id: BANK_BOUNTY_MARKET_ID,
+    id: "tqQIAgd6EZ",
     name: "BANK",
     description: "Awards loan as bounty on the BANK market.",
   },
   RISK: {
-    id: RISK_BOUNTY_MARKET_ID,
+    id: "QEytQ5ch0P",
     name: "RISK",
     description: "Awards loan as bounty on the RISK Payment Portal.",
   },
   OFFSHORE: {
-    id: OFFSHORE_BOUNTY_MARKET_ID,
+    id: "CAQchupgyN",
     name: "OFFSHORE",
     description: "Awards loan as bounty on the OFFSHORE market.",
   },
@@ -96,15 +86,11 @@ export default function Institutions(props: InstitutionsProps): JSX.Element {
   const {
     apiKey,
     loanAmount,
-    username, // Borrower username
+    username,
     lenderUsername,
     insuranceFee,
-    getPolicyEndDate,
     loanDueDate,
     selectedCoverage,
-    riskBaseFee,
-    partnerCodeValid,
-    durationFee,
     isProcessingPayment,
     paymentMessage,
     paymentMessageType,
@@ -119,7 +105,6 @@ export default function Institutions(props: InstitutionsProps): JSX.Element {
   const fetchCommentsError = useSignal<string | null>(null);
   const isFetchingComments = useSignal(false);
   const awardBountyMessage = useSignal<string | null>(null);
-  // awardBountyMessageType is still useful internally for logic, but not for direct styling classes
   const awardBountyMessageType = useSignal<
     "success" | "error" | "warning" | null
   >(null);
@@ -263,155 +248,45 @@ export default function Institutions(props: InstitutionsProps): JSX.Element {
     cooldownMessage.value = "";
 
     try {
-      const targetMarketId = institution.value
-        ? INSTITUTION_MARKETS[institution.value]?.id
-        : null;
-
-      if (!targetMarketId) {
-        throw new Error(
-          "Could not determine market ID for selected institution.",
-        );
-      }
-      if (loanAmount.value <= 0) {
-        throw new Error(
-          "Loan amount must be greater than zero to award bounty.",
-        );
-      }
-      if (insuranceFee === null || insuranceFee < 0) {
-        throw new Error("Insurance fee is invalid. Please check loan details.");
-      }
-
-      const loanBountyResult = await addBounty(
-        targetMarketId,
-        loanAmount.value,
-        selectedCommentId.value!,
-        apiKey.value,
-      );
-
-      if (!loanBountyResult.success) {
-        throw new Error(
-          `Failed to award loan bounty: ${
-            loanBountyResult.error || "Unknown error."
-          }`,
-        );
-      }
-
-      const insuranceBountyResult = await addBounty(
-        RISK_BOUNTY_MARKET_ID,
-        Math.round(insuranceFee),
-        null,
-        apiKey.value,
-      );
-
-      if (!insuranceBountyResult.success) {
-        throw new Error(
-          `Failed to add insurance fee to RISK market: ${
-            insuranceBountyResult.error || "Unknown error."
-          }`,
-        );
-      }
-
-      const policyStartDate = new Date().toISOString().split("T")[0];
-      const policyEndDate = getPolicyEndDate(loanDueDate.value);
-      const coveragePercentage = selectedCoverage.value;
-      const roundedInsuranceFee = Math.round(insuranceFee);
-
-      let discountLine = "";
-      if (partnerCodeValid.value) {
-        discountLine = "\nDiscount Code Applied: 25%";
-      }
-
-      const localCoverageFees: { [key: number]: number } = {
-        25: 0.02,
-        50: 0.05,
-        75: 0.08,
-        100: 0.12,
+      const body = {
+        apiKey: apiKey.value,
+        borrowerUsername: username.value,
+        lenderUsername: lenderUsername.value,
+        loanAmount: loanAmount.value,
+        coverage: selectedCoverage.value,
+        dueDate: loanDueDate.value,
+        institution: institution.value,
+        commentId: selectedCommentId.value,
       };
-      const formattedCoverageFee = coveragePercentage !== null
-        ? `${localCoverageFees[coveragePercentage] * 100}%`
-        : "N/A";
 
-      const receiptMessage = `# 🦝RISK Insurance Receipt
+      const response = await fetch("/api/v0/insurance/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
 
-### Summary
+      const result = await response.json();
 
-Transaction ID (Loan Bounty): ${
-        (loanBountyResult.data as ManaPaymentTransaction).id
-      }
-Transaction ID (Insurance Fee): ${
-        (insuranceBountyResult.data as ManaPaymentTransaction).id
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "An unknown error occurred.");
       }
 
-Coverage: C${coveragePercentage}
-
-Lender: @${lenderUsername.value}
-
-Borrower: @${username.value}
-
-Loan Amount (as Bounty): Ṁ${loanAmount.value}
-
-Date of Policy Start: ${policyStartDate}
-
-Loan Due Date: ${loanDueDate.value}
-
-Policy Ends: ${policyEndDate}
-
-### Fees
-
-Base Fee (risk multiplier): ${riskBaseFee * 100}%
-
-Coverage Fee: ${formattedCoverageFee}
-
-Duration Fee: Ṁ${durationFee}
-
-${discountLine}
-Total Fee (to RISK): Ṁ${roundedInsuranceFee}
-
-### Terms
-
-By using this service, you agree to The Fine Print at the very bottom of our dashboard. 60% refund may be available if borrower repays on time and in full. No refund if borrower defaults, but insurance will cover the policy amount.
-
----
-
-Have questions or need to activate coverage? Message @crowlsyong and we’ll walk you through it.
-
-
-Risk Free 🦝RISK Fee Guarantee™️
-
-
-🦝RISK: Recovery Loan Insurance Kiosk`;
-
-      const postCommentResult = await postComment(
-        targetMarketId,
-        receiptMessage,
-        apiKey.value,
-      );
-
-      if (!postCommentResult.success) {
-        throw new Error(
-          `Failed to post insurance receipt comment to ${institution.value} market: ${
-            postCommentResult.error || "Unknown error."
-          }`,
-        );
-      }
-
-      // Success messages with emoji
       awardBountyMessage.value =
-        `✅ Successfully awarded M${loanAmount.value} bounty to comment and paid M${roundedInsuranceFee} insurance fee to RISK!`;
+        `✅ Successfully awarded M${loanAmount.value} bounty and paid insurance fee!`;
       awardBountyMessageType.value = "success";
       paymentMessage.value =
         `✅ Loan (via bounty) and insurance fee processed via ${institution.value} institution.`;
       paymentMessageType.value = "success";
       cooldownActive.value = true;
     } catch (error: unknown) {
-      // Error messages with emoji
-      awardBountyMessage.value = `⛔ Error processing: ${
-        typeof error === "object" && error !== null && "message" in error
-          ? (error as { message: string }).message
-          : String(error)
-      }`;
+      const errorMessage = typeof error === "object" && error !== null &&
+          "message" in error
+        ? (error as { message: string }).message
+        : String(error);
+
+      awardBountyMessage.value = `⛔ Error processing: ${errorMessage}`;
       awardBountyMessageType.value = "error";
-      paymentMessage.value = `⛔ Payment failed: ${awardBountyMessage.value}`;
+      paymentMessage.value = `⛔ Payment failed: ${errorMessage}`;
       paymentMessageType.value = "error";
       cooldownActive.value = true;
     } finally {
@@ -421,7 +296,6 @@ Risk Free 🦝RISK Fee Guarantee™️
   };
 
   const handleConfirmBountyClick = () => {
-    // Clear any previous messages before initiating a new action or confirmation
     awardBountyMessage.value = null;
     awardBountyMessageType.value = null;
     paymentMessage.value = "";
@@ -429,8 +303,7 @@ Risk Free 🦝RISK Fee Guarantee™️
     cooldownMessage.value = "";
 
     if (cooldownActive.value) {
-      // Cooldown message with emoji
-      awardBountyMessage.value = `⛔ ${cooldownMessage.value}`; // Add emoji to cooldown message
+      awardBountyMessage.value = `⛔ ${cooldownMessage.value}`;
       awardBountyMessageType.value = "error";
       return;
     }
@@ -441,7 +314,6 @@ Risk Free 🦝RISK Fee Guarantee™️
       insuranceFee === null || insuranceFee < 0 || !loanDueDate.value ||
       selectedCoverage.value === null
     ) {
-      // Validation error message with emoji
       awardBountyMessage.value =
         `⛔ Please fill in all required fields and select a comment before awarding.`;
       awardBountyMessageType.value = "error";
@@ -471,10 +343,6 @@ Risk Free 🦝RISK Fee Guarantee™️
   } else if (cooldownActive.value) {
     bountyButtonText = "Please wait...";
   }
-
-  // Remove getMessageClass as it's no longer needed for text color/styling
-  // Instead, the emoji directly indicates success/error.
-  // The P tag will just use a neutral text color.
 
   return (
     <div class="mt-4 p-4 bg-gray-800 border border-gray-700 rounded-md shadow-sm">
@@ -556,7 +424,6 @@ Risk Free 🦝RISK Fee Guarantee™️
               {fetchCommentsError.value && (
                 <p class="text-red-400 text-sm">{fetchCommentsError.value}</p>
               )}
-              {/* Filtered comments message */}
               {!isFetchingComments.value && comments.value.length === 0 &&
                 !fetchCommentsError.value && apiKey.value && (
                 <p class="text-gray-400 text-sm">
@@ -613,7 +480,6 @@ Risk Free 🦝RISK Fee Guarantee™️
               >
                 {bountyButtonText}
               </button>
-              {/* Message display: only show if there's actual text and processing is NOT active */}
               {awardBountyMessage.value && !isProcessingPayment.value && (
                 <p class="mt-2 text-center text-sm text-gray-200">
                   {awardBountyMessage.value}

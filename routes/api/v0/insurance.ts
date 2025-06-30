@@ -16,7 +16,9 @@ function handleError(message: string, status: number): Response {
 
 // NOTE: The GET handler remains unchanged as it's purely for calculation.
 // It will continue to use usernames as it's typically for UI-driven lookups.
-export const handler: Handlers<InsuranceCalculationResult | TransactionExecutionResult | null> = {
+export const handler: Handlers<
+  InsuranceCalculationResult | TransactionExecutionResult | null
+> = {
   async GET(req) {
     const url = new URL(req.url);
     const params = url.searchParams;
@@ -147,14 +149,23 @@ export const handler: Handlers<InsuranceCalculationResult | TransactionExecution
 
     // API Key is only strictly required for non-dryRun requests
     if (!apiKey && !dryRun) {
-      return handleError("API key is required for non-dryRun POST requests", 401);
+      return handleError(
+        "API key is required for non-dryRun POST requests",
+        401,
+      );
     }
     if (
       !loanAmount || !coverage || !dueDate
     ) {
-      return handleError("Missing required parameters in POST body (loanAmount, coverage, dueDate)", 400);
+      return handleError(
+        "Missing required parameters in POST body (loanAmount, coverage, dueDate)",
+        400,
+      );
     }
-    if (!dryRun && institution && !["IMF", "BANK", "RISK", "OFFSHORE"].includes(institution)) {
+    if (
+      !dryRun && institution &&
+      !["IMF", "BANK", "RISK", "OFFSHORE"].includes(institution)
+    ) {
       return handleError("Invalid institution specified", 400);
     }
     if (!dryRun && institution && !commentId) {
@@ -212,7 +223,9 @@ export const handler: Handlers<InsuranceCalculationResult | TransactionExecution
         // The following are the *output* values which are passed explicitly
         // to populate TransactionExecutionResult's response. No duplication here.
         totalFee: Math.round(calcResult.feeDetails.finalFee),
-        totalFeeBeforeDiscount: Math.round(calcResult.feeDetails.totalInitialFee),
+        totalFeeBeforeDiscount: Math.round(
+          calcResult.feeDetails.totalInitialFee,
+        ),
         baseFee: Math.round(calcResult.feeDetails.riskFee),
         coverageFee: Math.round(calcResult.feeDetails.coverageFee),
         // durationFee: Math.round(calcResult.feeDetails.durationFee), // REMOVED THIS DUPLICATE LINE

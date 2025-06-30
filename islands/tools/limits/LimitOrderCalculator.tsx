@@ -1,7 +1,6 @@
 // islands/tools/limits/LimitOrderCalculator.tsx
 import { useEffect, useState } from "preact/hooks";
 import { useSignal } from "@preact/signals";
-import { getMarketDataBySlug } from "../../../utils/api/manifold_api_service.ts";
 import { MarketData } from "../../../utils/api/manifold_types.ts";
 import { TbToggleLeftFilled, TbToggleRightFilled } from "@preact-icons/tb";
 import type { ComponentType } from "preact";
@@ -118,17 +117,17 @@ export default function LimitOrderCalculator() {
       setFetchError(null);
 
       try {
-        const { data, error: apiError } = await getMarketDataBySlug(slug);
+        const response = await fetch(`/api/v0/market/${slug}`);
+        const data = await response.json();
 
-        if (apiError || !data) {
-          setFetchError(apiError);
-          setMarketData(null);
-        } else {
-          if (marketData?.id !== data.id) {
-            setSelectedAnswerId(null);
-          }
-          setMarketData(data);
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to fetch market data");
         }
+
+        if (marketData?.id !== data.id) {
+          setSelectedAnswerId(null);
+        }
+        setMarketData(data);
       } catch (e) {
         setFetchError(
           `An unexpected error occurred: ${
@@ -444,7 +443,7 @@ export default function LimitOrderCalculator() {
                       .filter((o) => o.noAmount > 0)
                       .sort((a, b) =>
                         b.noProb - a.noProb
-                      ) // Sort NO bets highest to lowest prob
+                      )
                       .map((order, index) => (
                         <li
                           key={`no-${index}`}

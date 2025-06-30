@@ -31,7 +31,8 @@ export default function CreditScore({ username }: CreditScoreProps) {
 
   async function fetchScoreData(user: string) {
     try {
-      const res = await fetch(`/api/score?username=${user}`);
+      // UPDATED: Point to the new, consolidated endpoint
+      const res = await fetch(`/api/v0/credit-score?username=${user}`);
       const data = await res.json();
       if (data.error) {
         error.value = data.error;

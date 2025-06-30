@@ -227,7 +227,9 @@ export async function fetchUserDataLiteById(
   }
 
   if (response.status === 404) {
-    console.info(`fetchUserDataLiteById: User with ID '${userId}' not found (404).`);
+    console.info(
+      `fetchUserDataLiteById: User with ID '${userId}' not found (404).`,
+    );
     return { userData: null, fetchSuccess: false };
   }
 

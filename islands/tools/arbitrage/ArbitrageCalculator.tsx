@@ -1,5 +1,5 @@
+// islands/tools/arbitrage/ArbitrageCalculator.tsx
 import { useEffect, useState } from "preact/hooks";
-import { getMarketDataBySlug } from "../../../utils/api/manifold_api_service.ts";
 import { MarketData } from "../../../utils/api/manifold_types.ts";
 import {
   ArbitrageCalculation,
@@ -31,44 +31,64 @@ export default function ArbitrageCalculator() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const debounceTimeout = setTimeout(() => {
-      if (marketAUrl) {
-        const slug = marketAUrl.split("/").pop();
-        if (slug) {
-          setLoadingA(true);
-          getMarketDataBySlug(slug).then(({ data, error }) => {
-            if (error) {
-              setError(`Error fetching Market A: ${error}`);
-            }
-            setMarketA(data);
-            setLoadingA(false);
-          });
+    const debounceTimeout = setTimeout(async () => {
+      const slug = marketAUrl.split("/").pop()?.trim();
+      if (slug) {
+        setLoadingA(true);
+        setError(null);
+        try {
+          const response = await fetch(`/api/v0/market/${slug}`);
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Failed to fetch Market A");
+          }
+          setMarketA(data);
+        } catch (e) {
+          setError(
+            `Error fetching Market A: ${
+              typeof e === "object" && e !== null && "message" in e
+                ? (e as { message: string }).message
+                : String(e)
+            }`,
+          );
+          setMarketA(null);
+        } finally {
+          setLoadingA(false);
         }
       } else {
         setMarketA(null);
-        setError(null);
       }
     }, 500);
     return () => clearTimeout(debounceTimeout);
   }, [marketAUrl]);
 
   useEffect(() => {
-    const debounceTimeout = setTimeout(() => {
-      if (marketBUrl) {
-        const slug = marketBUrl.split("/").pop();
-        if (slug) {
-          setLoadingB(true);
-          getMarketDataBySlug(slug).then(({ data, error }) => {
-            if (error) {
-              setError(`Error fetching Market B: ${error}`);
-            }
-            setMarketB(data);
-            setLoadingB(false);
-          });
+    const debounceTimeout = setTimeout(async () => {
+      const slug = marketBUrl.split("/").pop()?.trim();
+      if (slug) {
+        setLoadingB(true);
+        setError(null);
+        try {
+          const response = await fetch(`/api/v0/market/${slug}`);
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Failed to fetch Market B");
+          }
+          setMarketB(data);
+        } catch (e) {
+          setError(
+            `Error fetching Market B: ${
+              typeof e === "object" && e !== null && "message" in e
+                ? (e as { message: string }).message
+                : String(e)
+            }`,
+          );
+          setMarketB(null);
+        } finally {
+          setLoadingB(false);
         }
       } else {
         setMarketB(null);
-        setError(null);
       }
     }, 500);
     return () => clearTimeout(debounceTimeout);
@@ -76,13 +96,13 @@ export default function ArbitrageCalculator() {
 
   useEffect(() => {
     if (marketA && marketB) {
-      const { result, error } = calculateArbitrage(
+      const { result, error: calcError } = calculateArbitrage(
         marketA,
         marketB,
         calculationMode,
       );
       setCalculation(result);
-      setError(error);
+      setError(calcError);
     } else {
       setCalculation(null);
       if (!marketAUrl && !marketBUrl) {
