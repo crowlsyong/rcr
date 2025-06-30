@@ -15,10 +15,10 @@ interface CreditScoreDataPoint {
 
 async function getUserCreditScoreHistory(): Promise<void> {
   // Removed: await load({ export: true }); // No longer needed here
-  
+
   console.log(`Fetching credit score history for User (${USER_USER_ID})...`);
 
-  await new Promise(resolve => setTimeout(resolve, 100)); 
+  await new Promise((resolve) => setTimeout(resolve, 100));
 
   const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
   const allUserData: CreditScoreDataPoint[] = [];
@@ -38,36 +38,52 @@ async function getUserCreditScoreHistory(): Promise<void> {
           recentUserData.push(entry.value);
         }
       } else {
-        console.warn(`KV entry key matches prefix but value.userId does not match: ${entry.key.join('/')}, value.userId: ${entry.value?.userId}`);
+        console.warn(
+          `KV entry key matches prefix but value.userId does not match: ${
+            entry.key.join("/")
+          }, value.userId: ${entry.value?.userId}`,
+        );
       }
     }
 
     if (!foundAnyForUser) {
-      console.log(`No credit score entries found for User (${USER_USER_ID}) at all in the database this script is connected to.`);
+      console.log(
+        `No credit score entries found for User (${USER_USER_ID}) at all in the database this script is connected to.`,
+      );
       return;
     }
 
     if (allUserData.length > 0) {
       allUserData.sort((a, b) => a.timestamp - b.timestamp);
-      console.log(`\n--- ALL HISTORICAL ENTRIES FOR USER (${allUserData.length} total) ---`);
+      console.log(
+        `\n--- ALL HISTORICAL ENTRIES FOR USER (${allUserData.length} total) ---`,
+      );
       allUserData.forEach((point, index) => {
         const date = new Date(point.timestamp);
         console.log(
-          `  ${index + 1}. Date: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}, Score: ${point.creditScore}, Raw Timestamp: ${point.timestamp}`,
+          `  ${
+            index + 1
+          }. Date: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}, Score: ${point.creditScore}, Raw Timestamp: ${point.timestamp}`,
         );
       });
-      console.log('----------------------------------------------------');
+      console.log("----------------------------------------------------");
     }
 
     if (recentUserData.length === 0) {
-      console.log("\nNo credit score entries found for User in the last 7 days (after filtering).");
+      console.log(
+        "\nNo credit score entries found for User in the last 7 days (after filtering).",
+      );
     } else {
       recentUserData.sort((a, b) => a.timestamp - b.timestamp);
-      console.log(`\nFound ${recentUserData.length} entries for User in the last 7 days:`);
+      console.log(
+        `\nFound ${recentUserData.length} entries for User in the last 7 days:`,
+      );
       recentUserData.forEach((point, index) => {
         const date = new Date(point.timestamp);
         console.log(
-          `  ${index + 1}. Date: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}, Score: ${point.creditScore}, Raw Timestamp: ${point.timestamp}`,
+          `  ${
+            index + 1
+          }. Date: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}, Score: ${point.creditScore}, Raw Timestamp: ${point.timestamp}`,
         );
       });
     }

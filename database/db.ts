@@ -2,7 +2,7 @@
 /// <reference lib="deno.unstable" />
 
 // NEW: Import and call load() at the very top of the file
-import { load } from 'https://deno.land/std@0.224.0/dotenv/mod.ts';
+import { load } from "https://deno.land/std@0.224.0/dotenv/mod.ts";
 await load({ export: true }); // Ensure .env is loaded before Deno.openKv()
 
 let db: Deno.Kv;

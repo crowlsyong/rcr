@@ -32,34 +32,9 @@ export interface OverrideEvent {
   modifier: number;
   url: string;
   timestamp: number;
-  dateOfInfraction: number; // Make sure this is explicitly number and not optional
+  dateOfInfraction: number;
+  description: string;
 }
-
-interface CreditScoreOverrides {
-  [userId: string]: OverrideEvent[];
-}
-
-let creditScoreOverrides: CreditScoreOverrides = {};
-let overridesLoaded = false;
-
-async function loadCreditScoreOverrides() {
-  if (overridesLoaded) {
-    return;
-  }
-  try {
-    const jsonPath = "./database/credit_score_overrides.json";
-
-    const jsonString = await Deno.readTextFile(jsonPath);
-    creditScoreOverrides = JSON.parse(jsonString);
-    overridesLoaded = true;
-    console.log("Credit score overrides loaded successfully.");
-  } catch (error) {
-    console.error(`Failed to load credit score overrides:`, error);
-    creditScoreOverrides = {};
-  }
-}
-
-await loadCreditScoreOverrides();
 
 const getErrorMessage = (e: unknown): string => {
   return typeof e === "object" && e !== null && "message" in e
@@ -156,6 +131,17 @@ export const handler: Handlers = {
         shouldSaveHistoricalData = false;
       }
 
+      // Fetch override events from Deno KV
+      const overrideEventsForUser: OverrideEvent[] = [];
+      const overridePrefix = ["score_overrides", userId];
+      for await (
+        const entry of db.list<OverrideEvent>({ prefix: overridePrefix })
+      ) {
+        overrideEventsForUser.push(entry.value);
+      }
+      // Sort them by timestamp for consistent display, newest first
+      overrideEventsForUser.sort((a, b) => b.timestamp - a.timestamp);
+
       const createdTime = userData.createdTime ?? Date.now();
       const ageDays = (Date.now() - createdTime) / 86_400_000;
 
@@ -212,10 +198,8 @@ export const handler: Handlers = {
 
       let creditScore = mapToCreditScore(rawMMR);
 
-      // IMPORTANT: Ensure overrideEventsForUser is indeed populating with `dateOfInfraction`
-      // from the JSON file. If JSON has it and interface has it, it should come through.
-      const overrideEventsForUser = creditScoreOverrides[userId]; 
-      if (Array.isArray(overrideEventsForUser) && overrideEventsForUser.length > 0) {
+      // Apply modifiers from fetched override events
+      if (overrideEventsForUser.length > 0) {
         let totalModifier = 0;
         for (const event of overrideEventsForUser) {
           totalModifier += event.modifier;
@@ -255,10 +239,13 @@ export const handler: Handlers = {
           rawMMR: rawMMR,
         },
         historicalDataSaved: shouldSaveHistoricalData && !userDeleted,
-        overrideEvents: overrideEventsForUser || [],
+        overrideEvents: overrideEventsForUser, // Now passing the fetched KV events
       };
 
-      console.log(`Backend API: Sending overrideEvents for ${finalUsername}:`, output.overrideEvents);
+      console.log(
+        `Backend API: Sending overrideEvents for ${finalUsername}:`,
+        output.overrideEvents,
+      );
 
       return new Response(JSON.stringify(output), {
         headers: { "Content-Type": "application/json" },

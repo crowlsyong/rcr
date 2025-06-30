@@ -5,8 +5,12 @@
 import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $_middleware from "./routes/_middleware.ts";
+import * as $admin_adjustments from "./routes/admin/adjustments.tsx";
 import * as $admin_index from "./routes/admin/index.tsx";
 import * as $api_v0_middleware from "./routes/api/v0/_middleware.ts";
+import * as $api_v0_admin_adjust_score from "./routes/api/v0/admin/adjust-score.ts";
+import * as $api_v0_admin_delete_override from "./routes/api/v0/admin/delete-override.ts";
+import * as $api_v0_admin_update_override from "./routes/api/v0/admin/update-override.ts";
 import * as $api_v0_arbitrage_execute from "./routes/api/v0/arbitrage/execute.ts";
 import * as $api_v0_credit_score_index from "./routes/api/v0/credit-score/index.ts";
 import * as $api_v0_credit_score_lite from "./routes/api/v0/credit-score/lite.ts";
@@ -42,6 +46,7 @@ import * as $qr_string_ from "./routes/qr/[string].tsx";
 import * as $u_username_ from "./routes/u/[username].tsx";
 import * as $InfoHover from "./islands/InfoHover.tsx";
 import * as $PasswordGate from "./islands/PasswordGate.tsx";
+import * as $admin_AdjustmentForm from "./islands/admin/AdjustmentForm.tsx";
 import * as $buttons_Button from "./islands/buttons/Button.tsx";
 import * as $buttons_ChartButton from "./islands/buttons/ChartButton.tsx";
 import * as $buttons_ShareButton from "./islands/buttons/ShareButton.tsx";
@@ -110,8 +115,12 @@ const manifest = {
     "./routes/_404.tsx": $_404,
     "./routes/_app.tsx": $_app,
     "./routes/_middleware.ts": $_middleware,
+    "./routes/admin/adjustments.tsx": $admin_adjustments,
     "./routes/admin/index.tsx": $admin_index,
     "./routes/api/v0/_middleware.ts": $api_v0_middleware,
+    "./routes/api/v0/admin/adjust-score.ts": $api_v0_admin_adjust_score,
+    "./routes/api/v0/admin/delete-override.ts": $api_v0_admin_delete_override,
+    "./routes/api/v0/admin/update-override.ts": $api_v0_admin_update_override,
     "./routes/api/v0/arbitrage/execute.ts": $api_v0_arbitrage_execute,
     "./routes/api/v0/credit-score/index.ts": $api_v0_credit_score_index,
     "./routes/api/v0/credit-score/lite.ts": $api_v0_credit_score_lite,
@@ -150,6 +159,7 @@ const manifest = {
   islands: {
     "./islands/InfoHover.tsx": $InfoHover,
     "./islands/PasswordGate.tsx": $PasswordGate,
+    "./islands/admin/AdjustmentForm.tsx": $admin_AdjustmentForm,
     "./islands/buttons/Button.tsx": $buttons_Button,
     "./islands/buttons/ChartButton.tsx": $buttons_ChartButton,
     "./islands/buttons/ShareButton.tsx": $buttons_ShareButton,

@@ -87,7 +87,9 @@ export default function Chart({ username }: ChartProps) {
       }
 
       try {
-        const scoreRes = await fetch(`/api/v0/credit-score?username=${username}`);
+        const scoreRes = await fetch(
+          `/api/v0/credit-score?username=${username}`,
+        );
         if (!scoreRes.ok) {
           setError(
             `Failed to fetch current score data: ${scoreRes.statusText}`,
@@ -97,7 +99,10 @@ export default function Chart({ username }: ChartProps) {
         }
         const currentScoreData: UserScoreData = await scoreRes.json();
         setScoreData(currentScoreData);
-        console.log("Frontend Chart: Received overrideEvents from API:", currentScoreData.overrideEvents); // LOG 2
+        console.log(
+          "Frontend Chart: Received overrideEvents from API:",
+          currentScoreData.overrideEvents,
+        ); // LOG 2
 
         if (!currentScoreData.userExists) {
           setError(`User '${username}' not found on Manifold Markets.`);
@@ -208,11 +213,14 @@ export default function Chart({ username }: ChartProps) {
                   <strong>{scoreData.details?.latestRank ?? "N/A"}</strong>
                 </p>
                 <p class="text-sm md:text-base">
-                  Debt: <strong>{scoreData.details?.outstandingDebtImpact}</strong>
+                  Debt:{" "}
+                  <strong>{scoreData.details?.outstandingDebtImpact}</strong>
                 </p>
                 <p class="text-sm md:text-base">
                   Calculated Profit:{" "}
-                  <strong>{Math.round(scoreData.details?.calculatedProfit)}</strong>
+                  <strong>
+                    {Math.round(scoreData.details?.calculatedProfit)}
+                  </strong>
                 </p>
                 <p class="text-sm md:text-base">
                   Approximate Balance:{" "}

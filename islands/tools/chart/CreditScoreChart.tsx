@@ -1,13 +1,14 @@
 // islands/chart/CreditScoreChart.tsx
 import { useEffect, useRef } from "preact/hooks";
 import { Chart, registerables } from "chart.js";
-import 'npm:chartjs-adapter-date-fns';
+import "npm:chartjs-adapter-date-fns";
 import type { Chart as ChartJsType, TooltipItem } from "chart.js";
 import { OverrideEvent } from "../../../routes/api/v0/credit-score/index.ts";
 
 Chart.register(...registerables);
 
-interface HistoricalDataPoint {
+// ADD 'export' KEYWORD HERE
+export interface CreditScoreDataPoint {
   userId: string;
   username: string;
   creditScore: number;
@@ -15,14 +16,14 @@ interface HistoricalDataPoint {
 }
 
 interface InfractionBarDataPoint {
-  x: number; // Timestamp
-  y: number; // Credit Score (height of the bar)
-  eventDetails: OverrideEvent; // The attached event details
+  x: number;
+  y: number;
+  eventDetails: OverrideEvent;
 }
 
 interface CreditScoreChartProps {
   username: string;
-  historicalData: HistoricalDataPoint[];
+  historicalData: CreditScoreDataPoint[];
   selectedTimeRange: string;
   isLoading: boolean;
   error: string | null;
@@ -33,8 +34,8 @@ function getOptimalTickConfiguration(dataLength: number, timeRange: string) {
   if (timeRange === "7D") return { maxTicksLimit: 7, stepSize: undefined };
   if (timeRange === "30D") return { maxTicksLimit: 8, stepSize: undefined };
   if (timeRange === "90D") return { maxTicksLimit: 10, stepSize: undefined };
-  if (timeRange === "6M") return { maxTicksLimit: 12, stepSize: undefined }; 
-  if (dataLength > 100) return { maxTicksLimit: 15, stepSize: undefined }; 
+  if (timeRange === "6M") return { maxTicksLimit: 12, stepSize: undefined };
+  if (dataLength > 100) return { maxTicksLimit: 15, stepSize: undefined };
   if (dataLength > 50) return { maxTicksLimit: 12, stepSize: undefined };
   return { maxTicksLimit: 10, stepSize: undefined };
 }
@@ -91,8 +92,10 @@ export default function CreditScoreChart({
 
     const currentCanvas = canvasRef.current;
     if (!currentCanvas) {
-      console.warn("Chart: Canvas element is not available in DOM yet. Will retry on next render.");
-      return; 
+      console.warn(
+        "Chart: Canvas element is not available in DOM yet. Will retry on next render.",
+      );
+      return;
     }
 
     const ctx = currentCanvas.getContext("2d");
@@ -110,24 +113,24 @@ export default function CreditScoreChart({
       y: dp.creditScore,
     }));
 
-    // Data for infraction bars
-    const infractionBarData: InfractionBarDataPoint[] = overrideEvents.map(event => {
-      let closestScore = 0;
-      let minDiff = Infinity;
-      historicalData.forEach(dp => {
-        const diff = Math.abs(dp.timestamp - event.dateOfInfraction);
-        if (diff < minDiff) {
-          minDiff = diff;
-          closestScore = dp.creditScore;
-        }
-      });
-      return {
-        x: event.dateOfInfraction,
-        y: closestScore === 0 ? 1 : closestScore,
-        eventDetails: event,
-      };
-    });
-
+    const infractionBarData: InfractionBarDataPoint[] = overrideEvents.map(
+      (event) => {
+        let closestScore = 0;
+        let minDiff = Infinity;
+        historicalData.forEach((dp) => {
+          const diff = Math.abs(dp.timestamp - event.dateOfInfraction);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closestScore = dp.creditScore;
+          }
+        });
+        return {
+          x: event.dateOfInfraction,
+          y: closestScore === 0 ? 1 : closestScore,
+          eventDetails: event,
+        };
+      },
+    );
 
     const tickConfig = getOptimalTickConfiguration(
       historicalData.length,
@@ -152,13 +155,12 @@ export default function CreditScoreChart({
           pointBackgroundColor: "rgb(75, 192, 192)",
           pointBorderColor: "#fff",
           order: 1,
-        },
-        {
+        }, {
           type: "bar",
           label: "Infraction",
           data: infractionBarData,
-          backgroundColor: 'rgba(255, 99, 132, 0.5)',
-          borderColor: 'rgba(255, 99, 132, 0.8)',
+          backgroundColor: "rgba(255, 99, 132, 0.5)",
+          borderColor: "rgba(255, 99, 132, 0.8)",
           borderWidth: 1,
           barPercentage: 0.9,
           categoryPercentage: 0.9,
@@ -188,7 +190,7 @@ export default function CreditScoreChart({
             caretPadding: 10,
             displayColors: false,
             callbacks: {
-              title: function (context: TooltipItem<'line' | 'bar'>[]) {
+              title: function (context: TooltipItem<"line" | "bar">[]) {
                 const timestamp = context[0].parsed.x as number;
                 return new Date(timestamp).toLocaleDateString(undefined, {
                   weekday: "long",
@@ -197,18 +199,20 @@ export default function CreditScoreChart({
                   day: "numeric",
                 });
               },
-              label: function (context: TooltipItem<'line' | 'bar'>) {
-                if (context.dataset.type === 'bar') {
-                  const eventDetails = context.raw as InfractionBarDataPoint; 
+              label: function (context: TooltipItem<"line" | "bar">) {
+                if (context.dataset.type === "bar") {
+                  const eventDetails = context.raw as InfractionBarDataPoint;
                   if (eventDetails) {
-                    // FIXED: Removed URL from tooltip, only show message
-                    return [`@${eventDetails.eventDetails.username} didn't pay a loan back.`, `Modifier: ${eventDetails.eventDetails.modifier}`];
+                    return [
+                      `@${eventDetails.eventDetails.username} didn't pay a loan back.`,
+                      `Modifier: ${eventDetails.eventDetails.modifier}`,
+                    ];
                   }
-                  return 'Infraction event';
+                  return "Infraction event";
                 } else {
-                  let label = context.dataset.label || '';
+                  let label = context.dataset.label || "";
                   if (label) {
-                    label += ': ';
+                    label += ": ";
                   }
                   label += Math.round(context.parsed.y as number);
                   return label;
@@ -219,14 +223,20 @@ export default function CreditScoreChart({
         },
         scales: {
           x: {
-            type: 'time',
+            type: "time",
             time: {
-              unit: selectedTimeRange === '7D' ? 'day' : (selectedTimeRange === '30D' ? 'day' : (selectedTimeRange === '90D' || selectedTimeRange === '6M' ? 'week' : 'month')),
-              tooltipFormat: 'MMM d, yyyy',
+              unit: selectedTimeRange === "7D"
+                ? "day"
+                : (selectedTimeRange === "30D"
+                  ? "day"
+                  : (selectedTimeRange === "90D" || selectedTimeRange === "6M"
+                    ? "week"
+                    : "month")),
+              tooltipFormat: "MMM d, yyyy",
               displayFormats: {
-                day: 'MMM d',
-                week: 'MMM d',
-                month: 'MMM yyyy',
+                day: "MMM d",
+                week: "MMM d",
+                month: "MMM yyyy",
               },
             },
             title: {
@@ -279,43 +289,20 @@ export default function CreditScoreChart({
       plugins: [],
     });
 
-    // --- NEW: Add Click Event Listener for bars ---
-    const handleClick = (event: MouseEvent) => {
-      if (!chartInstanceRef.current) return;
-
-      // Get elements at the event position, filtering for bars
-      const elements = chartInstanceRef.current.getElementsAtEventForMode(
-        event,
-        'nearest', // 'nearest' mode finds the closest element
-        { intersect: true }, // Must intersect the element
-        true // Use dataset order for priority
-      );
-
-      // Filter for bar elements (dataset type 'bar')
-      const clickedBar = elements.find(el => chartInstanceRef.current?.data.datasets[el.datasetIndex].type === 'bar');
-
-      if (clickedBar) {
-        const datasetIndex = clickedBar.datasetIndex;
-        const dataIndex = clickedBar.index;
-        const rawDataPoint = chartInstanceRef.current.data.datasets[datasetIndex].data[dataIndex] as InfractionBarDataPoint;
-        
-        if (rawDataPoint && rawDataPoint.eventDetails && rawDataPoint.eventDetails.url) {
-          globalThis.open(rawDataPoint.eventDetails.url, '_blank'); // Open URL in a new tab
-        }
-      }
-    };
-
-    currentCanvas.addEventListener('click', handleClick);
-
     return () => {
-      // Cleanup: Remove event listener and destroy chart
-      currentCanvas.removeEventListener('click', handleClick);
       if (chartInstanceRef.current) {
         chartInstanceRef.current.destroy();
         chartInstanceRef.current = null;
       }
     };
-  }, [historicalData, selectedTimeRange, isLoading, error, username, overrideEvents]);
+  }, [
+    historicalData,
+    selectedTimeRange,
+    isLoading,
+    error,
+    username,
+    overrideEvents,
+  ]);
 
   const canvasId = `creditScoreChart-${username}`;
 
