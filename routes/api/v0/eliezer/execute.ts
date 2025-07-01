@@ -1,8 +1,8 @@
 // routes/api/v0/eliezer/execute.ts
 import { Handlers } from "$fresh/server.ts";
 import {
-  postDataToManifoldApi,
   getMarketDataBySlug,
+  postDataToManifoldApi,
 } from "../../../../utils/api/manifold_api_service.ts";
 import {
   ManaPaymentTransaction,
@@ -77,12 +77,22 @@ function handleError(message: string, status: number): Response {
 export const handler: Handlers<ExecutePayoutsResponse> = {
   async POST(req) {
     const body: ExecutePayoutsRequest = await req.json();
-    const { apiKey, users, marketId, marketSlugFull, apologyPercentage, customManagramMessage } = body;
+    const {
+      apiKey,
+      users,
+      marketId,
+      marketSlugFull,
+      apologyPercentage,
+      customManagramMessage,
+    } = body;
 
     if (!apiKey) {
       return handleError("API key is required for execution.", 401);
     }
-    if (!users || users.length === 0 || !marketId || !marketSlugFull || typeof apologyPercentage !== "number") {
+    if (
+      !users || users.length === 0 || !marketId || !marketSlugFull ||
+      typeof apologyPercentage !== "number"
+    ) {
       return handleError("Invalid request body for execution.", 400);
     }
 
@@ -99,7 +109,9 @@ export const handler: Handlers<ExecutePayoutsResponse> = {
     let marketUrlForMessage = `https://manifold.markets/${marketSlugFull}`;
 
     if (pureMarketSlugForLookup) {
-      const marketDataResult = await getMarketDataBySlug(pureMarketSlugForLookup);
+      const marketDataResult = await getMarketDataBySlug(
+        pureMarketSlugForLookup,
+      );
       if (marketDataResult.data && marketDataResult.data.url) {
         marketUrlForMessage = marketDataResult.data.url;
       }
@@ -120,10 +132,11 @@ export const handler: Handlers<ExecutePayoutsResponse> = {
 
       // REMOVED message truncation to finalManagramMessage here.
       // API will handle truncation if needed, based on your testing.
-      const finalManagramMessage = messageToUse; 
+      const finalManagramMessage = messageToUse;
 
       if (amountToSend < MIN_MANAGRAM_AMOUNT) {
-        const reason = `Skipped: Mana to send (M${amountToSend}) is below Manifold's minimum managram amount of M${MIN_MANAGRAM_AMOUNT}.`;
+        const reason =
+          `Skipped: Mana to send (M${amountToSend}) is below Manifold's minimum managram amount of M${MIN_MANAGRAM_AMOUNT}.`;
         errors.push({
           userId: user.userId,
           username: user.username,
@@ -148,7 +161,11 @@ export const handler: Handlers<ExecutePayoutsResponse> = {
       try {
         const sendResult = await postDataToManifoldApi<ManaPaymentTransaction>(
           "/managram",
-          { toIds: [user.userId], amount: amountToSend, message: finalManagramMessage },
+          {
+            toIds: [user.userId],
+            amount: amountToSend,
+            message: finalManagramMessage,
+          },
           apiKey,
         );
 
@@ -227,13 +244,15 @@ export const handler: Handlers<ExecutePayoutsResponse> = {
     return new Response(
       JSON.stringify({
         success: errors.length === 0,
-        message:
-          errors.length === 0
-            ? "All payouts attempted successfully."
-            : `Completed payouts with ${errors.length} error(s).`,
+        message: errors.length === 0
+          ? "All payouts attempted successfully."
+          : `Completed payouts with ${errors.length} error(s).`,
         errors: errors,
         transactions: transactions,
-        marketResolution: { status: "manual_action_required", message: marketResolutionStatus },
+        marketResolution: {
+          status: "manual_action_required",
+          message: marketResolutionStatus,
+        },
         totalPaidMana: totalPaidMana,
         totalErrors: errors.length,
         detailedLogs: detailedLogs,

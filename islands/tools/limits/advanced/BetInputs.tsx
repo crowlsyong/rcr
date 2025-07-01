@@ -1,6 +1,6 @@
 // islands/tools/limits/advanced/BetInputs.tsx
 import { Signal } from "@preact/signals";
-import { useState, useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 
 interface BetInputsProps {
   betAmount: Signal<number>;
@@ -29,10 +29,13 @@ export default function BetInputs({ betAmount }: BetInputsProps) {
   };
 
   const mapSliderValueToBetAmount = (rawValue: number): number => {
-    const clampedRawValue = Math.max(SLIDER_RAW_MIN, Math.min(
-      SLIDER_RAW_MAX,
-      rawValue,
-    ));
+    const clampedRawValue = Math.max(
+      SLIDER_RAW_MIN,
+      Math.min(
+        SLIDER_RAW_MAX,
+        rawValue,
+      ),
+    );
     const effectiveRange = SLIDER_RAW_MAX - SLIDER_RAW_MIN;
     const percentage = (clampedRawValue - SLIDER_RAW_MIN) / effectiveRange;
 
@@ -49,7 +52,8 @@ export default function BetInputs({ betAmount }: BetInputsProps) {
       const endValue = 10000;
       const logStart = Math.log(startValue);
       const logEnd = Math.log(endValue);
-      const interpolatedLog = logStart + segmentPercentage * (logEnd - logStart);
+      const interpolatedLog = logStart +
+        segmentPercentage * (logEnd - logStart);
       result = Math.round(Math.exp(interpolatedLog));
     } else {
       const segmentPercentage = (percentage - 0.66) / (1 - 0.66);
@@ -57,7 +61,8 @@ export default function BetInputs({ betAmount }: BetInputsProps) {
       const endValue = 100000;
       const logStart = Math.log(startValue);
       const logEnd = Math.log(endValue);
-      const interpolatedLog = logStart + segmentPercentage * (logEnd - logStart);
+      const interpolatedLog = logStart +
+        segmentPercentage * (logEnd - logStart);
       result = Math.round(Math.exp(interpolatedLog));
     }
     return Math.max(MIN_BET_AMOUNT, result);

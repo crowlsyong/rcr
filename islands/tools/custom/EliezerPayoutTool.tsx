@@ -1,6 +1,6 @@
 // islands/tools/custom/EliezerPayoutTool.tsx
 import { useSignal } from "@preact/signals";
-import { useEffect, useCallback, useMemo } from "preact/hooks";
+import { useCallback, useEffect, useMemo } from "preact/hooks";
 import { JSX } from "preact";
 
 interface UserPayout {
@@ -111,7 +111,9 @@ export default function EliezerPayoutTool(): JSX.Element {
   }, [apologyPercentage.value]);
 
   const calculatePayouts = useCallback(async () => {
-    if (!debouncedMarketUrl.value || debouncedApologyPercentage.value === null) {
+    if (
+      !debouncedMarketUrl.value || debouncedApologyPercentage.value === null
+    ) {
       calculationSuccess.value = false;
       usersToPay.value = [];
       marketQuestion.value = null;
@@ -221,7 +223,8 @@ export default function EliezerPayoutTool(): JSX.Element {
     }
 
     if (!marketSlug.value) {
-      executionMessage.value = "Market information is missing. Please calculate first.";
+      executionMessage.value =
+        "Market information is missing. Please calculate first.";
       isExecuting.value = false;
       return;
     }
@@ -229,9 +232,10 @@ export default function EliezerPayoutTool(): JSX.Element {
     const marketSlugFullForBackend = marketSlug.value;
     const actualManifoldMarketId = marketSlugFullForBackend.split("/").pop();
     if (!actualManifoldMarketId) {
-        executionMessage.value = "Could not derive actual Manifold market ID from slug for execution.";
-        isExecuting.value = false;
-        return;
+      executionMessage.value =
+        "Could not derive actual Manifold market ID from slug for execution.";
+      isExecuting.value = false;
+      return;
     }
 
     try {
@@ -259,23 +263,24 @@ export default function EliezerPayoutTool(): JSX.Element {
         executionTransactions.value = data.transactions || [];
         executionErrors.value = data.errors || [];
         executionTotalErrors.value = data.totalErrors || 0;
-        marketResolutionMessage.value =
-          data.marketResolution?.message || "Market resolution status unknown.";
+        marketResolutionMessage.value = data.marketResolution?.message ||
+          "Market resolution status unknown.";
         detailedExecutionLogs.value = data.detailedLogs || [];
       } else {
         executionMessage.value = data.message || "Payouts failed.";
         executionErrors.value = data.errors || [];
         executionTotalErrors.value = data.totalErrors || 0;
-        marketResolutionMessage.value =
-          data.marketResolution?.message || "Market resolution status unknown.";
+        marketResolutionMessage.value = data.marketResolution?.message ||
+          "Market resolution status unknown.";
         detailedExecutionLogs.value = data.detailedLogs || [];
       }
       executionTotalPaidMana.value = data.totalPaidMana || 0;
 
-      if (detailedExecutionLogs.value && detailedExecutionLogs.value.length > 0) {
+      if (
+        detailedExecutionLogs.value && detailedExecutionLogs.value.length > 0
+      ) {
         downloadExecutionLogs();
       }
-
     } catch (e: unknown) {
       executionMessage.value = `Network error during execution: ${
         typeof e === "object" && e !== null && "message" in e
@@ -312,7 +317,10 @@ export default function EliezerPayoutTool(): JSX.Element {
   };
 
   const managramPreview = useMemo(() => {
-    if (!calculationSuccess.value || usersToPay.value.length === 0 || !marketSlug.value) {
+    if (
+      !calculationSuccess.value || usersToPay.value.length === 0 ||
+      !marketSlug.value
+    ) {
       return "Managram preview will appear here after calculation results are available.";
     }
     const exampleUser = usersToPay.value[0];
@@ -321,21 +329,31 @@ export default function EliezerPayoutTool(): JSX.Element {
     const marketLink = `https://manifold.markets/${marketSlug.value}`;
 
     return `${apologyPercentage.value}% Payment as an apology for locked funds in ${marketLink} | Invested M${invested} | Apology payment M${payout}`;
-  }, [calculationSuccess.value, usersToPay.value, apologyPercentage.value, marketSlug.value]);
+  }, [
+    calculationSuccess.value,
+    usersToPay.value,
+    apologyPercentage.value,
+    marketSlug.value,
+  ]);
 
   return (
     <div class="w-full max-w-2xl mx-auto p-4 bg-gray-800 rounded-lg shadow-xl text-gray-100">
-      <p class="text-sm text-gray-400 mb-4"> {/* Removed text-center */}
-        This tool helps calculate and execute compensation for users who invested
-        in a Manifold market. It will send back their original investment plus a configurable
-        apology bonus to each unique investor.
+      <p class="text-sm text-gray-400 mb-4">
+        {/* Removed text-center */}
+        This tool helps calculate and execute compensation for users who
+        invested in a Manifold market. It will send back their original
+        investment plus a configurable apology bonus to each unique investor.
         <br />
       </p>
 
       {/* API Key and Apology Percentage on the same row */}
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div> {/* Container for API Key */}
-          <label htmlFor="apiKey" class="block text-sm font-medium text-gray-300 mb-1">
+        <div>
+          {/* Container for API Key */}
+          <label
+            htmlFor="apiKey"
+            class="block text-sm font-medium text-gray-300 mb-1"
+          >
             Your Manifold API Key (required for execution)
           </label>
           <input
@@ -347,12 +365,18 @@ export default function EliezerPayoutTool(): JSX.Element {
             class="w-full p-2 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-border-500"
           />
           <p class="mt-1 text-xs text-gray-400">
-            Find your API key on your Manifold profile page by clicking the gear icon and selecting Account Settings.
+            Find your API key on your Manifold profile page by clicking the gear
+            icon and selecting Account Settings. This key is NOT stored on our
+            servers.
           </p>
         </div>
 
-        <div> {/* Container for Apology Percentage */}
-          <label htmlFor="apologyPercentage" class="block text-sm font-medium text-gray-300 mb-1">
+        <div>
+          {/* Container for Apology Percentage */}
+          <label
+            htmlFor="apologyPercentage"
+            class="block text-sm font-medium text-gray-300 mb-1"
+          >
             Apology Payout Percentage
           </label>
           <div class="relative flex items-center">
@@ -371,22 +395,29 @@ export default function EliezerPayoutTool(): JSX.Element {
         </div>
       </div>
 
-      <div class="mb-4"> {/* Market URL remains a full-width input */}
-        <label htmlFor="marketUrl" class="block text-sm font-medium text-gray-300 mb-1">
+      <div class="mb-4">
+        {/* Market URL remains a full-width input */}
+        <label
+          htmlFor="marketUrl"
+          class="block text-sm font-medium text-gray-300 mb-1"
+        >
           Manifold Market URL
         </label>
         <input
           type="text"
           id="marketUrl"
           value={marketUrl.value}
-          onInput={(e) => marketUrl.value = (e.target as HTMLInputElement).value}
+          onInput={(e) =>
+            marketUrl.value = (e.target as HTMLInputElement).value}
           placeholder="e.g., https://manifold.markets/EliezerYudkowsky/what-book-will-i-enjoy-reading"
           class="w-full p-2 bg-gray-700 border border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500"
         />
       </div>
 
       {isCalculating.value && (
-          <p class="text-blue-300 text-center mt-4 mb-4">Calculating payouts...</p>
+        <p class="text-blue-300 text-center mt-4 mb-4">
+          Calculating payouts...
+        </p>
       )}
 
       {calculationError.value && (
@@ -417,9 +448,7 @@ export default function EliezerPayoutTool(): JSX.Element {
           </h4>
           <div class="max-h-60 overflow-y-auto border border-gray-600 rounded-md p-2 bg-gray-800">
             {usersToPay.value.length === 0
-              ? (
-                <p class="text-gray-400">No users found with invested mana.</p>
-              )
+              ? <p class="text-gray-400">No users found with invested mana.</p>
               : (
                 <ul class="space-y-1">
                   {usersToPay.value.map((user) => (
@@ -445,17 +474,22 @@ export default function EliezerPayoutTool(): JSX.Element {
               <input
                 type="checkbox"
                 checked={useCustomManagram.value}
-                onChange={() => useCustomManagram.value = !useCustomManagram.value}
+                onChange={() =>
+                  useCustomManagram.value = !useCustomManagram.value}
                 class="form-checkbox h-5 w-5 text-blue-600 rounded"
               />
-              <span class="ml-2 text-gray-300">Use Custom Managram Message</span>
+              <span class="ml-2 text-gray-300">
+                Use Custom Managram Message
+              </span>
             </label>
 
             {useCustomManagram.value
               ? (
                 <textarea
                   value={customManagramMessage.value}
-                  onInput={(e) => customManagramMessage.value = (e.target as HTMLTextAreaElement).value}
+                  onInput={(e) =>
+                    customManagramMessage.value =
+                      (e.target as HTMLTextAreaElement).value}
                   placeholder="Enter your custom message here..."
                   rows={4}
                   maxLength={100} // Still a good idea to suggest standard limits for API safety
@@ -469,14 +503,16 @@ export default function EliezerPayoutTool(): JSX.Element {
                 </div>
               )}
             <p class="mt-1 text-xs text-gray-400">
-              Example data, data will be unique to each user if you choose the automatic option. No dynamic options in custom managram mode.
+              Example data, data will be unique to each user if you choose the
+              automatic option. No dynamic options in custom managram mode.
             </p>
           </div>
 
           <button
             type="button"
             onClick={handleConfirmClick}
-            disabled={isExecuting.value || usersToPay.value.length === 0 || !apiKey.value}
+            disabled={isExecuting.value || usersToPay.value.length === 0 ||
+              !apiKey.value}
             class={`mt-6 w-full py-3 px-4 rounded-md font-bold text-lg transition-colors duration-200
             ${
               isExecuting.value
@@ -510,13 +546,16 @@ export default function EliezerPayoutTool(): JSX.Element {
           {executionTotalErrors.value !== null && (
             <p>Payout Errors: {executionTotalErrors.value}</p>
           )}
-          {executionTransactions.value && executionTransactions.value.length > 0 && (
+          {executionTransactions.value &&
+            executionTransactions.value.length > 0 && (
             <div class="mt-4">
               <h4 class="font-semibold mb-1">Successful Transactions:</h4>
               <ul class="text-sm max-h-40 overflow-y-auto">
                 {executionTransactions.value.map((tx) => (
                   <li key={tx.transactionId} class="text-gray-200">
-                    @{tx.username}: M{usersToPay.value.find(u => u.userId === tx.userId)?.calculatedPayout} (Tx ID: {tx.transactionId})
+                    @{tx.username}: M{usersToPay.value.find((u) =>
+                      u.userId === tx.userId
+                    )?.calculatedPayout} (Tx ID: {tx.transactionId})
                   </li>
                 ))}
               </ul>
@@ -542,9 +581,14 @@ export default function EliezerPayoutTool(): JSX.Element {
             </p>
           )}
 
-          {detailedExecutionLogs.value && detailedExecutionLogs.value.length > 0 && (
+          {detailedExecutionLogs.value &&
+            detailedExecutionLogs.value.length > 0 && (
             <>
-              <p class="mt-4 text-sm text-gray-400 text-center">Log has been downloaded automatically, but feel free to click the button</p> {/* New message */}
+              <p class="mt-4 text-sm text-gray-400 text-center">
+                Log has been downloaded automatically, but feel free to click
+                the button
+              </p>{" "}
+              {/* New message */}
               <button
                 type="button"
                 onClick={downloadExecutionLogs}

@@ -11,8 +11,7 @@ export default function Home(_req: Request, _ctx: RouteContext) {
           🦝 Eliezer Market Payout Tool
         </h1>{" "}
         {/* Updated title */}
-        <EliezerPayoutTool />{" "}
-        {/* Use the new EliezerPayoutTool component */}
+        <EliezerPayoutTool /> {/* Use the new EliezerPayoutTool component */}
       </div>
     </div>
   );

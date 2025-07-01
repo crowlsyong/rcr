@@ -1,8 +1,8 @@
 // routes/api/v0/eliezer/calculate.ts
 import { Handlers } from "$fresh/server.ts";
 import {
-  getMarketDataBySlug,
   fetchUserDataLiteById,
+  getMarketDataBySlug,
 } from "../../../../utils/api/manifold_api_service.ts";
 import {
   ContractMetric,
@@ -59,8 +59,14 @@ export const handler: Handlers<EliezerCalculateResponse> = {
     if (!marketUrl) {
       return handleError("Missing marketUrl in request body.", 400);
     }
-    if (typeof apologyPercentage !== "number" || apologyPercentage < 0 || apologyPercentage > 100) {
-      return handleError("Invalid apology percentage provided. Must be between 0 and 100.", 400);
+    if (
+      typeof apologyPercentage !== "number" || apologyPercentage < 0 ||
+      apologyPercentage > 100
+    ) {
+      return handleError(
+        "Invalid apology percentage provided. Must be between 0 and 100.",
+        400,
+      );
     }
 
     const PAYOUT_MULTIPLIER = apologyPercentage / 100;
@@ -71,23 +77,33 @@ export const handler: Handlers<EliezerCalculateResponse> = {
     }
 
     try {
-      console.log(`DEBUG: Attempting to fetch market data for slug: ${pureMarketSlug}`);
+      console.log(
+        `DEBUG: Attempting to fetch market data for slug: ${pureMarketSlug}`,
+      );
       const marketDataResult = await getMarketDataBySlug(pureMarketSlug);
 
       if (marketDataResult.error || !marketDataResult.data) {
-        console.error(`DEBUG: Failed getMarketDataBySlug for '${pureMarketSlug}': ${marketDataResult.error}`);
+        console.error(
+          `DEBUG: Failed getMarketDataBySlug for '${pureMarketSlug}': ${marketDataResult.error}`,
+        );
         return handleError(
-          marketDataResult.error || `Could not find market for slug: '${pureMarketSlug}'.`,
+          marketDataResult.error ||
+            `Could not find market for slug: '${pureMarketSlug}'.`,
           404,
         );
       }
       const marketData: MarketData = marketDataResult.data;
       const marketId = marketData.id;
       const marketQuestion = marketData.question;
-      console.log(`DEBUG: Found market ID: ${marketId}, Question: ${marketQuestion}`);
+      console.log(
+        `DEBUG: Found market ID: ${marketId}, Question: ${marketQuestion}`,
+      );
 
-      const positionsUrl = `https://api.manifold.markets/v0/market/${marketId}/positions`;
-      console.log(`DEBUG: Attempting to fetch positions from URL: ${positionsUrl}`);
+      const positionsUrl =
+        `https://api.manifold.markets/v0/market/${marketId}/positions`;
+      console.log(
+        `DEBUG: Attempting to fetch positions from URL: ${positionsUrl}`,
+      );
 
       const fetchOptions: RequestInit = {
         headers: {
@@ -116,7 +132,9 @@ export const handler: Handlers<EliezerCalculateResponse> = {
       }
 
       const positions: ContractMetric[] = await positionsRawResponse.json();
-      console.log(`DEBUG: Successfully fetched positions. Count: ${positions.length}`);
+      console.log(
+        `DEBUG: Successfully fetched positions. Count: ${positions.length}`,
+      );
 
       const userManaSpent = new Map<string, {
         totalSpentMana: number;
@@ -129,8 +147,8 @@ export const handler: Handlers<EliezerCalculateResponse> = {
         if (position.userId && position.totalSpent) {
           uniqueUserIds.add(position.userId);
 
-          const manaSpentOnPosition =
-            (position.totalSpent.YES || 0) + (position.totalSpent.NO || 0);
+          const manaSpentOnPosition = (position.totalSpent.YES || 0) +
+            (position.totalSpent.NO || 0);
 
           if (manaSpentOnPosition > 0) {
             const currentSpent = userManaSpent.get(position.userId);
@@ -144,8 +162,12 @@ export const handler: Handlers<EliezerCalculateResponse> = {
         }
       }
 
-      console.log(`DEBUG: Number of unique user IDs with positions: ${uniqueUserIds.size}`);
-      console.log(`DEBUG: Number of unique users with recorded mana spent > 0: ${userManaSpent.size}`);
+      console.log(
+        `DEBUG: Number of unique user IDs with positions: ${uniqueUserIds.size}`,
+      );
+      console.log(
+        `DEBUG: Number of unique users with recorded mana spent > 0: ${userManaSpent.size}`,
+      );
 
       const userLookups = Array.from(uniqueUserIds).map(async (userId) => {
         const result = await fetchUserDataLiteById(userId);
@@ -160,7 +182,9 @@ export const handler: Handlers<EliezerCalculateResponse> = {
           userIdToUsernameMap.set(result.userId, result.userData.username);
         }
       }
-      console.log(`DEBUG: Successfully resolved usernames for ${userIdToUsernameMap.size} users.`);
+      console.log(
+        `DEBUG: Successfully resolved usernames for ${userIdToUsernameMap.size} users.`,
+      );
 
       const usersToPay: UserPayout[] = [];
       let totalPayoutMana = 0;
@@ -169,12 +193,19 @@ export const handler: Handlers<EliezerCalculateResponse> = {
         const username = userIdToUsernameMap.get(userId);
         if (username) {
           console.log(`CALC_DEBUG: User @${username} (ID: ${userId})`);
-          console.log(`CALC_DEBUG:   totalSpentMana (originalInvested candidate): ${data.totalSpentMana}`);
+          console.log(
+            `CALC_DEBUG:   totalSpentMana (originalInvested candidate): ${data.totalSpentMana}`,
+          );
           console.log(`CALC_DEBUG:   PAYOUT_MULTIPLIER: ${PAYOUT_MULTIPLIER}`);
-          const calculatedPayoutBeforeCeil = data.totalSpentMana * PAYOUT_MULTIPLIER;
-          console.log(`CALC_DEBUG:   calculatedPayout (before Math.ceil): ${calculatedPayoutBeforeCeil}`);
+          const calculatedPayoutBeforeCeil = data.totalSpentMana *
+            PAYOUT_MULTIPLIER;
+          console.log(
+            `CALC_DEBUG:   calculatedPayout (before Math.ceil): ${calculatedPayoutBeforeCeil}`,
+          );
           const calculatedPayout = Math.ceil(calculatedPayoutBeforeCeil);
-          console.log(`CALC_DEBUG:   calculatedPayout (after Math.ceil): ${calculatedPayout}`);
+          console.log(
+            `CALC_DEBUG:   calculatedPayout (after Math.ceil): ${calculatedPayout}`,
+          );
 
           if (calculatedPayout > 0) {
             usersToPay.push({
@@ -185,19 +216,27 @@ export const handler: Handlers<EliezerCalculateResponse> = {
             });
             totalPayoutMana += calculatedPayout;
           } else {
-            console.log(`DEBUG: Skipping user ${username} (${userId}) because calculated payout is 0.`);
+            console.log(
+              `DEBUG: Skipping user ${username} (${userId}) because calculated payout is 0.`,
+            );
           }
         } else {
-          console.warn(`DEBUG: Could not resolve username for userId: ${userId}. Skipping payout.`);
+          console.warn(
+            `DEBUG: Could not resolve username for userId: ${userId}. Skipping payout.`,
+          );
         }
       }
 
-      console.log(`DEBUG: Calculated payouts for ${usersToPay.length} final unique users.`);
+      console.log(
+        `DEBUG: Calculated payouts for ${usersToPay.length} final unique users.`,
+      );
 
       return new Response(
         JSON.stringify({
           success: true,
-          marketSlug: `${marketData.creatorUsername || marketData.creatorName}/${marketData.slug}`,
+          marketSlug: `${
+            marketData.creatorUsername || marketData.creatorName
+          }/${marketData.slug}`,
           marketQuestion: marketQuestion,
           totalUsersToPay: usersToPay.length,
           totalPayoutMana: totalPayoutMana,
@@ -209,7 +248,9 @@ export const handler: Handlers<EliezerCalculateResponse> = {
         },
       );
     } catch (e: unknown) {
-      console.error(`DEBUG: Caught unhandled error in POST handler (outside direct fetch):`);
+      console.error(
+        `DEBUG: Caught unhandled error in POST handler (outside direct fetch):`,
+      );
       console.error(e);
       return handleError(
         `Server error during calculation: ${
