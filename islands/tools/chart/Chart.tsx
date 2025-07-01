@@ -110,6 +110,7 @@ export default function Chart() {
     }
   }, [debouncedChartUsername]);
 
+  // Modified useEffect to ensure immediate fetch on mount if initialUsername is present
   useEffect(() => {
     async function fetchChartData(user: string) {
       setIsLoading(true);
@@ -160,13 +161,29 @@ export default function Chart() {
         }
       } catch (err) {
         console.error("Error fetching data for chart:", err);
-        setError("Could not load data.");
+        setError(
+          `Could not load data: ${
+            typeof err === "object" && err !== null && "message" in err
+              ? (err as { message: string }).message
+              : String(err)
+          }`,
+        );
       } finally {
         setIsLoading(false);
       }
     }
 
-    fetchChartData(debouncedChartUsername);
+    // This condition ensures the fetch happens on mount if debouncedChartUsername is already set
+    // and also on subsequent changes to debouncedChartUsername.
+    if (debouncedChartUsername) {
+      fetchChartData(debouncedChartUsername);
+    } else if (debouncedChartUsername === "") {
+      // If the username is intentionally cleared, reset state
+      setIsLoading(false);
+      setError(null);
+      setScoreData(null);
+      setAllHistoricalData([]);
+    }
   }, [debouncedChartUsername]);
 
   // Keep the re-focusing effect as a fallback, though it might not be strictly needed now
