@@ -366,8 +366,10 @@ export default function EliezerPayoutTool(): JSX.Element {
           />
           <p class="mt-1 text-xs text-gray-400">
             Find your API key on your Manifold profile page by clicking the gear
-            icon and selecting Account Settings. This key is NOT stored on our
-            servers.
+            icon and selecting Account Settings.
+          </p>
+          <p class="mt-1 text-xs text-gray-400">
+            This key is NOT stored on our servers.
           </p>
         </div>
 
