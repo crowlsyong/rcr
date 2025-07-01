@@ -206,7 +206,7 @@ export default function Chart() {
 
   return (
     <div class="bg-gray-900 p-6 rounded-lg shadow-xl border border-gray-700">
-      <h1 class="text-2xl font-bold mb-6 text-white">Credit Score Chart</h1>
+      <h1 class="text-2xl font-bold mb-6 text-white">🦝Credit Score Chart</h1>
 
       <div class="flex items-end space-x-2">
         <div class="flex-grow">
