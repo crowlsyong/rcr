@@ -157,7 +157,7 @@ export default function BasicChart(
             data: [],
             fill: false,
             borderColor: "rgb(75, 192, 192)",
-            tension: 0.4,
+            tension: 0.3,
             pointHitRadius: 20,
             pointRadius: 5,
             order: 2,
