@@ -325,9 +325,6 @@ export default function EliezerPayoutTool(): JSX.Element {
 
   return (
     <div class="w-full max-w-2xl mx-auto p-4 bg-gray-800 rounded-lg shadow-xl text-gray-100">
-      <h2 class="text-2xl font-bold mb-4 text-center text-blue-400">
-        Eliezer Market Payout Tool
-      </h2>
       <p class="text-sm text-gray-400 mb-4"> {/* Removed text-center */}
         This tool helps calculate and execute compensation for users who invested
         in a Manifold market. It will send back their original investment plus a configurable
