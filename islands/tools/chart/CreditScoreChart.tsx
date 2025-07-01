@@ -7,6 +7,7 @@ import { OverrideEvent } from "../../../routes/api/v0/credit-score/index.ts";
 
 Chart.register(...registerables);
 
+// Re-defining for clarity in this file as well
 export interface CreditScoreDataPoint {
   userId: string;
   username: string;
@@ -15,9 +16,9 @@ export interface CreditScoreDataPoint {
 }
 
 interface InfractionBarDataPoint {
-  x: number;
-  y: number;
-  eventDetails: OverrideEvent;
+  x: number; // Timestamp
+  y: number; // Credit Score (height of the bar)
+  eventDetails: OverrideEvent; // The attached event details
 }
 
 interface CreditScoreChartProps {
@@ -27,46 +28,29 @@ interface CreditScoreChartProps {
   isLoading: boolean;
   error: string | null;
   overrideEvents: OverrideEvent[];
+  chartHeight?: string; // Optional prop for custom height
 }
 
-function getOptimalTickConfiguration(dataLength: number, timeRange: string) {
-  if (timeRange === "7D") return { maxTicksLimit: 7, stepSize: undefined };
-  if (timeRange === "30D") return { maxTicksLimit: 8, stepSize: undefined };
-  if (timeRange === "90D") return { maxTicksLimit: 10, stepSize: undefined };
-  if (timeRange === "6M") return { maxTicksLimit: 12, stepSize: undefined };
-  if (dataLength > 100) return { maxTicksLimit: 15, stepSize: undefined };
-  if (dataLength > 50) return { maxTicksLimit: 12, stepSize: undefined };
-  return { maxTicksLimit: 10, stepSize: undefined };
-}
+type ChartTimeUnit =
+  | "millisecond"
+  | "second"
+  | "minute"
+  | "hour"
+  | "day"
+  | "week"
+  | "month"
+  | "quarter"
+  | "year";
 
-function _formatDateLabel(timestamp: number, timeRange: string): string {
-  const date = new Date(timestamp);
-
-  switch (timeRange) {
-    case "7D":
-      return date.toLocaleDateString(undefined, {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-      });
-    case "30D":
-      return date.toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-      });
-    case "90D":
-    case "6M":
-      return date.toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-      });
-    case "ALL":
-    default:
-      return date.toLocaleDateString(undefined, {
-        year: "2-digit",
-        month: "short",
-      });
-  }
+function getOptimalTickConfiguration(
+  dataLength: number,
+  timeRange: string,
+): { unit: ChartTimeUnit; maxTicksLimit: number } {
+  if (timeRange === "7D") return { unit: "day", maxTicksLimit: 7 };
+  if (timeRange === "30D") return { unit: "day", maxTicksLimit: 8 };
+  if (timeRange === "90D") return { unit: "week", maxTicksLimit: 10 };
+  if (timeRange === "6M") return { unit: "month", maxTicksLimit: 12 };
+  return { unit: "month", maxTicksLimit: Math.min(dataLength, 15) };
 }
 
 export default function CreditScoreChart({
@@ -76,12 +60,17 @@ export default function CreditScoreChart({
   isLoading,
   error,
   overrideEvents,
+  chartHeight = "300px", // Default height
 }: CreditScoreChartProps) {
   const chartInstanceRef = useRef<ChartJsType | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    if (historicalData.length === 0 || isLoading || error) {
+    // Only proceed if there's data to display or if not loading/error
+    if (
+      historicalData.length === 0 && overrideEvents.length === 0 || isLoading ||
+      error
+    ) {
       if (chartInstanceRef.current) {
         chartInstanceRef.current.destroy();
         chartInstanceRef.current = null;
@@ -103,6 +92,7 @@ export default function CreditScoreChart({
       return;
     }
 
+    // Destroy existing chart instance before creating a new one
     if (chartInstanceRef.current) {
       chartInstanceRef.current.destroy();
     }
@@ -112,6 +102,7 @@ export default function CreditScoreChart({
       y: dp.creditScore,
     }));
 
+    // Data for infraction bars
     const infractionBarData: InfractionBarDataPoint[] = overrideEvents.map(
       (event) => {
         let closestScore = 0;
@@ -125,7 +116,7 @@ export default function CreditScoreChart({
         });
         return {
           x: event.dateOfInfraction,
-          y: closestScore === 0 ? 1 : closestScore,
+          y: closestScore === 0 ? 1 : closestScore, // Ensure y is not 0 for bar visibility
           eventDetails: event,
         };
       },
@@ -137,9 +128,9 @@ export default function CreditScoreChart({
     );
 
     chartInstanceRef.current = new Chart(ctx, {
-      type: "line",
+      type: "line", // Default type, datasets define their own types
       data: {
-        labels: [],
+        labels: [], // Labels handled by 'time' scale type
         datasets: [{
           type: "line",
           label: "Credit Score",
@@ -153,7 +144,7 @@ export default function CreditScoreChart({
           pointHoverRadius: 7,
           pointBackgroundColor: "rgb(75, 192, 192)",
           pointBorderColor: "#fff",
-          order: 1,
+          order: 1, // Line should be drawn first
         }, {
           type: "bar",
           label: "Infraction",
@@ -164,7 +155,7 @@ export default function CreditScoreChart({
           barPercentage: 0.9,
           categoryPercentage: 0.9,
           minBarLength: 5,
-          order: 2,
+          order: 2, // Bars should be drawn over the line
         }],
       },
       options: {
@@ -180,7 +171,7 @@ export default function CreditScoreChart({
             text: "Credit Score History",
             color: "#f0f0f0",
           },
-          tooltip: {
+          tooltip: { // Reverted to standard tooltip with callback for bar info
             backgroundColor: "rgba(0, 0, 0, 0.8)",
             titleColor: "#fff",
             bodyColor: "#ccc",
@@ -200,17 +191,14 @@ export default function CreditScoreChart({
               },
               label: function (context: TooltipItem<"line" | "bar">) {
                 if (context.dataset.type === "bar") {
-                  const eventDetails = context.raw as InfractionBarDataPoint;
-                  if (eventDetails) {
-                    const defaultMessage =
-                      `@${eventDetails.eventDetails.username} didn't pay a loan back.`;
-                    const description = eventDetails.eventDetails.description;
-
+                  const rawData = context.raw as InfractionBarDataPoint;
+                  if (rawData && rawData.eventDetails) {
                     return [
-                      description && description.trim() !== ""
-                        ? description
-                        : defaultMessage,
-                      `Modifier: ${eventDetails.eventDetails.modifier}`,
+                      `Override: ${rawData.eventDetails.description}`,
+                      `Modifier: ${
+                        rawData.eventDetails.modifier > 0 ? "+" : ""
+                      }${rawData.eventDetails.modifier}`,
+                      `URL: ${rawData.eventDetails.url}`, // Keep URL in tooltip for info
                     ];
                   }
                   return "Infraction event";
@@ -242,6 +230,7 @@ export default function CreditScoreChart({
                 day: "MMM d",
                 week: "MMM d",
                 month: "MMM yyyy",
+                year: "yyyy",
               },
             },
             title: {
@@ -294,7 +283,41 @@ export default function CreditScoreChart({
       plugins: [],
     });
 
+    // --- NEW: Add Click Event Listener for bars ---
+    const handleClick = (event: MouseEvent) => {
+      if (!chartInstanceRef.current) return;
+
+      const elements = chartInstanceRef.current.getElementsAtEventForMode(
+        event,
+        "nearest",
+        { intersect: true },
+        true,
+      );
+
+      const clickedBar = elements.find((el) =>
+        chartInstanceRef.current?.data.datasets[el.datasetIndex].type === "bar"
+      );
+
+      if (clickedBar) {
+        const datasetIndex = clickedBar.datasetIndex;
+        const dataIndex = clickedBar.index;
+        const rawDataPoint = chartInstanceRef.current.data
+          .datasets[datasetIndex].data[dataIndex] as InfractionBarDataPoint;
+
+        if (
+          rawDataPoint && rawDataPoint.eventDetails &&
+          rawDataPoint.eventDetails.url
+        ) {
+          globalThis.open(rawDataPoint.eventDetails.url, "_blank"); // Open URL in a new tab
+        }
+      }
+    };
+
+    currentCanvas.addEventListener("click", handleClick);
+
     return () => {
+      // Cleanup: Remove event listener and destroy chart
+      currentCanvas.removeEventListener("click", handleClick);
       if (chartInstanceRef.current) {
         chartInstanceRef.current.destroy();
         chartInstanceRef.current = null;
@@ -307,13 +330,14 @@ export default function CreditScoreChart({
     error,
     username,
     overrideEvents,
-  ]);
+    chartHeight,
+  ]); // chartHeight added to deps
 
   const canvasId = `creditScoreChart-${username}`;
 
   if (isLoading) {
     return (
-      <div class="bg-gray-900 p-4 md:p-6 rounded-lg shadow-inner">
+      <div class="bg-gray-900 p-4 md:p-6 rounded-lg shadow-inner border border-gray-700">
         <h2 class="text-xl font-semibold mb-4 text-gray-100">Score History</h2>
         <p class="text-center text-gray-400 py-8">Loading chart data...</p>
       </div>
@@ -330,15 +354,18 @@ export default function CreditScoreChart({
   }
 
   return (
-    <div class="bg-gray-900 p-4 md:p-6 rounded-lg shadow-inner">
-      {historicalData.length === 0
+    <div class="bg-gray-900 p-4 md:p-6 rounded-lg shadow-inner border border-gray-700">
+      <h2 class="text-xl font-semibold mb-4 text-gray-100">Score History</h2>
+      {historicalData.length === 0 && overrideEvents.length === 0 // Check if either data or overrides exist
         ? (
           <p class="text-gray-400 text-sm text-center py-4">
             No historical data available yet.
           </p>
         )
         : (
-          <div style={{ position: "relative", width: "100%", height: "300px" }}>
+          <div
+            style={{ position: "relative", width: "100%", height: chartHeight }}
+          >
             <canvas ref={canvasRef} id={canvasId}></canvas>
           </div>
         )}

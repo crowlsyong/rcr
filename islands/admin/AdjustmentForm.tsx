@@ -1,9 +1,9 @@
 // islands/admin/AdjustmentForm.tsx
 import { useCallback, useEffect, useState } from "preact/hooks";
 import UsernameInput from "../shared/UsernameInput.tsx";
-import UserAdjustmentDisplay from "./UserAdjustmentDisplay.tsx"; // Will now only display score/error
+import UserAdjustmentDisplay from "./UserAdjustmentDisplay.tsx";
 import AdjustmentFormFields from "./AdjustmentFormFields.tsx";
-import ExistingOverridesTable from "./ExistingOverridesTable.tsx"; // NEW: Import the table here directly
+import ExistingOverridesTable from "./ExistingOverridesTable.tsx"; // NEW: Import it here for its own section
 import { OverrideEvent, UserScoreOverview } from "./AdjustmentFormFields.tsx";
 
 function getInitialUsernameFromUrl(): string {
@@ -60,17 +60,8 @@ export default function AdjustmentForm() {
   const handleUserOverviewFetched = useCallback(
     (user: UserScoreOverview | null) => {
       console.log("[AdjustmentForm] User overview fetched:", user);
-      if (
-        user && (user as UserScoreOverview & { modifyingEvent?: OverrideEvent })
-          .modifyingEvent
-      ) {
-        setModifyingEvent(
-          (user as UserScoreOverview & { modifyingEvent: OverrideEvent })
-            .modifyingEvent,
-        );
-      } else {
-        setModifyingEvent(null);
-      }
+      // We no longer set modifyingEvent here based on initial fetch.
+      // ModifyingEvent is set ONLY when "Modify" button in table is clicked.
       setSelectedUserOverview(user);
       setSubmitMessage(null);
       setSubmitMessageType("");
@@ -129,8 +120,8 @@ export default function AdjustmentForm() {
       setSubmitMessageType("success");
       console.log("[AdjustmentForm] Form submitted successfully.");
 
-      setModifyingEvent(null);
-      setRefreshDisplayTrigger((prev) => prev + 1);
+      setModifyingEvent(null); // Clear modifying state after successful submit
+      setRefreshDisplayTrigger((prev) => prev + 1); // Trigger refresh
 
       await new Promise((r) => setTimeout(r, 500));
     } catch (err) {
@@ -149,7 +140,7 @@ export default function AdjustmentForm() {
 
   const handleFormFieldSuccess = useCallback(() => {
     console.log("[AdjustmentForm] Form fields reported success.");
-    setRefreshDisplayTrigger((prev) => prev + 1);
+    // This is now redundant since handleFormSubmit already triggers refreshDisplayTrigger
   }, []);
 
   const handleUserDisplayRefreshNeeded = useCallback(() => {
@@ -163,30 +154,32 @@ export default function AdjustmentForm() {
     setSubmitMessageType("error");
   }, []);
 
+  const handleModifyEventFromTable = useCallback((event: OverrideEvent) => {
+    console.log("[AdjustmentForm] Received modify event from table:", event);
+    setModifyingEvent(event); // Set the event to modify
+  }, []);
+
   return (
     <div class="bg-gray-900 p-6 rounded-lg shadow-xl border border-gray-700">
-      <h2 class="text-xl font-bold mb-6 text-white">
-        Admin Panel - Adjust User Scores
-      </h2>
-
       <div class="mb-6">
         <UsernameInput
           initialValue={initialUsername}
           onDebouncedChange={handleDebouncedUsernameChange}
-          isFetching={isSubmitting}
+          isFetching={isSubmitting} // isSubmitting disables input while submitting
         />
       </div>
 
       {/* Main layout grid for Current User Status + Adjustment Form */}
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Column: Current User Status Display */}
+        {/* Left Column: Current User Status Display (which now includes chart) */}
         <div>
           <UserAdjustmentDisplay
             debouncedUsername={debouncedSearchUsername}
             onUserOverviewFetched={handleUserOverviewFetched}
             isLoadingParent={isSubmitting}
             refreshTrigger={refreshDisplayTrigger}
-            onTableRefreshNeeded={handleUserDisplayRefreshNeeded}
+            onDeleteSuccess={handleUserDisplayRefreshNeeded} // Passes through
+            onModify={handleModifyEventFromTable} // Passes through
           />
         </div>
 
@@ -218,38 +211,35 @@ export default function AdjustmentForm() {
       {selectedUserOverview && !selectedUserOverview.userDeleted &&
           selectedUserOverview.existingOverrideEvents.length > 0
         ? (
-          <div class="mt-6 w-full">
-            {/* mt-6 for spacing from previous section */}
+          <div class="mt-8 pt-8 border-t border-gray-700">
+            {/* Added mt-8 pt-8 border-t for visual separation */}
             <ExistingOverridesTable
               overrideEvents={selectedUserOverview.existingOverrideEvents}
               userId={selectedUserOverview.userId}
               username={selectedUserOverview.username}
-              isLoadingParent={isSubmitting}
-              onDeleteSuccess={handleUserDisplayRefreshNeeded} // Calls the central refresh trigger
-              onModify={(event) =>
-                handleUserOverviewFetched(
-                  { ...selectedUserOverview, modifyingEvent: event } as
-                    & UserScoreOverview
-                    & {
-                      modifyingEvent: OverrideEvent;
-                    },
-                )}
+              isLoadingParent={isSubmitting} // Pass overall submission state
+              onDeleteSuccess={handleUserDisplayRefreshNeeded} // Call the central refresh trigger
+              onModify={handleModifyEventFromTable} // Call the central modify event handler
             />
           </div>
         )
         : selectedUserOverview && !selectedUserOverview.userDeleted &&
             selectedUserOverview.existingOverrideEvents.length === 0
         ? (
-          <div class="mt-6 w-full p-4 bg-gray-800 rounded-lg shadow-inner border border-gray-700">
-            <h4 class="text-md font-semibold text-white mb-4">
-              Existing Overrides for @{selectedUserOverview.username}:
-            </h4>
-            <p class="text-gray-400 text-sm">
-              No existing overrides for this user.
-            </p>
+          <div class="mt-8 pt-8 border-t border-gray-700">
+            {/* Consistent spacing/border for "No overrides" message */}
+            <div class="p-4 bg-gray-800 rounded-lg shadow-inner border border-gray-700">
+              <h4 class="text-md font-semibold text-white mb-4">
+                Existing Overrides for @{selectedUserOverview.username}:
+              </h4>
+              <p class="text-gray-400 text-sm">
+                No existing overrides for this user.
+              </p>
+            </div>
           </div>
         )
         : null}
+
       {selectedUserOverview?.userDeleted && (
         <div class="mt-6 w-full flex items-center justify-center bg-yellow-900/20 p-6 rounded-lg border border-yellow-700">
           <p class="text-yellow-400 text-center">

@@ -1,15 +1,16 @@
 // islands/admin/AdjustmentFormFields.tsx
 import { useSignal } from "@preact/signals";
 import { useEffect, useRef } from "preact/hooks";
+import { CreditScoreDataPoint } from "../tools/chart/CreditScoreChart.tsx"; // NEW: Import for allHistoricalData
 
 export interface OverrideEvent {
   timestamp: number;
-  userId: string; // Added userId
-  username: string; // Added username
+  userId: string;
+  username: string;
   modifier: number;
   url: string;
   dateOfInfraction: number;
-  description: string; // Added description
+  description: string;
 }
 
 export interface UserScoreOverview {
@@ -22,6 +23,7 @@ export interface UserScoreOverview {
   riskBaseFee: number;
   userDeleted: boolean;
   existingOverrideEvents: OverrideEvent[];
+  allHistoricalData: CreditScoreDataPoint[]; // NEW: Added for the chart
 }
 
 interface AdjustmentFormFieldsProps {
