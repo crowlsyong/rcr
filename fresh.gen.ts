@@ -15,6 +15,8 @@ import * as $api_v0_arbitrage_execute from "./routes/api/v0/arbitrage/execute.ts
 import * as $api_v0_credit_card from "./routes/api/v0/credit-card.ts";
 import * as $api_v0_credit_score_index from "./routes/api/v0/credit-score/index.ts";
 import * as $api_v0_credit_score_lite from "./routes/api/v0/credit-score/lite.ts";
+import * as $api_v0_eliezer_calculate from "./routes/api/v0/eliezer/calculate.ts";
+import * as $api_v0_eliezer_execute from "./routes/api/v0/eliezer/execute.ts";
 import * as $api_v0_history from "./routes/api/v0/history.ts";
 import * as $api_v0_insurance from "./routes/api/v0/insurance.ts";
 import * as $api_v0_insurance_execute from "./routes/api/v0/insurance/execute.ts";
@@ -33,6 +35,7 @@ import * as $auth_signout from "./routes/auth/signout.ts";
 import * as $chart_index from "./routes/chart/index.tsx";
 import * as $docs_layout from "./routes/docs/_layout.tsx";
 import * as $docs_api from "./routes/docs/api.tsx";
+import * as $eliezer from "./routes/eliezer.tsx";
 import * as $extension from "./routes/extension.tsx";
 import * as $forbidden from "./routes/forbidden.tsx";
 import * as $gameshow_usernames_ from "./routes/gameshow/[usernames].tsx";
@@ -74,6 +77,7 @@ import * as $tools_chart_TimeRangeSelector from "./islands/tools/chart/TimeRange
 import * as $tools_creditscore_CreditScore from "./islands/tools/creditscore/CreditScore.tsx";
 import * as $tools_creditscore_CreditScoreChExt from "./islands/tools/creditscore/CreditScoreChExt.tsx";
 import * as $tools_creditscore_ScoreResult from "./islands/tools/creditscore/ScoreResult.tsx";
+import * as $tools_custom_EliezerPayoutTool from "./islands/tools/custom/EliezerPayoutTool.tsx";
 import * as $tools_insurance_FinancialSummary from "./islands/tools/insurance/FinancialSummary.tsx";
 import * as $tools_insurance_InputDetails from "./islands/tools/insurance/InputDetails.tsx";
 import * as $tools_insurance_Institutions from "./islands/tools/insurance/Institutions.tsx";
@@ -130,6 +134,8 @@ const manifest = {
     "./routes/api/v0/credit-card.ts": $api_v0_credit_card,
     "./routes/api/v0/credit-score/index.ts": $api_v0_credit_score_index,
     "./routes/api/v0/credit-score/lite.ts": $api_v0_credit_score_lite,
+    "./routes/api/v0/eliezer/calculate.ts": $api_v0_eliezer_calculate,
+    "./routes/api/v0/eliezer/execute.ts": $api_v0_eliezer_execute,
     "./routes/api/v0/history.ts": $api_v0_history,
     "./routes/api/v0/insurance.ts": $api_v0_insurance,
     "./routes/api/v0/insurance/execute.ts": $api_v0_insurance_execute,
@@ -148,6 +154,7 @@ const manifest = {
     "./routes/chart/index.tsx": $chart_index,
     "./routes/docs/_layout.tsx": $docs_layout,
     "./routes/docs/api.tsx": $docs_api,
+    "./routes/eliezer.tsx": $eliezer,
     "./routes/extension.tsx": $extension,
     "./routes/forbidden.tsx": $forbidden,
     "./routes/gameshow/[usernames].tsx": $gameshow_usernames_,
@@ -201,6 +208,8 @@ const manifest = {
       $tools_creditscore_CreditScoreChExt,
     "./islands/tools/creditscore/ScoreResult.tsx":
       $tools_creditscore_ScoreResult,
+    "./islands/tools/custom/EliezerPayoutTool.tsx":
+      $tools_custom_EliezerPayoutTool,
     "./islands/tools/insurance/FinancialSummary.tsx":
       $tools_insurance_FinancialSummary,
     "./islands/tools/insurance/InputDetails.tsx": $tools_insurance_InputDetails,

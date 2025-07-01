@@ -1,5 +1,4 @@
 // utils/api/manifold_types.ts
-
 export interface ManaPaymentTransaction {
   id: string;
   amount: number;
@@ -56,6 +55,12 @@ export interface Answer {
 
 export interface ManifoldMarket {
   id: string;
+  creatorId: string;
+  creatorUsername: string;
+  creatorName: string;
+  createdTime: number;
+  creatorAvatarUrl?: string | null;
+  closeTime?: number | null;
   question: string;
   slug: string;
   url: string;
@@ -72,9 +77,67 @@ export interface ManifoldMarket {
     NO: number;
   };
   answers?: Answer[];
+  isResolved?: boolean;
+  resolution?: string;
+  resolutionTime?: number;
+  resolutionProbability?: number;
+  uniqueBettorCount?: number;
+  lastUpdatedTime?: number;
+  lastBetTime?: number;
+  lastCommentTime?: number;
+  token?: string;
+  description?: string;
+  groupSlugs?: string[];
+  textDescription?: string;
+  mechanism?: string;
+  p?: number;
 }
 
 export interface MarketData extends ManifoldMarket {}
+
+// UPDATED ContractMetric interface
+export type ContractMetric = {
+  contractId: string;
+  from?: { // Marking as optional, and detailing structure
+    [period: string]: {
+      profit: number;
+      profitPercent: number;
+      invested: number;
+      prevValue: number;
+      value: number;
+    };
+  };
+  loan?: number; // Marking optional
+  payout?: number; // Marking optional
+  profit?: number; // Marking optional
+  userId: string;
+  answerId?: string | null; // Marking optional and allowing null
+  invested: number; // This is the old 'invested' field
+  lastProb?: number | null; // Marking optional and allowing null
+  hasShares: boolean;
+  totalSpent?: { // Marking optional
+    NO?: number;
+    YES?: number;
+  };
+  hasNoShares: boolean;
+  lastBetTime?: number; // Marking optional
+  totalShares?: { // Marking optional
+    NO: number;
+    YES: number;
+    // Potentially other answer IDs
+    [key: string]: number; // Allow dynamic keys for totalShares
+  };
+  hasYesShares: boolean;
+  profitPercent?: number; // Marking optional
+  userUsername?: string; // Marking optional to match behavior, though usually present
+  userName?: string; // Marking optional
+  userAvatarUrl?: string | null; // Marking optional
+  totalAmountSold?: number; // <-- ADDED THIS
+  maxSharesOutcome?: string | null; // Marking optional
+  totalAmountInvested?: number; // <-- ADDED THIS (This is the one causing the error!)
+  isRanked?: boolean; // <-- ADDED THIS
+  previousProfit?: number; // <-- ADDED THIS (from example)
+};
 
 export interface BetPayload {
   amount: number;
@@ -100,40 +163,36 @@ export interface ManifoldBetResponse {
   isCancelled: boolean;
 }
 
-// Defining the nested content structure for Manifold Comments (BlockJSON / TipTap)
 export interface TipTapContentBlock {
   type: string;
-  text?: string; // For paragraph, heading etc.
-  content?: TipTapContentBlock[]; // For nested structures like doc, paragraph, mention
-  attrs?: { // For attributes like mention, link. More specific attrs can be added if needed.
+  text?: string;
+  content?: TipTapContentBlock[];
+  attrs?: {
     id?: string;
     label?: string;
     href?: string;
-    // Add other TipTap attrs here as needed, e.g., 'level' for headings
   };
 }
 
-// Updated interface for Manifold Comment response
 export interface ManifoldComment {
   id: string;
-  isApi?: boolean; // Added based on your provided API response
+  isApi?: boolean;
   userId: string;
-  // This is the crucial change: 'content' is an object with a 'type' and a 'content' array
   content: {
     type: "doc";
     content: TipTapContentBlock[];
   };
-  userName?: string; // Added from API response
+  userName?: string;
   contractId: string;
-  visibility?: "public" | string; // Added from API response
-  commentType?: "contract" | string; // Added from API response
+  visibility?: "public" | string;
+  commentType?: "contract" | string;
   createdTime: number;
-  contractSlug?: string; // Added from API response
-  userUsername?: string; // Added from API response
-  userAvatarUrl?: string; // Added from API response
-  contractQuestion?: string; // Added from API response
+  contractSlug?: string;
+  userUsername?: string;
+  userAvatarUrl?: string;
+  contractQuestion?: string;
   replyToCommentId?: string;
-  likes?: number; // Added from API response
+  likes?: number;
 }
 
 export interface ManagramApiResponse {
