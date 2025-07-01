@@ -501,7 +501,6 @@ export default function EliezerPayoutTool(): JSX.Element {
           </h3>
           <p class="text-gray-200">
             Market: <span class="font-medium">{marketQuestion.value}</span>{" "}
-            (Slug: <span class="font-mono text-sm">{marketSlug.value}</span>)
           </p>
           <p class="text-gray-200">
             Total Unique Investors:{" "}
