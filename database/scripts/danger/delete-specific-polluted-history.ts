@@ -2,7 +2,7 @@
 /// <reference lib="deno.unstable" />
 
 import db from "../../db.ts";
-import { load } from "https://deno.land/std@0.224.0/dotenv/mod.ts";
+import { load } from 'https://deno.land/std@0.224.0/dotenv/mod.ts';
 
 // IMPORTANT: Ensure this is Spin's actual userId.
 const TARGET_USER_ID = "Y3ZEdMHLtoUXwiXGHaT6pj2Zj123";
@@ -11,7 +11,7 @@ const TARGET_USER_ID = "Y3ZEdMHLtoUXwiXGHaT6pj2Zj123";
 // They are from your provided log for June 28 and June 29, after the 'undo' script ran.
 const POLLUTED_CREDIT_SCORE_TIMESTAMPS: number[] = [
   1751153592014, // June 28th entry (currently 728)
-  1751247415844, // June 29th entry (currently 627)
+  1751247415844  // June 29th entry (currently 627)
 ];
 
 async function deleteSpecificPollutedHistory(): Promise<void> {
@@ -24,16 +24,8 @@ async function deleteSpecificPollutedHistory(): Promise<void> {
     Deno.exit(1);
   }
 
-  console.log(
-    `\nATTEMPTING TO DELETE SPECIFIC POLLUTED CREDIT HISTORY POINTS FOR USER ID: ${TARGET_USER_ID}\n`,
-  );
-  console.log(
-    `Timestamps to delete: ${
-      POLLUTED_CREDIT_SCORE_TIMESTAMPS.map((ts) =>
-        new Date(ts).toLocaleString()
-      ).join(", ")
-    }\n`,
-  );
+  console.log(`\nATTEMPTING TO DELETE SPECIFIC POLLUTED CREDIT HISTORY POINTS FOR USER ID: ${TARGET_USER_ID}\n`);
+  console.log(`Timestamps to delete: ${POLLUTED_CREDIT_SCORE_TIMESTAMPS.map(ts => new Date(ts).toLocaleString()).join(', ')}\n`);
   console.log("THIS ACTION IS IRREVERSIBLE.\n");
 
   const confirm = prompt("Type 'PURGE_POLLUTED' to proceed with deletion:");
@@ -67,9 +59,7 @@ async function deleteSpecificPollutedHistory(): Promise<void> {
     }
 
     await atomic.commit();
-    console.log(
-      `\n✅ Successfully deleted ${deletedCount} specific polluted credit history points for user ID: ${TARGET_USER_ID}`,
-    );
+    console.log(`\n✅ Successfully deleted ${deletedCount} specific polluted credit history points for user ID: ${TARGET_USER_ID}`);
   } catch (error) {
     console.error(`Error during deletion: ${getErrorMessage(error)}`);
     Deno.exit(1);
