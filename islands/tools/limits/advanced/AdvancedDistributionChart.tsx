@@ -32,7 +32,7 @@ export default function AdvancedDistributionChart({
   selectedAnswerId,
 }: AdvancedDistributionChartProps) {
   const betAmount = useMemo(() => signal(totalBetAmount), []);
-  const percentageInterval = useMemo(() => signal(12), []);
+  const percentageInterval = useMemo(() => signal(20), []);
   const distributionType = useMemo(
     () => signal(DistributionType.BellCurve),
     [],
