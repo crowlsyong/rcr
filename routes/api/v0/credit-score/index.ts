@@ -187,7 +187,7 @@ export const handler: Handlers = {
         MANIFOLD_USER_ID,
       );
 
-      const rawMMR = computeMMR(
+      const rawMMR = computeMMR( // Raw MMR (Manifold Score)
         userPortfolio.balance,
         calculatedProfit,
         ageDays,
@@ -196,36 +196,42 @@ export const handler: Handlers = {
         outstandingDebtImpact,
       );
 
-      let creditScore = mapToCreditScore(rawMMR);
+      const baseCreditScore = mapToCreditScore(rawMMR); // THIS IS THE BASE SCORE (e.g., 827 from MMR)
 
-      // Apply modifiers from fetched override events
+      // Calculate total modifier to apply to the *display* score
+      let totalModifierForDisplay = 0;
       if (overrideEventsForUser.length > 0) {
-        let totalModifier = 0;
         for (const event of overrideEventsForUser) {
-          totalModifier += event.modifier;
+          totalModifierForDisplay += event.modifier;
         }
-        console.log(
-          `Applying total credit score modifier for user ${finalUsername} (ID: ${userId}): ${totalModifier}`,
-        );
-        creditScore = Math.max(0, Math.min(1000, creditScore + totalModifier));
       }
 
-      const risk = calculateriskBaseFee(creditScore);
+      // Calculate the final score for current display
+      const finalDisplayCreditScore = Math.max(
+        0,
+        Math.min(1000, baseCreditScore + totalModifierForDisplay),
+      );
 
+      // **** CRITICAL CHANGE FOR HISTORICAL SAVING ****
+      // Save the BASE score (before modifiers are applied) to history.
+      // This ensures that history.ts can always apply the modifiers dynamically.
       if (shouldSaveHistoricalData && !userDeleted) {
         await saveHistoricalScore(
           userId,
           finalUsername,
-          creditScore,
+          baseCreditScore, // <--- SAVE THE BASE SCORE HERE
           currentTime,
         );
         await updateLastScoreUpdateTime(userId, currentTime);
       }
+      // ************************************************
+
+      const risk = calculateriskBaseFee(finalDisplayCreditScore); // Calculate risk based on the final display score
 
       const output = {
         username: finalUsername,
         userId: userId,
-        creditScore,
+        creditScore: finalDisplayCreditScore, // Output the final display score
         riskBaseFee: risk,
         avatarUrl: userData.avatarUrl || null,
         userExists: true,
@@ -236,10 +242,10 @@ export const handler: Handlers = {
           outstandingDebtImpact: outstandingDebtImpact,
           calculatedProfit: calculatedProfit,
           balance: userPortfolio.balance,
-          rawMMR: rawMMR,
+          rawMMR: rawMMR, // Still output raw MMR for debugging/details
         },
         historicalDataSaved: shouldSaveHistoricalData && !userDeleted,
-        overrideEvents: overrideEventsForUser, // Now passing the fetched KV events
+        overrideEvents: overrideEventsForUser,
       };
 
       console.log(

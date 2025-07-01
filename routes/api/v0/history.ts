@@ -1,21 +1,26 @@
-/// <reference lib="deno.unstable" />
 // routes/api/v0/history.ts
-
 import { Handlers } from "$fresh/server.ts";
-import db from "../../../database/db.ts"; // Import the KV database instance
+import db from "../../../database/db.ts";
+import { OverrideEvent } from "./credit-score/index.ts"; // Import OverrideEvent
 
 interface CreditScoreDataPoint {
   userId: string;
   username: string;
-  creditScore: number;
+  creditScore: number; // This should now always be the BASE score when stored
   timestamp: number;
 }
+
+const getErrorMessage = (e: unknown): string => {
+  return typeof e === "object" && e !== null && "message" in e
+    ? (e as { message: string }).message
+    : String(e);
+};
 
 export const handler: Handlers = {
   async GET(req): Promise<Response> {
     const url = new URL(req.url);
     const username = url.searchParams.get("username");
-    const userId = url.searchParams.get("userId"); // Also allow fetching by userId
+    const userId = url.searchParams.get("userId");
 
     if (!username && !userId) {
       return new Response("Username or userId is required", { status: 400 });
@@ -23,9 +28,9 @@ export const handler: Handlers = {
 
     let targetUserId: string | null = userId;
 
-    // If only username is provided, try to fetch the user data to get the userId
     if (!targetUserId && username) {
       try {
+        // Assume fetchUserData is available to get userId from username
         const userRes = await fetch(
           `https://api.manifold.markets/v0/user/${username}`,
         );
@@ -51,33 +56,71 @@ export const handler: Handlers = {
     }
 
     if (!targetUserId) {
-      // This case should theoretically not happen if username or userId was provided and processed
       return new Response("Could not determine user ID", { status: 500 });
     }
 
     const historicalData: CreditScoreDataPoint[] = [];
-    const prefix = ["credit_scores", targetUserId];
+    const historyPrefix = ["credit_scores", targetUserId];
+
+    const overrideEvents: OverrideEvent[] = []; // This will fetch all override events
+    const overridePrefix = ["score_overrides", targetUserId];
 
     try {
-      // Use db.list to get all entries with the specified prefix
-      // The keys are ordered by the components, so this will return data chronologically
-      for await (const entry of db.list<CreditScoreDataPoint>({ prefix })) {
+      // Fetch all historical score data points (these are now BASE scores)
+      for await (
+        const entry of db.list<CreditScoreDataPoint>({ prefix: historyPrefix })
+      ) {
         historicalData.push(entry.value);
       }
 
-      // Sort the data points by timestamp in ascending order, just in case db.list order changes
-      // although with the timestamp in the key, it should be sorted by default.
+      // Fetch all override events for the user
+      for await (
+        const entry of db.list<OverrideEvent>({ prefix: overridePrefix })
+      ) {
+        overrideEvents.push(entry.value);
+      }
+
+      // Sort historical data by timestamp in ascending order
       historicalData.sort((a, b) => a.timestamp - b.timestamp);
 
-      return new Response(JSON.stringify(historicalData), {
+      // **** CRITICAL: Apply overrides to BASE historical data points ON READ ****
+      const adjustedHistoricalData = historicalData.map((dataPoint) => {
+        let totalModifierForThisDate = 0;
+        // Sum modifiers from all events whose dateOfInfraction is ON or BEFORE this historical dataPoint's timestamp
+        // And ensure the event's timestamp is also <= the dataPoint's timestamp (if you want the event to "exist" at that time)
+        for (const overrideEvent of overrideEvents) {
+          // Only apply modifier if its dateOfInfraction is on or before the current data point's timestamp
+          if (overrideEvent.dateOfInfraction <= dataPoint.timestamp) {
+            totalModifierForThisDate += overrideEvent.modifier;
+          }
+        }
+
+        // Calculate the adjusted score for this historical data point
+        // Ensure score stays within 0-1000 range
+        const adjustedScore = Math.max(
+          0,
+          Math.min(1000, dataPoint.creditScore + totalModifierForThisDate),
+        );
+
+        // Return a new data point with the adjusted score
+        return {
+          ...dataPoint,
+          creditScore: adjustedScore,
+        };
+      });
+
+      return new Response(JSON.stringify(adjustedHistoricalData), {
         headers: { "Content-Type": "application/json" },
       });
     } catch (error) {
       console.error(
-        `Error fetching historical data for user ID '${targetUserId}':`,
+        `Error fetching and adjusting historical data for user ID '${targetUserId}':`,
         error,
       );
-      return new Response("Error fetching historical data", { status: 500 });
+      return new Response(
+        `Error fetching historical data: ${getErrorMessage(error)}`,
+        { status: 500 },
+      );
     }
   },
 };
