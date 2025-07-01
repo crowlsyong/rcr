@@ -2,12 +2,13 @@
 import { fetchWithRetries } from "./fetch_utilities.ts";
 import {
   ManaPaymentTransaction,
+  ManifoldBetResponse, // <--- ADDED to export from here
   ManifoldComment,
   ManifoldUser,
   MarketData,
   UserPortfolio,
 } from "./manifold_types.ts";
-import { BetPayload, ManifoldBetResponse } from "./manifold_types.ts";
+import { BetPayload } from "./manifold_types.ts";
 
 const MANIFOLD_API_BASE_URL = "https://api.manifold.markets/v0";
 
@@ -242,7 +243,6 @@ export async function fetchUserDataLiteById(
 
   try {
     const userDataLite = await response.json();
-    // Ensure the response structure is as expected and has the critical username field
     if (
       userDataLite && typeof userDataLite.id === "string" &&
       typeof userDataLite.username === "string"
@@ -259,7 +259,7 @@ export async function fetchUserDataLiteById(
     console.warn(
       `fetchUserDataLiteById: Malformed lite user data for ID '${userId}'. Missing ID or username.`,
     );
-    return { userData: null, fetchSuccess: false }; // Malformed lite data
+    return { userData: null, fetchSuccess: false };
   } catch (jsonError) {
     console.error(
       `fetchUserDataLiteById: Error parsing JSON for userId '${userId}': ${
@@ -611,5 +611,60 @@ export async function cancelManifoldBet(apiKey: string, betId: string) {
           : String(e)
       }`,
     };
+  }
+}
+export async function fetchBetsForContract(
+  contractId: string,
+  userId?: string,
+): Promise<
+  { success: boolean; data: ManifoldBetResponse[] | null; error: string | null }
+> {
+  let url = `${MANIFOLD_API_BASE_URL}/bets?contractId=${contractId}`;
+  if (userId) {
+    url += `&userId=${userId}`;
+  }
+  url += `&limit=1000`; // Fetch a large number of bets to ensure we get them all
+
+  const { response, success, error } = await fetchWithRetries(url);
+
+  if (!success || !response) {
+    return {
+      success: false,
+      data: null,
+      error: `Network or fetch error: ${
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : String(error)
+      }`,
+    };
+  }
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(
+      `Manifold API GET bets error: ${response.status} ${response.statusText} - ${errorText}`,
+    );
+    return {
+      success: false,
+      data: null,
+      error: `Failed to fetch bets (${response.status}): ${
+        errorText || response.statusText
+      }`,
+    };
+  }
+
+  try {
+    const bets: ManifoldBetResponse[] = await response.json();
+    return { success: true, data: bets, error: null };
+  } catch (jsonError) {
+    console.error(
+      `Error parsing JSON for bets: ${
+        typeof jsonError === "object" && jsonError !== null &&
+          "message" in jsonError
+          ? (jsonError as { message: string }).message
+          : String(jsonError)
+      }`,
+    );
+    return { success: false, data: null, error: "Error parsing bets data" };
   }
 }

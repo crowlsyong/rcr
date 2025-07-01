@@ -1,7 +1,16 @@
 // islands/tools/custom/EliezerPayoutTool.tsx
 import { useSignal } from "@preact/signals";
-import { useCallback, useEffect, useMemo } from "preact/hooks";
-import { JSX } from "preact";
+import { useCallback, useEffect, useMemo, useState } from "preact/hooks"; // Ensure useState is imported
+import { ComponentType, JSX } from "preact";
+
+import { TbToggleLeftFilled, TbToggleRightFilled } from "@preact-icons/tb";
+
+const ToggleOnIcon = TbToggleRightFilled as ComponentType<
+  JSX.IntrinsicElements["svg"]
+>;
+const ToggleOffIcon = TbToggleLeftFilled as ComponentType<
+  JSX.IntrinsicElements["svg"]
+>;
 
 interface UserPayout {
   userId: string;
@@ -65,7 +74,7 @@ export default function EliezerPayoutTool(): JSX.Element {
     "https://manifold.markets/EliezerYudkowsky/what-book-will-i-enjoy-reading",
   );
   const apiKey = useSignal("");
-  const apologyPercentage = useSignal(20);
+  const apologyPercentage = useSignal(20); // Default to 20%
   const usersToPay = useSignal<UserPayout[]>([]);
   const marketQuestion = useSignal<string | null>(null);
   const marketSlug = useSignal<string | null>(null);
@@ -92,9 +101,18 @@ export default function EliezerPayoutTool(): JSX.Element {
 
   const useCustomManagram = useSignal(false);
   const customManagramMessage = useSignal("");
+  const useStartingBetLogic = useSignal(true); // Default to true
 
   const debouncedMarketUrl = useSignal(marketUrl.value);
   const debouncedApologyPercentage = useSignal(apologyPercentage.value);
+  const debouncedUseStartingBetLogic = useSignal(useStartingBetLogic.value);
+
+  // State for SSR protection of icons
+  const [isClient, setIsClient] = useState(false); // Make sure useState is imported
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -109,6 +127,13 @@ export default function EliezerPayoutTool(): JSX.Element {
     }, 500);
     return () => clearTimeout(handler);
   }, [apologyPercentage.value]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      debouncedUseStartingBetLogic.value = useStartingBetLogic.value;
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [useStartingBetLogic.value]);
 
   const calculatePayouts = useCallback(async () => {
     if (
@@ -151,6 +176,7 @@ export default function EliezerPayoutTool(): JSX.Element {
         body: JSON.stringify({
           marketUrl: debouncedMarketUrl.value,
           apologyPercentage: debouncedApologyPercentage.value,
+          useStartingBetLogic: debouncedUseStartingBetLogic.value,
         }),
       });
 
@@ -175,7 +201,11 @@ export default function EliezerPayoutTool(): JSX.Element {
     } finally {
       isCalculating.value = false;
     }
-  }, [debouncedMarketUrl.value, debouncedApologyPercentage.value]);
+  }, [
+    debouncedMarketUrl.value,
+    debouncedApologyPercentage.value,
+    debouncedUseStartingBetLogic.value,
+  ]);
 
   useEffect(() => {
     calculatePayouts();
@@ -198,7 +228,7 @@ export default function EliezerPayoutTool(): JSX.Element {
   const handlePercentageInput = (e: Event) => {
     const value = (e.target as HTMLInputElement).value;
     const parsed = parseInt(value, 10);
-    if (!isNaN(parsed) && parsed >= 0 && parsed <= 100) {
+    if (!isNaN(parsed) && parsed >= 0) { // Removed max 100 here to allow 120% etc.
       apologyPercentage.value = parsed;
     } else if (value === "") {
       apologyPercentage.value = 0;
@@ -253,6 +283,7 @@ export default function EliezerPayoutTool(): JSX.Element {
           customManagramMessage: useCustomManagram.value
             ? customManagramMessage.value
             : null,
+          useStartingBetLogic: useStartingBetLogic.value,
         }),
       });
 
@@ -327,17 +358,53 @@ export default function EliezerPayoutTool(): JSX.Element {
     const invested = Math.round(exampleUser.originalInvested);
     const payout = exampleUser.calculatedPayout;
     const marketLink = `https://manifold.markets/${marketSlug.value}`;
+    const payoutBasisText = useStartingBetLogic.value
+      ? "starting bet"
+      : "total invested";
 
-    return `${apologyPercentage.value}% Payment as an apology for locked funds in ${marketLink} | Invested M${invested} | Apology payment M${payout}`;
+    return `${apologyPercentage.value}% Payment as an apology for locked funds in ${marketLink} | Based on ${payoutBasisText} M${invested} | Apology payment M${payout}`;
   }, [
     calculationSuccess.value,
     usersToPay.value,
     apologyPercentage.value,
     marketSlug.value,
+    useStartingBetLogic.value,
   ]);
 
   return (
     <div class="w-full max-w-2xl mx-auto p-4 bg-gray-800 rounded-lg shadow-xl text-gray-100">
+      {/* Header with Title and Toggle */}
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-bold text-blue-400">
+          Payout Tool
+        </h2>
+        {/* Toggle and its descriptive text */}
+        <div class="flex items-center gap-2">
+          {/* Added a div to group text and toggle */}
+          <span class="text-sm text-gray-400">
+            Viewing payout based on{"  "}
+            <span class="font-semibold text-white">
+              {useStartingBetLogic.value ? "Starting Bet" : "Total Invested"}
+            </span>
+          </span>
+          <button
+            type="button"
+            onClick={() =>
+              useStartingBetLogic.value = !useStartingBetLogic.value}
+            title={useStartingBetLogic.value
+              ? "Payout based on starting bet"
+              : "Payout based on total invested"}
+            class="flex items-center justify-center p-1 rounded-full focus:outline-none ring-0 focus:ring-0"
+          >
+            {isClient && (
+              useStartingBetLogic.value
+                ? <ToggleOnIcon class="w-10 h-10 text-blue-500" size={40} />
+                : <ToggleOffIcon class="w-10 h-10 text-gray-500" size={40} />
+            )}
+          </button>
+        </div>
+      </div>
+
       <p class="text-sm text-gray-400 mb-4">
         {/* Removed text-center */}
         This tool helps calculate and execute compensation for users who
@@ -389,7 +456,7 @@ export default function EliezerPayoutTool(): JSX.Element {
               onInput={handlePercentageInput}
               placeholder="20"
               min="0"
-              max="100"
+              // Removed max="100" to allow values like 120
               class="w-full p-2 pr-8 bg-gray-700 border border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500"
             />
             <span class="absolute right-3 text-gray-400 text-lg">%</span>
@@ -434,7 +501,8 @@ export default function EliezerPayoutTool(): JSX.Element {
             Calculation Results
           </h3>
           <p class="text-gray-200">
-            Market: <span class="font-medium">{marketQuestion.value}</span>
+            Market: <span class="font-medium">{marketQuestion.value}</span>{" "}
+            (Slug: <span class="font-mono text-sm">{marketSlug.value}</span>)
           </p>
           <p class="text-gray-200">
             Total Unique Investors:{" "}
@@ -494,7 +562,7 @@ export default function EliezerPayoutTool(): JSX.Element {
                       (e.target as HTMLTextAreaElement).value}
                   placeholder="Enter your custom message here..."
                   rows={4}
-                  maxLength={100} // Still a good idea to suggest standard limits for API safety
+                  maxLength={100}
                   class="w-full p-2 bg-gray-800 border border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-100"
                 >
                 </textarea>
@@ -589,8 +657,7 @@ export default function EliezerPayoutTool(): JSX.Element {
               <p class="mt-4 text-sm text-gray-400 text-center">
                 Log has been downloaded automatically, but feel free to click
                 the button
-              </p>{" "}
-              {/* New message */}
+              </p>
               <button
                 type="button"
                 onClick={downloadExecutionLogs}

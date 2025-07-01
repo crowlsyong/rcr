@@ -22,6 +22,7 @@ interface SuccessfulPayoutLog {
   marketUrl: string;
   apologyPercentage: number;
   customMessageUsed: boolean;
+  payoutBasis: "starting_bet" | "total_invested"; // <--- NEW: Log payout basis
 }
 
 interface FailedPayoutLog {
@@ -36,6 +37,7 @@ interface FailedPayoutLog {
   marketUrl: string;
   apologyPercentage: number;
   customMessageUsed: boolean;
+  payoutBasis: "starting_bet" | "total_invested"; // <--- NEW: Log payout basis
 }
 
 type DetailedPayoutLog = SuccessfulPayoutLog | FailedPayoutLog;
@@ -43,8 +45,8 @@ type DetailedPayoutLog = SuccessfulPayoutLog | FailedPayoutLog;
 interface UserPayout {
   userId: string;
   username: string;
-  originalInvested: number;
-  calculatedPayout: number;
+  originalInvested: number; // This is the total mana spent by the user
+  calculatedPayout: number; // This is the 20% apology payment
 }
 
 interface ExecutePayoutsRequest {
@@ -54,6 +56,7 @@ interface ExecutePayoutsRequest {
   marketSlugFull: string;
   apologyPercentage: number;
   customManagramMessage: string | null;
+  useStartingBetLogic: boolean; // <--- NEW: Accept flag
 }
 
 interface ExecutePayoutsResponse {
@@ -84,15 +87,17 @@ export const handler: Handlers<ExecutePayoutsResponse> = {
       marketSlugFull,
       apologyPercentage,
       customManagramMessage,
-    } = body;
+      useStartingBetLogic,
+    } = body; // <--- NEW: Destructure flag
 
     if (!apiKey) {
       return handleError("API key is required for execution.", 401);
     }
     if (
       !users || users.length === 0 || !marketId || !marketSlugFull ||
-      typeof apologyPercentage !== "number"
-    ) {
+      typeof apologyPercentage !== "number" ||
+      typeof useStartingBetLogic !== "boolean"
+    ) { // <--- Added validation for flag
       return handleError("Invalid request body for execution.", 400);
     }
 
@@ -118,20 +123,22 @@ export const handler: Handlers<ExecutePayoutsResponse> = {
     }
 
     const MIN_MANAGRAM_AMOUNT = 10;
+    const payoutBasisText = useStartingBetLogic
+      ? "starting bet"
+      : "total invested"; // For managram message
 
     for (const user of users) {
       const timestamp = new Date().toISOString();
       const roundedOriginalInvested = Math.round(user.originalInvested);
       const amountToSend = user.calculatedPayout;
 
+      // Managram message now reflects the basis of payout
       const messageToUse = customManagramMessage
         ? customManagramMessage
-        : `${apologyPercentage}% Payment as an apology for locked funds in ${marketUrlForMessage} | Invested M${roundedOriginalInvested} | Apology payment M${amountToSend}`;
+        : `${apologyPercentage}% Payment as an apology for locked funds in ${marketUrlForMessage} | Based on ${payoutBasisText} M${roundedOriginalInvested} | Apology payment M${amountToSend}`;
 
       const customMessageWasUsed = customManagramMessage !== null;
 
-      // REMOVED message truncation to finalManagramMessage here.
-      // API will handle truncation if needed, based on your testing.
       const finalManagramMessage = messageToUse;
 
       if (amountToSend < MIN_MANAGRAM_AMOUNT) {
@@ -154,6 +161,7 @@ export const handler: Handlers<ExecutePayoutsResponse> = {
           marketUrl: marketUrlForMessage,
           apologyPercentage: apologyPercentage,
           customMessageUsed: customMessageWasUsed,
+          payoutBasis: useStartingBetLogic ? "starting_bet" : "total_invested", // <--- NEW: Log payout basis
         });
         continue;
       }
@@ -188,6 +196,9 @@ export const handler: Handlers<ExecutePayoutsResponse> = {
             marketUrl: marketUrlForMessage,
             apologyPercentage: apologyPercentage,
             customMessageUsed: customMessageWasUsed,
+            payoutBasis: useStartingBetLogic
+              ? "starting_bet"
+              : "total_invested", // <--- NEW: Log payout basis
           });
         } else {
           transactions.push({
@@ -209,6 +220,9 @@ export const handler: Handlers<ExecutePayoutsResponse> = {
             marketUrl: marketUrlForMessage,
             apologyPercentage: apologyPercentage,
             customMessageUsed: customMessageWasUsed,
+            payoutBasis: useStartingBetLogic
+              ? "starting_bet"
+              : "total_invested", // <--- NEW: Log payout basis
           });
         }
       } catch (e: unknown) {
@@ -234,6 +248,7 @@ export const handler: Handlers<ExecutePayoutsResponse> = {
           marketUrl: marketUrlForMessage,
           apologyPercentage: apologyPercentage,
           customMessageUsed: customMessageWasUsed,
+          payoutBasis: useStartingBetLogic ? "starting_bet" : "total_invested", // <--- NEW: Log payout basis
         });
       }
     }
