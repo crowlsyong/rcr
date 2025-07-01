@@ -408,8 +408,7 @@ export default function EliezerPayoutTool(): JSX.Element {
       <p class="text-sm text-gray-400 mb-4">
         {/* Removed text-center */}
         This tool helps calculate and execute compensation for users who
-        invested in a Manifold market. It will send back their original
-        investment plus a configurable apology bonus to each unique investor.
+        invested in a Manifold market. It will send back a % of their investment.
         <br />
       </p>
 
