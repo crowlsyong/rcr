@@ -1,7 +1,6 @@
 // islands/tools/limits/advanced/PointsGranularityControl.tsx
 import { Signal, useSignal, useSignalEffect } from "@preact/signals";
-import { useState } from "preact/hooks";
-import { useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { TbToggleLeftFilled, TbToggleRightFilled } from "@preact-icons/tb";
 import type { ComponentType } from "preact";
 import type { JSX } from "preact/jsx-runtime";
@@ -34,6 +33,11 @@ export default function PointsGranularityControl(
   const [localGranularityStep, setLocalGranularityStep] = useState(
     String(granularityStep.value),
   );
+  const [isClient, setIsClient] = useState(false); // New state for client-side check
+
+  useEffect(() => {
+    setIsClient(true); // Set to true once component mounts on the client
+  }, []);
 
   // Effect to auto-calculate points when in auto mode
   useSignalEffect(() => {
@@ -95,9 +99,14 @@ export default function PointsGranularityControl(
             class="flex items-center focus:outline-none"
             aria-pressed={isAutoMode.value}
           >
-            {isAutoMode.value
-              ? <ToggleOnIcon class="w-10 h-10 text-blue-500" />
-              : <ToggleOffIcon class="w-10 h-10 text-gray-500" />}
+            {isClient // Conditionally render icons
+              ? (isAutoMode.value
+                ? <ToggleOnIcon size={40} class="w-10 h-10 text-blue-500" />
+                : <ToggleOffIcon size={40} class="w-10 h-10 text-gray-500" />)
+              : ( // Placeholder for SSR
+                <div class="w-10 h-10 bg-gray-700 rounded-full animate-pulse">
+                </div>
+              )}
           </button>
         </div>
       </div>

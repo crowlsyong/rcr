@@ -43,7 +43,8 @@ import * as $iframe_credit_score from "./routes/iframe/credit-score.tsx";
 import * as $iframe_insurance_fee_calculator from "./routes/iframe/insurance-fee-calculator.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $insurance from "./routes/insurance.tsx";
-import * as $limits from "./routes/limits.tsx";
+import * as $limits_advanced from "./routes/limits/advanced.tsx";
+import * as $limits_index from "./routes/limits/index.tsx";
 import * as $old_ext_username_ from "./routes/old-ext/[username].tsx";
 import * as $qr_string_ from "./routes/qr/[string].tsx";
 import * as $refund from "./routes/refund.tsx";
@@ -117,6 +118,9 @@ import * as $tools_limits_advanced_DistributionTypeSelector from "./islands/tool
 import * as $tools_limits_advanced_MinMaxProbabilityControl from "./islands/tools/limits/advanced/MinMaxProbabilityControl.tsx";
 import * as $tools_limits_advanced_MinMaxProbabilityInputs from "./islands/tools/limits/advanced/MinMaxProbabilityInputs.tsx";
 import * as $tools_limits_advanced_PointsGranularityControl from "./islands/tools/limits/advanced/PointsGranularityControl.tsx";
+import * as $tools_limits_advanced_route_ApiKeyInput from "./islands/tools/limits/advanced/route/ApiKeyInput.tsx";
+import * as $tools_limits_advanced_route_Container from "./islands/tools/limits/advanced/route/Container.tsx";
+import * as $tools_limits_advanced_route_MarketUrlInput from "./islands/tools/limits/advanced/route/MarketUrlInput.tsx";
 import * as $tools_limits_advanced_utils_calculate_bet_data from "./islands/tools/limits/advanced/utils/calculate-bet-data.ts";
 import * as $tools_refund_PayoutTool from "./islands/tools/refund/PayoutTool.tsx";
 import type { Manifest } from "$fresh/server.ts";
@@ -165,7 +169,8 @@ const manifest = {
       $iframe_insurance_fee_calculator,
     "./routes/index.tsx": $index,
     "./routes/insurance.tsx": $insurance,
-    "./routes/limits.tsx": $limits,
+    "./routes/limits/advanced.tsx": $limits_advanced,
+    "./routes/limits/index.tsx": $limits_index,
     "./routes/old-ext/[username].tsx": $old_ext_username_,
     "./routes/qr/[string].tsx": $qr_string_,
     "./routes/refund.tsx": $refund,
@@ -285,6 +290,12 @@ const manifest = {
       $tools_limits_advanced_MinMaxProbabilityInputs,
     "./islands/tools/limits/advanced/PointsGranularityControl.tsx":
       $tools_limits_advanced_PointsGranularityControl,
+    "./islands/tools/limits/advanced/route/ApiKeyInput.tsx":
+      $tools_limits_advanced_route_ApiKeyInput,
+    "./islands/tools/limits/advanced/route/Container.tsx":
+      $tools_limits_advanced_route_Container,
+    "./islands/tools/limits/advanced/route/MarketUrlInput.tsx":
+      $tools_limits_advanced_route_MarketUrlInput,
     "./islands/tools/limits/advanced/utils/calculate-bet-data.ts":
       $tools_limits_advanced_utils_calculate_bet_data,
     "./islands/tools/refund/PayoutTool.tsx": $tools_refund_PayoutTool,

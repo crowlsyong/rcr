@@ -1,6 +1,6 @@
 // islands/tools/limits/advanced/MinMaxProbabilityControl.tsx
 import { Signal, useSignal } from "@preact/signals";
-import { useEffect, useState } from "preact/hooks"; // Ensure useEffect is imported
+import { useEffect, useState } from "preact/hooks";
 import { TbToggleLeftFilled, TbToggleRightFilled } from "@preact-icons/tb";
 import type { ComponentType } from "preact";
 import type { JSX } from "preact/jsx-runtime";
@@ -40,12 +40,16 @@ export default function MinMaxProbabilityControl(
   const [localOffsetPercent, setLocalOffsetPercent] = useState(
     String(offsetPercent.value),
   );
+  const [isClient, setIsClient] = useState(false); // New state for client-side check
+
+  useEffect(() => {
+    setIsClient(true); // Set to true once component mounts on the client
+  }, []);
 
   const centerPoint = isRelativeToMarker.value
     ? currentProbability.value
     : 50 + centerShift.value;
 
-  // Replaced useSignalEffect with a standard useEffect and an explicit dependency array
   useEffect(() => {
     if (isRelativeMode.value) {
       const offset = offsetPercent.value;
@@ -57,11 +61,10 @@ export default function MinMaxProbabilityControl(
     }
   }, [
     isRelativeMode.value,
-    centerPoint, // This will change when the toggle or sliders change
+    centerPoint,
     offsetPercent.value,
   ]);
 
-  // Sync local state with signals (no changes here)
   useEffect(() => {
     setLocalMinPercentage(String(minDistributionPercentage.value));
   }, [minDistributionPercentage.value]);
@@ -74,7 +77,6 @@ export default function MinMaxProbabilityControl(
     setLocalOffsetPercent(String(offsetPercent.value));
   }, [offsetPercent.value]);
 
-  // Input handlers (no changes here)
   const handleMinPercentageInputChange = (value: string) => {
     const numValue = parseInt(value, 10);
     if (!isNaN(numValue) && numValue >= 1 && numValue <= 98) {
@@ -123,9 +125,14 @@ export default function MinMaxProbabilityControl(
             class="flex items-center focus:outline-none"
             aria-pressed={isRelativeMode.value}
           >
-            {isRelativeMode.value
-              ? <ToggleOnIcon class="w-10 h-10 text-blue-500" />
-              : <ToggleOffIcon class="w-10 h-10 text-gray-500" />}
+            {isClient // Conditionally render icons
+              ? (isRelativeMode.value
+                ? <ToggleOnIcon size={40} class="w-10 h-10 text-blue-500" />
+                : <ToggleOffIcon size={40} class="w-10 h-10 text-gray-500" />)
+              : ( // Placeholder for SSR
+                <div class="w-10 h-10 bg-gray-700 rounded-full animate-pulse">
+                </div>
+              )}
           </button>
         </div>
       </div>
@@ -170,7 +177,7 @@ export default function MinMaxProbabilityControl(
                     }
                   }}
                   min="1"
-                  max={maxOffset}
+                  max={maxOffset > 0 ? maxOffset : 1}
                   class="w-12 px-2 py-1 rounded bg-gray-800 text-gray-100 border border-gray-600 focus:outline-none focus:border-blue-500 text-xs text-right"
                 />
                 <span class="text-gray-300">%</span>

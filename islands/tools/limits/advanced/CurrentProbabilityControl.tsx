@@ -35,6 +35,11 @@ export default function CurrentProbabilityControl(
     useState(
       String(50 + centerShift.value),
     );
+  const [isClient, setIsClient] = useState(false); // New state for client-side check
+
+  useEffect(() => {
+    setIsClient(true); // Set to true once component mounts on the client
+  }, []);
 
   useEffect(() => {
     setLocalProbability(String(currentProbability.value));
@@ -160,9 +165,14 @@ export default function CurrentProbabilityControl(
               isDisabledByMarket ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
-            {useCustom
-              ? <LockOpenIcon class="w-4 h-4 text-gray-600" />
-              : <LockFilledIcon class="w-4 h-4 text-blue-500" />}
+            {isClient // Conditionally render icon
+              ? (useCustom
+                ? <LockOpenIcon size={16} class="w-4 h-4 text-gray-600" />
+                : <LockFilledIcon size={16} class="w-4 h-4 text-blue-500" />)
+              : ( // Placeholder for SSR
+                <div class="w-4 h-4 bg-gray-700 rounded animate-pulse">
+                </div>
+              )}
           </button>
         </div>
       </div>
@@ -229,9 +239,14 @@ export default function CurrentProbabilityControl(
             title="Locks to market probability slider"
             class="flex items-center justify-center rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            {isShiftLockedToCurrentProb.value
-              ? <LockFilledIcon class="h-4 w-4 text-blue-500" />
-              : <LockOpenIcon class="h-4 w-4 text-gray-600" />}
+            {isClient // Conditionally render icon
+              ? (isShiftLockedToCurrentProb.value
+                ? <LockFilledIcon size={16} class="h-4 w-4 text-blue-500" />
+                : <LockOpenIcon size={16} class="h-4 w-4 text-gray-600" />)
+              : ( // Placeholder for SSR
+                <div class="w-4 h-4 bg-gray-700 rounded animate-pulse">
+                </div>
+              )}
           </button>
         </div>
       </div>

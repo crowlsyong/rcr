@@ -1,6 +1,6 @@
 // islands/tools/limits/advanced/AdvancedMarketInfoDisplay.tsx
 import { MarketData } from "../../../../utils/api/manifold_types.ts";
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks"; // Import useEffect
 import { TbCopy } from "@preact-icons/tb";
 import type { ComponentType } from "preact";
 import type { JSX } from "preact/jsx-runtime";
@@ -19,6 +19,11 @@ export default function AdvancedMarketInfoDisplay({
   currentProbability,
 }: AdvancedMarketInfoDisplayProps) {
   const [copied, setCopied] = useState(false);
+  const [isClient, setIsClient] = useState(false); // New state for client-side check
+
+  useEffect(() => {
+    setIsClient(true); // Set to true once component mounts on the client
+  }, []);
 
   if (!marketData) {
     return null;
@@ -76,13 +81,18 @@ export default function AdvancedMarketInfoDisplay({
                        min-w-[48px] h-6"
                 title={copied ? "Copied!" : "Copy Market ID"}
               >
-                {copied
-                  ? (
-                    <span class="text-green-400 text-xxs sm:text-xxs">
-                      Copied!
-                    </span>
-                  )
-                  : <CopyIcon class="w-4 h-4 text-gray-300" />}
+                {isClient // Conditionally render icon
+                  ? (copied
+                    ? (
+                      <span class="text-green-400 text-xxs sm:text-xxs">
+                        Copied!
+                      </span>
+                    )
+                    : <CopyIcon size={16} class="w-4 h-4 text-gray-300" />)
+                  : ( // Placeholder for SSR
+                    <div class="w-4 h-4 bg-gray-600 rounded animate-pulse">
+                    </div>
+                  )}
               </button>
             </div>
           </div>

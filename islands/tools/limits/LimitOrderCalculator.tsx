@@ -68,6 +68,11 @@ export default function LimitOrderCalculator() {
   const [lastNonAdvancedUpperProb, setLastNonAdvancedUpperProb] = useState(75);
 
   const currentProbability = useSignal(50);
+  const [isClient, setIsClient] = useState(false); // New state for client-side check
+
+  useEffect(() => {
+    setIsClient(true); // Set to true once component mounts on the client
+  }, []);
 
   const getActiveMarketProbability = (): number | undefined => {
     if (!marketData) return undefined;
@@ -336,9 +341,24 @@ export default function LimitOrderCalculator() {
                     class="flex items-center focus:outline-none"
                     aria-pressed={isVolatilityBet}
                   >
-                    {isVolatilityBet
-                      ? <ToggleOnIcon class="w-10 h-10 text-blue-500" />
-                      : <ToggleOffIcon class="w-10 h-10 text-gray-500" />}
+                    {isClient // Conditionally render icons
+                      ? (isVolatilityBet
+                        ? (
+                          <ToggleOnIcon
+                            size={40}
+                            class="w-10 h-10 text-blue-500"
+                          />
+                        )
+                        : (
+                          <ToggleOffIcon
+                            size={40}
+                            class="w-10 h-10 text-gray-500"
+                          />
+                        ))
+                      : ( // Placeholder for SSR
+                        <div class="w-10 h-10 bg-gray-700 rounded-full animate-pulse">
+                        </div>
+                      )}
                   </button>
                 </div>
 
@@ -353,9 +373,24 @@ export default function LimitOrderCalculator() {
                       class="flex items-center focus:outline-none"
                       aria-pressed={isAdvancedMode}
                     >
-                      {isAdvancedMode
-                        ? <ToggleOnIcon class="w-10 h-10 text-blue-500" />
-                        : <ToggleOffIcon class="w-10 h-10 text-gray-500" />}
+                      {isClient // Conditionally render icons
+                        ? (isAdvancedMode
+                          ? (
+                            <ToggleOnIcon
+                              size={40}
+                              class="w-10 h-10 text-blue-500"
+                            />
+                          )
+                          : (
+                            <ToggleOffIcon
+                              size={40}
+                              class="w-10 h-10 text-gray-500"
+                            />
+                          ))
+                        : ( // Placeholder for SSR
+                          <div class="w-10 h-10 bg-gray-700 rounded-full animate-pulse">
+                          </div>
+                        )}
                     </button>
                   </div>
                 )}
