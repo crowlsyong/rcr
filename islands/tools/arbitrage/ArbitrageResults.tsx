@@ -3,7 +3,7 @@
 import {
   ArbitrageCalculation,
   CalcMode,
-} from "../../../utils/arbitrage_calculator.ts";
+} from "../../../utils/tools/arbitrage_calculator.ts";
 
 interface ArbitrageResultsProps {
   calculation: ArbitrageCalculation | null;

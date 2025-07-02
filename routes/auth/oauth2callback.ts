@@ -5,8 +5,8 @@ import {
   getAndDeleteOauthSession,
   setAdminSession,
 } from "../../database/db.ts";
-import { getAuthenticatedUser } from "../../utils/github.ts";
-import { oauth2Client } from "../../utils/oauth.ts";
+import { getAuthenticatedUser } from "../../utils/auth/github.ts";
+import { oauth2Client } from "../../utils/auth/oauth.ts";
 import { ALLOWED_ADMIN_LOGINS } from "../../utils/allowed_users.ts";
 
 export const handler: Handlers = {

@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { Chart, registerables } from "chart.js";
 import { JSX } from "preact";
-import { COVERAGE_FEE_DATA } from "../../../../utils/score_utils.ts";
+import { COVERAGE_FEE_DATA } from "../../../../utils/tools/score_utils.ts";
 
 Chart.register(...registerables);
 

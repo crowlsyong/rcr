@@ -1,6 +1,6 @@
 // utils/arbitrage_calculator.ts
 
-import { MarketData } from "./api/manifold_types.ts";
+import { MarketData } from "../api/manifold_types.ts";
 
 export interface ArbitrageCalculation {
   marketA: MarketData;

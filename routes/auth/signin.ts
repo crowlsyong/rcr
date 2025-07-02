@@ -2,7 +2,7 @@
 import { Handlers } from "$fresh/server.ts";
 import { setCookie } from "$std/http/cookie.ts";
 import { setOauthSession } from "../../database/db.ts";
-import { oauth2Client } from "../../utils/oauth.ts";
+import { oauth2Client } from "../../utils/auth/oauth.ts";
 
 export const handler: Handlers = {
   async GET() {

@@ -61,10 +61,9 @@ import * as $menu_LinkDataProvider from "./islands/menu/LinkDataProvider.tsx";
 import * as $menu_MenuBar from "./islands/menu/MenuBar.tsx";
 import * as $menu_MenuDropdown from "./islands/menu/MenuDropdown.tsx";
 import * as $shared_InfoHover from "./islands/shared/InfoHover.tsx";
+import * as $shared_InfoIcon from "./islands/shared/InfoIcon.tsx";
 import * as $shared_PasswordGate from "./islands/shared/PasswordGate.tsx";
 import * as $shared_UsernameInput from "./islands/shared/UsernameInput.tsx";
-import * as $tools_GameShowCreditScore from "./islands/tools/GameShowCreditScore.tsx";
-import * as $tools_InfoIcon from "./islands/tools/InfoIcon.tsx";
 import * as $tools_arbitrage_ArbitrageCalculator from "./islands/tools/arbitrage/ArbitrageCalculator.tsx";
 import * as $tools_arbitrage_ArbitrageExecutionButton from "./islands/tools/arbitrage/ArbitrageExecutionButton.tsx";
 import * as $tools_arbitrage_ArbitragePlacement from "./islands/tools/arbitrage/ArbitragePlacement.tsx";
@@ -79,6 +78,7 @@ import * as $tools_creditscore_CreditScore from "./islands/tools/creditscore/Cre
 import * as $tools_creditscore_CreditScoreChExt from "./islands/tools/creditscore/CreditScoreChExt.tsx";
 import * as $tools_creditscore_ScoreResult from "./islands/tools/creditscore/ScoreResult.tsx";
 import * as $tools_custom_EliezerPayoutTool from "./islands/tools/custom/EliezerPayoutTool.tsx";
+import * as $tools_custom_GameShowCreditScore from "./islands/tools/custom/GameShowCreditScore.tsx";
 import * as $tools_insurance_FinancialSummary from "./islands/tools/insurance/FinancialSummary.tsx";
 import * as $tools_insurance_InputDetails from "./islands/tools/insurance/InputDetails.tsx";
 import * as $tools_insurance_Institutions from "./islands/tools/insurance/Institutions.tsx";
@@ -185,10 +185,9 @@ const manifest = {
     "./islands/menu/MenuBar.tsx": $menu_MenuBar,
     "./islands/menu/MenuDropdown.tsx": $menu_MenuDropdown,
     "./islands/shared/InfoHover.tsx": $shared_InfoHover,
+    "./islands/shared/InfoIcon.tsx": $shared_InfoIcon,
     "./islands/shared/PasswordGate.tsx": $shared_PasswordGate,
     "./islands/shared/UsernameInput.tsx": $shared_UsernameInput,
-    "./islands/tools/GameShowCreditScore.tsx": $tools_GameShowCreditScore,
-    "./islands/tools/InfoIcon.tsx": $tools_InfoIcon,
     "./islands/tools/arbitrage/ArbitrageCalculator.tsx":
       $tools_arbitrage_ArbitrageCalculator,
     "./islands/tools/arbitrage/ArbitrageExecutionButton.tsx":
@@ -213,6 +212,8 @@ const manifest = {
       $tools_creditscore_ScoreResult,
     "./islands/tools/custom/EliezerPayoutTool.tsx":
       $tools_custom_EliezerPayoutTool,
+    "./islands/tools/custom/GameShowCreditScore.tsx":
+      $tools_custom_GameShowCreditScore,
     "./islands/tools/insurance/FinancialSummary.tsx":
       $tools_insurance_FinancialSummary,
     "./islands/tools/insurance/InputDetails.tsx": $tools_insurance_InputDetails,

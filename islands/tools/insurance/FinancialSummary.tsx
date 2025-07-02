@@ -5,7 +5,7 @@ import InfoHover from "../../shared/InfoHover.tsx";
 import DurationFeeChart from "./charts/DurationFeeChart.tsx";
 import CoverageFeeChart from "./charts/CoverageFeeChart.tsx";
 import RiskFeeChart from "./charts/RiskFeeChart.tsx";
-import InfoIcon from "../InfoIcon.tsx";
+import InfoIcon from "../../shared/InfoIcon.tsx";
 
 interface FinancialSummaryProps {
   insuranceFee: number | null;

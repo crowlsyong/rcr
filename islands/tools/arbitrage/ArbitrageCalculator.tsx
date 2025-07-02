@@ -5,7 +5,7 @@ import {
   ArbitrageCalculation,
   CalcMode,
   calculateArbitrage,
-} from "../../../utils/arbitrage_calculator.ts";
+} from "../../../utils/tools/arbitrage_calculator.ts";
 import ArbitrageExecutionButton from "./ArbitrageExecutionButton.tsx";
 import ArbitrageResults from "./ArbitrageResults.tsx";
 import BudgetSlider from "./BudgetSlider.tsx";

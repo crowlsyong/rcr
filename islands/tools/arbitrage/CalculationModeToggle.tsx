@@ -1,4 +1,4 @@
-import { CalcMode } from "../../../utils/arbitrage_calculator.ts";
+import { CalcMode } from "../../../utils/tools/arbitrage_calculator.ts";
 
 interface CalculationModeToggleProps {
   mode: CalcMode;

@@ -5,7 +5,7 @@ import { JSX } from "preact";
 import {
   getScoreColor,
   RISK_LEVEL_DATA,
-} from "../../../../utils/score_utils.ts";
+} from "../../../../utils/tools/score_utils.ts";
 
 Chart.register(...registerables);
 

@@ -2,7 +2,7 @@
 
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
-import ScoreResult from "../tools/creditscore/ScoreResult.tsx";
+import ScoreResult from "../creditscore/ScoreResult.tsx";
 
 interface CreditScoreData {
   username: string;
