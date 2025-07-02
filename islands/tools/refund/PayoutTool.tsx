@@ -374,12 +374,12 @@ export default function EliezerPayoutTool(): JSX.Element {
       {/* Header with Title and Toggle */}
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-2xl font-bold text-blue-400">
-          Payout Tool
+          Inputs
         </h2>
         {/* Toggle and its descriptive text */}
         <div class="flex items-center gap-2">
           {/* Added a div to group text and toggle */}
-          <span class="text-sm text-gray-400">
+          <span class="text-xs text-gray-400">
             Viewing payout based on{"  "}
             <span class="font-semibold text-white">
               {useStartingBetLogic.value ? "Starting Bet" : "Total Invested"}

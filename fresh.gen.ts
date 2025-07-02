@@ -49,6 +49,7 @@ import * as $limits_index from "./routes/limits/index.tsx";
 import * as $old_ext_username_ from "./routes/old-ext/[username].tsx";
 import * as $qr_string_ from "./routes/qr/[string].tsx";
 import * as $refund from "./routes/refund.tsx";
+import * as $test from "./routes/test.tsx";
 import * as $u_username_ from "./routes/u/[username].tsx";
 import * as $admin_AdjustmentForm from "./islands/admin/AdjustmentForm.tsx";
 import * as $admin_AdjustmentFormFields from "./islands/admin/AdjustmentFormFields.tsx";
@@ -176,6 +177,7 @@ const manifest = {
     "./routes/old-ext/[username].tsx": $old_ext_username_,
     "./routes/qr/[string].tsx": $qr_string_,
     "./routes/refund.tsx": $refund,
+    "./routes/test.tsx": $test,
     "./routes/u/[username].tsx": $u_username_,
   },
   islands: {
