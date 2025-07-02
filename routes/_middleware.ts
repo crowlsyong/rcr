@@ -3,7 +3,7 @@
 import { FreshContext } from "$fresh/server.ts";
 import { deleteCookie, getCookies } from "$std/http/cookie.ts";
 import { deleteAdminSession, getAdminLoginBySession } from "../database/db.ts";
-import { ALLOWED_ADMIN_LOGINS } from "../utils/allowed_users.ts";
+import { ALLOWED_ADMIN_LOGINS } from "../utils/auth/allowed_users.ts";
 
 export interface AdminState {
   isAdmin: boolean;
