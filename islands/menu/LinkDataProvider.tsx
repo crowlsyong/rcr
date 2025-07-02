@@ -23,6 +23,7 @@ const appsLinks: Link[] = [
   { label: "📦 Extension", url: "/extension", targetBlank: false },
   { label: "🗃️ Insurance", url: "/insurance", targetBlank: false },
   { label: "🧮 Limits", url: "/limits", targetBlank: false },
+  { label: "❤️‍🩹 Refund", url: "/refund", targetBlank: false },
 ];
 
 const banksLinks: Link[] = [
