@@ -1,6 +1,6 @@
 // islands/tools/refund/PayoutTool.tsx
 import { useSignal } from "@preact/signals";
-import { useCallback, useEffect, useMemo, useState } from "preact/hooks"; // Ensure useState is imported
+import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 import { ComponentType, JSX } from "preact";
 
 import { TbToggleLeftFilled, TbToggleRightFilled } from "@preact-icons/tb";
@@ -70,11 +70,9 @@ interface ExecuteResponse {
 }
 
 export default function EliezerPayoutTool(): JSX.Element {
-  const marketUrl = useSignal(
-    "https://manifold.markets/EliezerYudkowsky/what-book-will-i-enjoy-reading",
-  );
+  const marketUrl = useSignal(""); // Changed to empty string for placeholder
   const apiKey = useSignal("");
-  const apologyPercentage = useSignal(20); // Default to 20%
+  const apologyPercentage = useSignal(20);
   const usersToPay = useSignal<UserPayout[]>([]);
   const marketQuestion = useSignal<string | null>(null);
   const marketSlug = useSignal<string | null>(null);
@@ -101,14 +99,14 @@ export default function EliezerPayoutTool(): JSX.Element {
 
   const useCustomManagram = useSignal(false);
   const customManagramMessage = useSignal("");
-  const useStartingBetLogic = useSignal(true); // Default to true
+  const useStartingBetLogic = useSignal(true);
 
   const debouncedMarketUrl = useSignal(marketUrl.value);
   const debouncedApologyPercentage = useSignal(apologyPercentage.value);
   const debouncedUseStartingBetLogic = useSignal(useStartingBetLogic.value);
 
   // State for SSR protection of icons
-  const [isClient, setIsClient] = useState(false); // Make sure useState is imported
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -228,7 +226,7 @@ export default function EliezerPayoutTool(): JSX.Element {
   const handlePercentageInput = (e: Event) => {
     const value = (e.target as HTMLInputElement).value;
     const parsed = parseInt(value, 10);
-    if (!isNaN(parsed) && parsed >= 0) { // Removed max 100 here to allow 120% etc.
+    if (!isNaN(parsed) && parsed >= 0) {
       apologyPercentage.value = parsed;
     } else if (value === "") {
       apologyPercentage.value = 0;
@@ -406,7 +404,6 @@ export default function EliezerPayoutTool(): JSX.Element {
       </div>
 
       <p class="text-sm text-gray-400 mb-4">
-        {/* Removed text-center */}
         This tool helps calculate and execute compensation for users who
         invested in a Manifold market. It will send back a % of their
         investment.
@@ -456,7 +453,6 @@ export default function EliezerPayoutTool(): JSX.Element {
               onInput={handlePercentageInput}
               placeholder="20"
               min="0"
-              // Removed max="100" to allow values like 120
               class="w-full p-2 pr-8 bg-gray-700 border border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500"
             />
             <span class="absolute right-3 text-gray-400 text-lg">%</span>
@@ -478,7 +474,7 @@ export default function EliezerPayoutTool(): JSX.Element {
           value={marketUrl.value}
           onInput={(e) =>
             marketUrl.value = (e.target as HTMLInputElement).value}
-          placeholder="e.g., https://manifold.markets/EliezerYudkowsky/what-book-will-i-enjoy-reading"
+          placeholder="https://manifold.markets/EliezerYudkowsky/what-book-will-i-enjoy-reading"
           class="w-full p-2 bg-gray-700 border border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500"
         />
       </div>
