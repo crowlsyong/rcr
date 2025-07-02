@@ -43,6 +43,7 @@ import * as $iframe_credit_score from "./routes/iframe/credit-score.tsx";
 import * as $iframe_insurance_fee_calculator from "./routes/iframe/insurance-fee-calculator.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $insurance from "./routes/insurance.tsx";
+import * as $limits_layout from "./routes/limits/_layout.tsx";
 import * as $limits_advanced from "./routes/limits/advanced.tsx";
 import * as $limits_index from "./routes/limits/index.tsx";
 import * as $old_ext_username_ from "./routes/old-ext/[username].tsx";
@@ -169,6 +170,7 @@ const manifest = {
       $iframe_insurance_fee_calculator,
     "./routes/index.tsx": $index,
     "./routes/insurance.tsx": $insurance,
+    "./routes/limits/_layout.tsx": $limits_layout,
     "./routes/limits/advanced.tsx": $limits_advanced,
     "./routes/limits/index.tsx": $limits_index,
     "./routes/old-ext/[username].tsx": $old_ext_username_,

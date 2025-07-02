@@ -253,9 +253,17 @@ export default function LimitOrderCalculator() {
 
   return (
     <div class={mainContainerClasses}>
-      <h1 class="text-2xl font-bold mb-4">
-        🦝 Limit Order App
-      </h1>
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-2xl font-bold">
+          🦝 Limit Order App
+        </h1>
+        <a
+          href="/limits/advanced"
+          class="text-xs px-3 py-1 rounded-md border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors duration-200"
+        >
+          Advanced Version →
+        </a>
+      </div>
       <p class="mb-6 text-gray-300">
         This tool calculates how to split your budget into two limit orders to
         acquire the same number of shares for both YES and NO outcomes within

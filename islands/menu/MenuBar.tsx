@@ -1,9 +1,10 @@
 // islands/menu/MenuBar.tsx
+
 import { useSignal } from "@preact/signals";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { ComponentType } from "preact";
 import { JSX } from "preact/jsx-runtime";
-import { TbExternalLink } from "@preact-icons/tb";
+import { TbExternalLink } from "@preact-icons/tb"; // Import ExternalLinkIcon for explicit size
 
 import MenuDropdown from "./MenuDropdown.tsx";
 import LinkDataProvider from "./LinkDataProvider.tsx";
@@ -12,11 +13,20 @@ const ExternalLinkIcon = TbExternalLink as ComponentType<
   JSX.IntrinsicElements["svg"]
 >;
 
-export default function MenuBar() {
+interface MenuBarProps {
+  theme?: "dark" | "default"; // New prop to control theme
+}
+
+export default function MenuBar({ theme = "default" }: MenuBarProps) { // Default to 'default'
   const isMenuOpen = useSignal(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const scrollableContentRef = useRef<HTMLDivElement>(null);
   const [activePath, setActivePath] = useState("");
+  const [isClient, setIsClient] = useState(false); // For client-side icon rendering
+
+  useEffect(() => {
+    setIsClient(true); // Set to true once component mounts on the client
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -45,6 +55,11 @@ export default function MenuBar() {
     }
   }, []);
 
+  // Determine background classes based on theme prop
+  const headerBgClass = theme === "dark" ? "bg-black" : "bg-[#0F1729]";
+
+  const menuBgClass = theme === "dark" ? "bg-black" : "bg-[#0F1729]";
+
   return (
     <>
       <style>
@@ -60,7 +75,9 @@ export default function MenuBar() {
         `}
       </style>
       <div>
-        <div class="fixed top-0 left-0 w-full flex items-center justify-between px-4 py-3 bg-[#0F1729] text-white bg-opacity-70 backdrop-blur-lg z-50">
+        <div
+          class={`fixed top-0 left-0 w-full flex items-center justify-between px-4 py-3 ${headerBgClass} text-white bg-opacity-70 backdrop-blur-lg z-50`}
+        >
           <a href="/">
             <img
               class="hidden md:block h-10"
@@ -98,7 +115,7 @@ export default function MenuBar() {
 
         <div
           ref={menuRef}
-          class={`fixed top-0 right-0 h-full w-full md:w-[300px] bg-[#0F1729] bg-opacity-70 backdrop-blur-lg text-white p-6 z-50 md:rounded-l-lg md:border-l-2 border-[#334155] transform transition-transform duration-300 ease-in-out ${
+          class={`fixed top-0 right-0 h-full w-full md:w-[300px] ${menuBgClass} bg-opacity-70 backdrop-blur-lg text-white p-6 z-50 md:rounded-l-lg md:border-l-2 border-[#334155] transform transition-transform duration-300 ease-in-out ${
             isMenuOpen.value
               ? "translate-x-0 pointer-events-auto"
               : "translate-x-full pointer-events-none"
@@ -165,8 +182,11 @@ export default function MenuBar() {
                 tabIndex={isMenuOpen.value ? 0 : -1}
               >
                 <span>❤️ Donate Mana</span>
-                {typeof window !== "undefined" && (
-                  <ExternalLinkIcon class="absolute right-3 w-4 h-4 opacity-70" />
+                {isClient && ( // Conditionally render icon on client
+                  <ExternalLinkIcon
+                    size={16}
+                    class="absolute right-3 w-4 h-4 opacity-70"
+                  /> // Added size prop
                 )}
               </a>
             </div>
