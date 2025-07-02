@@ -1,19 +1,13 @@
-// routes/api/cron-update-scores.ts
-
+// utils/cron/fetch_scores.ts
 /// <reference lib="deno.unstable" />
 
 import db from "../../database/db.ts";
 import { handler as scoreHandler } from "../../routes/api/v0/score.ts";
 
 const CRON_NAME = "Update User Credit Scores";
-// Process 100 users per cron job execution.
-// This is estimated to take ~6-8 minutes, well within the 15-minute limit.
 const USERS_PER_RUN = 100;
-const DELAY_BETWEEN_USERS_MS = 50; // Keep this as is for smooth API calls
-
-// This schedule will run every 30 minutes (e.g., at :00 and :30 past the hour).
-// You could also do "*/15 * * * *" for every 15 minutes, if you want it to run more frequently.
-const FREQUENT_SCHEDULE = "0 * * * *";
+const DELAY_BETWEEN_USERS_MS = 50;
+const FREQUENT_SCHEDULE = "0 * * * *"; // Every hour at :00
 const CRON_PROGRESS_KEY = ["cron_progress", CRON_NAME, "last_index"];
 
 interface User {
@@ -75,7 +69,7 @@ async function processUserScore(user: User): Promise<void> {
   }
 }
 
-// The main cron job definition
+// The main cron job definition must be at the top-level of this module.
 Deno.cron(CRON_NAME, FREQUENT_SCHEDULE, async () => {
   console.info(
     `[${CRON_NAME}] Cron job triggered with schedule "${FREQUENT_SCHEDULE}".`,
