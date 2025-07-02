@@ -46,9 +46,8 @@ import * as $insurance from "./routes/insurance.tsx";
 import * as $limits from "./routes/limits.tsx";
 import * as $old_ext_username_ from "./routes/old-ext/[username].tsx";
 import * as $qr_string_ from "./routes/qr/[string].tsx";
+import * as $refund from "./routes/refund.tsx";
 import * as $u_username_ from "./routes/u/[username].tsx";
-import * as $InfoHover from "./islands/InfoHover.tsx";
-import * as $PasswordGate from "./islands/PasswordGate.tsx";
 import * as $admin_AdjustmentForm from "./islands/admin/AdjustmentForm.tsx";
 import * as $admin_AdjustmentFormFields from "./islands/admin/AdjustmentFormFields.tsx";
 import * as $admin_ExistingOverridesTable from "./islands/admin/ExistingOverridesTable.tsx";
@@ -61,6 +60,8 @@ import * as $buttons_ShareURL from "./islands/buttons/ShareURL.tsx";
 import * as $menu_LinkDataProvider from "./islands/menu/LinkDataProvider.tsx";
 import * as $menu_MenuBar from "./islands/menu/MenuBar.tsx";
 import * as $menu_MenuDropdown from "./islands/menu/MenuDropdown.tsx";
+import * as $shared_InfoHover from "./islands/shared/InfoHover.tsx";
+import * as $shared_PasswordGate from "./islands/shared/PasswordGate.tsx";
 import * as $shared_UsernameInput from "./islands/shared/UsernameInput.tsx";
 import * as $tools_GameShowCreditScore from "./islands/tools/GameShowCreditScore.tsx";
 import * as $tools_InfoIcon from "./islands/tools/InfoIcon.tsx";
@@ -117,6 +118,7 @@ import * as $tools_limits_advanced_MinMaxProbabilityControl from "./islands/tool
 import * as $tools_limits_advanced_MinMaxProbabilityInputs from "./islands/tools/limits/advanced/MinMaxProbabilityInputs.tsx";
 import * as $tools_limits_advanced_PointsGranularityControl from "./islands/tools/limits/advanced/PointsGranularityControl.tsx";
 import * as $tools_limits_advanced_utils_calculate_bet_data from "./islands/tools/limits/advanced/utils/calculate-bet-data.ts";
+import * as $tools_refund_PayoutTool from "./islands/tools/refund/PayoutTool.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -166,11 +168,10 @@ const manifest = {
     "./routes/limits.tsx": $limits,
     "./routes/old-ext/[username].tsx": $old_ext_username_,
     "./routes/qr/[string].tsx": $qr_string_,
+    "./routes/refund.tsx": $refund,
     "./routes/u/[username].tsx": $u_username_,
   },
   islands: {
-    "./islands/InfoHover.tsx": $InfoHover,
-    "./islands/PasswordGate.tsx": $PasswordGate,
     "./islands/admin/AdjustmentForm.tsx": $admin_AdjustmentForm,
     "./islands/admin/AdjustmentFormFields.tsx": $admin_AdjustmentFormFields,
     "./islands/admin/ExistingOverridesTable.tsx": $admin_ExistingOverridesTable,
@@ -183,6 +184,8 @@ const manifest = {
     "./islands/menu/LinkDataProvider.tsx": $menu_LinkDataProvider,
     "./islands/menu/MenuBar.tsx": $menu_MenuBar,
     "./islands/menu/MenuDropdown.tsx": $menu_MenuDropdown,
+    "./islands/shared/InfoHover.tsx": $shared_InfoHover,
+    "./islands/shared/PasswordGate.tsx": $shared_PasswordGate,
     "./islands/shared/UsernameInput.tsx": $shared_UsernameInput,
     "./islands/tools/GameShowCreditScore.tsx": $tools_GameShowCreditScore,
     "./islands/tools/InfoIcon.tsx": $tools_InfoIcon,
@@ -283,6 +286,7 @@ const manifest = {
       $tools_limits_advanced_PointsGranularityControl,
     "./islands/tools/limits/advanced/utils/calculate-bet-data.ts":
       $tools_limits_advanced_utils_calculate_bet_data,
+    "./islands/tools/refund/PayoutTool.tsx": $tools_refund_PayoutTool,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

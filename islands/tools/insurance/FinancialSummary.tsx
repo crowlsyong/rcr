@@ -1,7 +1,7 @@
 // islands/tools/insurance/FinancialSummary.tsx
 import { Signal } from "@preact/signals";
 import { JSX } from "preact";
-import InfoHover from "../../InfoHover.tsx";
+import InfoHover from "../../shared/InfoHover.tsx";
 import DurationFeeChart from "./charts/DurationFeeChart.tsx";
 import CoverageFeeChart from "./charts/CoverageFeeChart.tsx";
 import RiskFeeChart from "./charts/RiskFeeChart.tsx";
