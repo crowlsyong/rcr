@@ -18,7 +18,7 @@ export default function ApiKeyInput(
       </label>
       <input
         type="password"
-        id="advanced-api-key"
+        id="api-key"
         name="apiKey"
         value={apiKey}
         onInput={(e) => setApiKey(e.currentTarget.value)}

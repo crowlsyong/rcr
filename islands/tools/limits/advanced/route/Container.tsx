@@ -235,7 +235,7 @@ export default function AdvancedLimitsContainer() {
         probability range. Design custom bet strategies with granular control.
       </p>
 
-      <div class="bg-gray-900 shadow sm:rounded-lg p-6 mb-6 border border-gray-700 space-y-6">
+      <div class="bg-black shadow sm:rounded-lg p-6 mb-6 border border-gray-700 space-y-6">
         <div class="flex flex-col sm:flex-row sm:space-x-4 space-y-6 sm:space-y-0">
           <div class="sm:flex-1">
             <MarketUrlInput
@@ -266,7 +266,7 @@ export default function AdvancedLimitsContainer() {
       )}
 
       {/* Advanced Distribution Chart - ALWAYS RENDERED */}
-      <div class="mb-6 bg-gray-900">
+      <div class="mb-6 bg-black">
         <AdvancedDistributionChart
           totalBetAmount={totalBetAmountInput}
           lowerProbability={lowerProbabilityInput}
