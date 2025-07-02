@@ -1,4 +1,5 @@
 // islands/tools/limits/ProbabilityInput.tsx
+
 import { useEffect, useState } from "preact/hooks";
 import { MarketData } from "../../../utils/api/manifold_types.ts";
 
@@ -32,25 +33,90 @@ export default function ProbabilityInput(props: ProbabilityInputProps) {
     }
     if (marketData.outcomeType === "MULTIPLE_CHOICE" && selectedAnswerId) {
       const answer = marketData.answers?.find((a) => a.id === selectedAnswerId);
-      return answer?.probability;
+      return answer ? answer.probability : undefined;
     }
     return undefined;
   };
 
   const marketProb = getActiveProbability();
-  const maxOffset = marketProb
+
+  // Calculate maxOffset, ensuring it's at least 1 to avoid range slider issues
+  // maxOffset is the largest symmetric offset possible while staying within (0%, 100%)
+  const rawMaxOffset = marketProb
     ? Math.floor(Math.min(marketProb, 1 - marketProb) * 100 - 1)
     : 50;
+  const clampedMaxOffset = Math.max(1, rawMaxOffset); // Ensure min slider value is 1
+
+  console.log(
+    "ProbabilityInput Render - marketProb:",
+    marketProb,
+    "rawMaxOffset:",
+    rawMaxOffset,
+    "clampedMaxOffset:",
+    clampedMaxOffset,
+  );
+  console.log(
+    "ProbabilityInput Render - isCustom:",
+    isCustom,
+    "offsetPercent:",
+    offsetPercent,
+  );
 
   useEffect(() => {
+    console.log(
+      "ProbabilityInput useEffect (isCustom, marketProb, offsetPercent) triggered.",
+    );
     if (!isCustom && typeof marketProb === "number") {
-      const currentOffset = Math.min(offsetPercent, maxOffset);
+      // Use the clampedMaxOffset to ensure currentOffset is valid
+      const currentOffset = Math.min(offsetPercent, clampedMaxOffset);
       const lower = marketProb * 100 - currentOffset;
       const upper = marketProb * 100 + currentOffset;
-      setLowerProbability(Math.round(lower));
-      setUpperProbability(Math.round(upper));
+
+      console.log(
+        "ProbabilityInput useEffect - Calculating relative range:",
+        {
+          marketProbRaw: marketProb,
+          marketProbPercent: marketProb * 100,
+          currentOffset,
+          calculatedLower: lower,
+          calculatedUpper: upper,
+        },
+      );
+
+      // Clamp values to ensure they stay strictly within (0,100) after rounding
+      let finalLower = Math.max(1, Math.min(99, Math.round(lower)));
+      let finalUpper = Math.max(1, Math.min(99, Math.round(upper)));
+
+      // Additional safeguard: ensure finalLower is always strictly less than finalUpper
+      // This is crucial for preventing "Lower probability must be less than upper probability"
+      if (finalLower >= finalUpper) {
+        console.warn(
+          "ProbabilityInput useEffect - Collapsing/Inverting range detected (finalLower >= finalUpper). Attempting to fix.",
+          { initialLower: lower, initialUpper: upper, finalLower, finalUpper },
+        );
+        if (finalLower < 99) {
+          finalUpper = finalLower + 1; // Nudge upper up if possible
+        } else if (finalUpper > 1) {
+          finalLower = finalUpper - 1; // Nudge lower down if possible (e.g., both 99, make it 98-99)
+        } else {
+          // Extreme case: both are at 1. Fallback to a wider, known-good range.
+          console.error(
+            "ProbabilityInput useEffect - Extreme range collapse. Falling back to 25-75.",
+          );
+          finalLower = 25;
+          finalUpper = 75;
+        }
+      }
+
+      setLowerProbability(finalLower);
+      setUpperProbability(finalUpper);
+
+      console.log(
+        "ProbabilityInput useEffect - Setting probabilities to:",
+        { setLower: finalLower, setUpper: finalUpper },
+      );
     }
-  }, [isCustom, marketProb, offsetPercent, maxOffset]);
+  }, [isCustom, marketProb, offsetPercent, clampedMaxOffset]); // Dependency array for useEffect
 
   if (isCustom) {
     return (
@@ -97,12 +163,12 @@ export default function ProbabilityInput(props: ProbabilityInputProps) {
     );
   }
 
+  // Display message if market data is not available for relative slider mode
   if (typeof marketProb !== "number") {
     const message = marketData?.outcomeType === "MULTIPLE_CHOICE"
       ? "Please select a multiple choice option to use the slider, or switch to Custom Range."
       : "Market must be of type BINARY to use the relative slider. Please use Custom Range.";
     return <p class="text-xs sm:text-sm text-gray-400 mt-4">{message}</p>;
-    {/* Added text-xs sm:text-sm */}
   }
 
   return (
@@ -119,7 +185,7 @@ export default function ProbabilityInput(props: ProbabilityInputProps) {
           id="range-slider"
           type="range"
           min="1"
-          max={maxOffset > 0 ? maxOffset : 1}
+          max={clampedMaxOffset}
           value={offsetPercent}
           onInput={(e) => setOffsetPercent(Number(e.currentTarget.value))}
           class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer mt-2"
