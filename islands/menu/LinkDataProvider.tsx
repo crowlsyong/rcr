@@ -66,6 +66,11 @@ const globularConglomerateLinks: Link[] = [
     targetBlank: true,
   },
   {
+    label: "🔑 Public Key",
+    url: "/public-key/RISK%20CORPORATION_0x01AEA48B_public.asc",
+    targetBlank: false,
+  },
+  {
     label: "📈 Reports",
     isSpecialNestedDropdown: true,
     children: [
