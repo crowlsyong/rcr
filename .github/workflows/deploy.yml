@@ -23,8 +23,8 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Run Deno tasks and update lock
-        run: deno task start --reload --lock-write
+      - name: Build step
+        run: "deno task build"
 
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
@@ -32,3 +32,5 @@ jobs:
           project: "risk"
           entrypoint: "main.ts"
           root: "."
+          
+          
