@@ -24,7 +24,7 @@ jobs:
           deno-version: v2.x
 
       - name: Build step
-        run: "deno task build"
+        run: "# This command reads the dependency, sees the new hash, and writes it to deno.lock deno task build --reload --lock-write --unstable-kv"
 
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
