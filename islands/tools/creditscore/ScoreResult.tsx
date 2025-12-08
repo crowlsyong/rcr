@@ -147,7 +147,7 @@ export default function ScoreResult({
           {isDataAvailable
             ? (
               <p class="text-xs">
-                Base Insurance Fee: {(riskBaseFee * 100).toFixed(0)}%
+                RISK® Insurance Fee: {(riskBaseFee * 100).toFixed(0)}%
               </p>
             )
             : null}
