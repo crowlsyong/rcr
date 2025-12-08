@@ -24,7 +24,7 @@ jobs:
           deno-version: v2.x
 
       - name: Build step
-        run: "deno task build --unstable-kv --reload --lock-write"
+        run: "deno task build --unstable-kv"
 
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
