@@ -23,8 +23,8 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Run Deno tasks and update lock
-        run: deno task start --reload --lock-write
+      # - name: Run Deno tasks and update lock
+      #  run: deno task start --reload --lock-write
 
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
