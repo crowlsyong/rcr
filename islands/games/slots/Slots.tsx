@@ -1,5 +1,5 @@
 // islands/games/slots/Slots.tsx
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import SlotsUI from "./SlotsUI.tsx";
 
 type SymbolKey = number;
@@ -12,21 +12,23 @@ type SpinResult = {
   payoutSent: boolean;
 };
 
-const ICON_COUNT = 10;
+const ICON_COUNT = 5;
 const ICON_WIDTH = 88;
 const ICON_HEIGHT = 88;
 
-const REPEAT_COUNT = 22;
-const SAFE_REPEAT_MARGIN = 8;
+const REPEAT_COUNT = 14;
+const START_CYCLE = 2;
 
 const BETS = [50, 100, 250, 500, 1000] as const;
 
-function randInt(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+function clamp(n: number, a: number, b: number) {
+  return Math.max(a, Math.min(b, n));
 }
 
-function pickSymbol(): SymbolKey {
-  return Math.floor(Math.random() * ICON_COUNT);
+function parseIconToIndex(sym: string) {
+  const n = Number(sym.split("-")[1]);
+  if (!Number.isFinite(n)) return 0;
+  return clamp(n - 1, 0, ICON_COUNT - 1);
 }
 
 export default function Slots() {
@@ -41,66 +43,28 @@ export default function Slots() {
   const [apiKey, setApiKey] = useState("");
 
   const spinningRef = useRef(false);
-  const spinIndexRef = useRef(0);
-  const last777Ref = useRef(-10_000);
 
-  const iconUrls = Array.from({ length: ICON_COUNT }).map(
-    (_, i) => `/styles/slots/slot-${i + 1}.png`,
+  const currentIndexRef = useRef<[number, number, number]>([0, 0, 0]);
+
+  const iconUrls = useMemo(
+    () =>
+      Array.from({ length: ICON_COUNT }).map(
+        (_, i) => `/styles/slots/icon-${i + 1}.png`,
+      ),
+    [],
   );
 
-  function evaluate(
-    line: [SymbolKey, SymbolKey, SymbolKey],
-    spinIndex: number,
-  ): SpinResult {
-    const [a, b, c] = line;
-
-    const jackpotEligible =
-      spinIndex - last777Ref.current >= 10_000 && Math.random() < 1 / 10_000;
-
-    if (jackpotEligible) {
-      last777Ref.current = spinIndex;
-      return {
-        win: true,
-        combo: [7, 7, 7],
-        payout: 5000,
-        reason: "jackpot",
-        payoutSent: false,
-      };
-    }
-
-    if (a === b && b === c) {
-      return {
-        win: true,
-        combo: [a, b, c],
-        payout: 500,
-        reason: "triple",
-        payoutSent: false,
-      };
-    }
-
-    if (a === b || b === c) {
-      return {
-        win: true,
-        combo: [a, b, c],
-        payout: 50,
-        reason: "pair",
-        payoutSent: false,
-      };
-    }
-
-    return {
-      win: false,
-      combo: [a, b, c],
-      payout: 0,
-      reason: "lose",
-      payoutSent: false,
-    };
+  function setStripPosition(el: HTMLDivElement, cycle: number, idx: number) {
+    const y = -((cycle * ICON_COUNT + idx) * ICON_HEIGHT);
+    el.style.transition = "none";
+    el.style.transform = `translate3d(0, ${y}px, 0)`;
   }
 
-  function animateReel(
+  function animateTo(
     reelIndex: number,
-    finalSymbol: number,
-    delta: number,
+    targetIdx: number,
+    durMs: number,
+    extraCycles: number,
   ): Promise<void> {
     return new Promise((resolve) => {
       const el = document.getElementById(
@@ -112,35 +76,26 @@ export default function Slots() {
         return;
       }
 
-      const timePerIcon = 220;
+      const fromIdx = currentIndexRef.current[reelIndex];
 
-      const baseIcons = ICON_COUNT *
-        Math.max(1, REPEAT_COUNT - SAFE_REPEAT_MARGIN);
+      const startCycle = START_CYCLE;
+      const endCycle = START_CYCLE + extraCycles;
 
-      const maxIcons = ICON_COUNT * REPEAT_COUNT - 1;
-      const desiredIcons = baseIcons + delta + finalSymbol;
-      const offsetIcons = Math.min(desiredIcons, maxIcons);
+      setStripPosition(el, startCycle, fromIdx);
 
-      const translateY = -(offsetIcons * ICON_HEIGHT);
-
-      const dur = (baseIcons + delta) * timePerIcon + reelIndex * 1400;
+      const endY = -((endCycle * ICON_COUNT + targetIdx) * ICON_HEIGHT);
 
       el.style.willChange = "transform";
-      el.style.transition = "none";
-      el.style.transform = "translate3d(0, 0px, 0)";
-
       requestAnimationFrame(() => {
-        el.style.transition = `transform ${dur}ms cubic-bezier(.22,.61,.36,1)`;
-        el.style.transform = `translate3d(0, ${translateY}px, 0)`;
+        el.style.transition = `transform ${durMs}ms cubic-bezier(.22,.61,.36,1)`;
+        el.style.transform = `translate3d(0, ${endY}px, 0)`;
       });
 
-      setTimeout(() => {
-        const normalized = -(finalSymbol * ICON_HEIGHT);
-        el.style.transition = "none";
-        el.style.transform = `translate3d(0, ${normalized}px, 0)`;
+      globalThis.setTimeout(() => {
+        currentIndexRef.current[reelIndex] = targetIdx;
         el.style.willChange = "auto";
         resolve();
-      }, dur + 40);
+      }, durMs + 30);
     });
   }
 
@@ -149,30 +104,59 @@ export default function Slots() {
 
     try {
       spinningRef.current = true;
-      setSpinState("spinning");
-      setStatus("spinning");
-      setResult(null);
       setError(null);
+      setResult(null);
+      setSpinState("spinning");
+      setStatus("calling api");
 
-      const spinIndex = ++spinIndexRef.current;
+      const r = await fetch("/api/v0/slots/slots-api", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ bet, apiKey }),
+      });
 
-      const final: [number, number, number] = [
-        pickSymbol(),
-        pickSymbol(),
-        pickSymbol(),
+      const j = (await r.json().catch(() => null)) as any;
+      if (!r.ok || !j?.ok || !j?.outcome) {
+        console.error("slots api bad response", { status: r.status, j });
+        setError(j?.error || "api error");
+        setSpinState("idle");
+        spinningRef.current = false;
+        return;
+      }
+
+      const outcome = j.outcome as {
+        win: boolean;
+        payout: number;
+        combo: [string, string, string];
+        reason: string;
+      };
+
+      const payoutSent = !!j.payoutSent;
+
+      const finalIdx: [number, number, number] = [
+        parseIconToIndex(outcome.combo[0]),
+        parseIconToIndex(outcome.combo[1]),
+        parseIconToIndex(outcome.combo[2]),
       ];
 
-      const deltas = [randInt(8, 10), randInt(10, 12), randInt(12, 14)];
+      setStatus("spinning");
 
-      await Promise.all([
-        animateReel(0, final[0], deltas[0]),
-        animateReel(1, final[1], deltas[1]),
-        animateReel(2, final[2], deltas[2]),
-      ]);
+      const base = 2400;
+      const gap = 650;
 
-      const evaluated = evaluate(final, spinIndex);
-      setResult(evaluated);
-      setStatus(evaluated.win ? evaluated.reason : "no win");
+      await animateTo(0, finalIdx[0], base, 4);
+      await animateTo(1, finalIdx[1], base + gap, 5);
+      await animateTo(2, finalIdx[2], base + 2 * gap, 6);
+
+      setResult({
+        win: outcome.win,
+        payout: outcome.payout,
+        combo: finalIdx,
+        reason: outcome.reason,
+        payoutSent,
+      });
+
+      setStatus(outcome.win ? outcome.reason : "loss");
       setSpinState("done");
     } catch (e) {
       console.error(e);
@@ -184,13 +168,35 @@ export default function Slots() {
   }
 
   useEffect(() => {
+    const init = () => {
+      try {
+        currentIndexRef.current = [
+          Math.floor(Math.random() * ICON_COUNT),
+          Math.floor(Math.random() * ICON_COUNT),
+          Math.floor(Math.random() * ICON_COUNT),
+        ];
+        for (let i = 0; i < 3; i++) {
+          const el = document.getElementById(`slot-strip-${i}`) as
+            | HTMLDivElement
+            | null;
+          if (!el) continue;
+          setStripPosition(el, START_CYCLE, currentIndexRef.current[i]);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    init();
+
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.repeat) return;
       if (e.code === "Space" || e.code === "Enter") spin();
     };
+
     globalThis.addEventListener("keydown", onKeyDown);
     return () => globalThis.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [bet, apiKey]);
 
   return (
     <SlotsUI
@@ -205,7 +211,7 @@ export default function Slots() {
       setBet={setBet}
       bets={BETS}
       canSpin={!spinningRef.current}
-      spinState={spinState}
+      spinState={spinState as any}
       status={status}
       error={error}
       result={result as any}

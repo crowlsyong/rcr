@@ -26,7 +26,6 @@ type ManagramResponse = {
   message?: string;
 };
 
-const streaks = new Map<string, number>();
 let cachedRiskbot: DisplayUser | null = null;
 
 function json(status: number, body: unknown) {
@@ -36,121 +35,18 @@ function json(status: number, body: unknown) {
   });
 }
 
+function pickIndex(n: number) {
+  return Math.floor(Math.random() * n);
+}
+
 function pick<T>(arr: readonly T[]) {
   return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function hasAdjacentPair(combo: readonly string[]) {
-  return combo[0] === combo[1] || combo[1] === combo[2];
-}
-
-function isTriple(combo: readonly string[]) {
-  return combo[0] === combo[1] && combo[1] === combo[2];
-}
-
-function makeLossCombo(icons: readonly string[]) {
-  for (let i = 0; i < 50; i++) {
-    const c = [pick(icons), pick(icons), pick(icons)] as [
-      string,
-      string,
-      string,
-    ];
-    if (!hasAdjacentPair(c) && !isTriple(c)) return c;
-  }
-  const a = pick(icons);
-  const b = pick(icons.filter((x) => x !== a));
-  const c = pick(icons.filter((x) => x !== a && x !== b));
-  return [a, b, c] as [string, string, string];
-}
-
-function makeTwoferCombo(icons: readonly string[]) {
-  const a = pick(icons);
-  const other = pick(icons.filter((x) => x !== a));
-  if (Math.random() < 0.5) return [a, a, other] as [string, string, string];
-  return [other, a, a] as [string, string, string];
-}
-
-function makeOutcomeForUser(
-  userId: string,
-  bet: number,
-  icons: readonly string[],
-) {
-  const streak = streaks.get(userId) ?? 0;
-
-  const JACKPOT_777_CHANCE = 1 / 10000;
-  const TWOFER_CHANCE = 0.22;
-  const THREEFER_CHANCE = 0.018;
-
-  const TWOFER_MULT = 0.6;
-  const THREEFER_MULT = 15;
-
-  const roll = Math.random();
-
-  // routes/api/v0/slots/slots-api.ts
-  if (roll < JACKPOT_777_CHANCE) {
-    streaks.set(userId, 0);
-    return {
-      win: true,
-      payout: 5000,
-      combo: ["slot-7", "slot-7", "slot-7"] as [string, string, string],
-      reason: "777-jackpot",
-      streak: 0,
-    };
-  }
-
-  let winType: "twofer" | "threefer" | "loss" = "loss";
-
-  if (streak >= 5) {
-    winType = "twofer";
-  } else {
-    const r = Math.random();
-    if (r < THREEFER_CHANCE) winType = "threefer";
-    else if (r < THREEFER_CHANCE + TWOFER_CHANCE) winType = "twofer";
-    else winType = "loss";
-  }
-
-  if (winType === "loss") {
-    streaks.set(userId, streak + 1);
-    return {
-      win: false,
-      payout: 0,
-      combo: makeLossCombo(icons),
-      reason: "loss",
-      streak: streak + 1,
-    };
-  }
-
-  streaks.set(userId, 0);
-
-  if (winType === "twofer") {
-    const combo = makeTwoferCombo(icons);
-    const payout = Math.max(10, Math.floor(bet * TWOFER_MULT));
-    return {
-      win: true,
-      payout,
-      combo,
-      reason: "twofer",
-      streak: 0,
-    };
-  }
-
-  const sym = Math.random() < 0.5 ? "🪙" : "⭐";
-  const payout = Math.max(10, Math.floor(bet * THREEFER_MULT));
-  return {
-    win: true,
-    payout,
-    combo: [sym, sym, sym] as [string, string, string],
-    reason: sym === "🪙" ? "coins" : "stars",
-    streak: 0,
-  };
 }
 
 async function mfFetch<T>(
   path: string,
   init: RequestInit,
-): Promise<
-  { ok: true; data: T } | { ok: false; status: number; text: string }
-> {
+): Promise<{ ok: true; data: T } | { ok: false; status: number; text: string }> {
   const res = await fetch(`${API_BASE}${path}`, init);
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -206,6 +102,184 @@ async function sendManagram(
   return r.data;
 }
 
+function buildReel(counts: readonly number[]) {
+  const out: string[] = [];
+  for (let i = 0; i < counts.length; i++) {
+    for (let k = 0; k < counts[i]; k++) out.push(`icon-${i + 1}`);
+  }
+  return out;
+}
+
+const REEL0 = buildReel([1, 2, 3, 4, 5]);
+const REEL1 = buildReel([1, 2, 2, 4, 6]);
+const REEL2 = buildReel([1, 1, 3, 4, 6]);
+
+const JACKPOT_MULT = [3000, 800, 150, 40, 15];
+const PAIR_MULT = [100, 40, 20, 6, 4];
+
+function idxFromIcon(sym: string) {
+  const n = Number(sym.split("-")[1]);
+  if (!Number.isFinite(n) || n < 1 || n > 5) return 0;
+  return n - 1;
+}
+
+function multFor(icon: number, table: number[]) {
+  const i = Math.max(0, Math.min(4, icon - 1));
+  return table[i];
+}
+
+function computePayout(bet: number, a: number, b: number, c: number) {
+  if (a === b && b === c) {
+    const mult = multFor(a, JACKPOT_MULT);
+    return { win: true, payout: Math.floor(bet * mult), reason: `jackpot-icon-${a}` };
+  }
+
+  if (a === b) {
+    const mult = multFor(a, PAIR_MULT);
+    return { win: true, payout: Math.floor(bet * mult), reason: `pair-left-icon-${a}` };
+  }
+
+  if (b === c) {
+    const mult = multFor(b, PAIR_MULT);
+    return { win: true, payout: Math.floor(bet * mult), reason: `pair-right-icon-${b}` };
+  }
+
+  return { win: false, payout: 0, reason: "loss" };
+}
+
+function stopRangesForIcon(reel: 1 | 2 | 3, icon: number): [number, number] {
+  const i = Math.max(1, Math.min(5, icon));
+
+  if (reel === 1) {
+    if (i === 1) return [0, 0];
+    if (i === 2) return [1, 2];
+    if (i === 3) return [3, 5];
+    if (i === 4) return [6, 9];
+    return [10, 14];
+  }
+
+  if (reel === 2) {
+    if (i === 1) return [0, 0];
+    if (i === 2) return [1, 2];
+    if (i === 3) return [3, 4];
+    if (i === 4) return [5, 8];
+    return [9, 14];
+  }
+
+  if (i === 1) return [0, 0];
+  if (i === 2) return [1, 1];
+  if (i === 3) return [2, 4];
+  if (i === 4) return [5, 8];
+  return [9, 14];
+}
+
+function randomStopForIcon(reel: 1 | 2 | 3, icon: number) {
+  const [a, b] = stopRangesForIcon(reel, icon);
+  return a + pickIndex(b - a + 1);
+}
+
+const FORCED_SCALE = 0.2;
+
+const FORCED_ICON_POOL: number[] = [
+  1, 1, 1,
+  2, 2, 2, 2, 2,
+  3, 3, 3, 3, 3, 3, 3, 3,
+  4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+  5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+];
+
+function pickForcedIcon() {
+  return pick(FORCED_ICON_POOL);
+}
+
+function pickDifferentIcon(except: number) {
+  const opts = [1, 2, 3, 4, 5].filter((x) => x !== except);
+  return pick(opts);
+}
+
+type Outcome = {
+  win: boolean;
+  payout: number;
+  reason: string;
+  combo: [string, string, string];
+  icons: [number, number, number];
+  stops: [number, number, number];
+  forced: boolean;
+};
+
+function randomOutcome(bet: number): Outcome {
+  const combo = [pick(REEL0), pick(REEL1), pick(REEL2)] as [string, string, string];
+  const [aS, bS, cS] = combo;
+
+  const a = idxFromIcon(aS) + 1;
+  const b = idxFromIcon(bS) + 1;
+  const c = idxFromIcon(cS) + 1;
+
+  const stops: [number, number, number] = [
+    randomStopForIcon(1, a),
+    randomStopForIcon(2, b),
+    randomStopForIcon(3, c),
+  ];
+
+  const p = computePayout(bet, a, b, c);
+
+  return {
+    win: p.win,
+    payout: p.payout,
+    reason: p.reason,
+    combo,
+    icons: [a, b, c],
+    stops,
+    forced: false,
+  };
+}
+
+function forcedWinOutcome(bet: number): Outcome {
+  const icon = pickForcedIcon();
+
+  const makeLeftPair = Math.random() < 0.5;
+  const other = pickDifferentIcon(icon);
+
+  const icons: [number, number, number] = makeLeftPair
+    ? [icon, icon, other]
+    : [other, icon, icon];
+
+  const combo: [string, string, string] = [
+    `icon-${icons[0]}`,
+    `icon-${icons[1]}`,
+    `icon-${icons[2]}`,
+  ];
+
+  const stops: [number, number, number] = [
+    randomStopForIcon(1, icons[0]),
+    randomStopForIcon(2, icons[1]),
+    randomStopForIcon(3, icons[2]),
+  ];
+
+  const mult = multFor(icon, PAIR_MULT);
+  const payout = Math.max(0, Math.floor(bet * mult * FORCED_SCALE));
+
+  return {
+    win: payout > 0,
+    payout,
+    reason: makeLeftPair ? `forced-pair-left-icon-${icon}` : `forced-pair-right-icon-${icon}`,
+    combo,
+    icons,
+    stops,
+    forced: true,
+  };
+}
+
+const streakByUserId = new Map<string, number>();
+
+function getLossStreak(userId: string) {
+  return streakByUserId.get(userId) ?? 0;
+}
+
+function setLossStreak(userId: string, n: number) {
+  streakByUserId.set(userId, n);
+}
+
 export const handler: Handlers = {
   async POST(req) {
     try {
@@ -225,25 +299,8 @@ export const handler: Handlers = {
 
       const riskbotKey = Deno.env.get("RISKBOT_API_KEY")?.trim();
       if (!riskbotKey) {
-        return json(500, {
-          ok: false,
-          error: "server missing RISKBOT_API_KEY",
-        });
+        return json(500, { ok: false, error: "server missing RISKBOT_API_KEY" });
       }
-
-      // routes/api/v0/slots/slots-api.ts
-      const icons = [
-        "slot-1",
-        "slot-2",
-        "slot-3",
-        "slot-4",
-        "slot-5",
-        "slot-6",
-        "slot-7",
-        "slot-8",
-        "slot-9",
-        "slot-10",
-      ] as const;
 
       const riskbot = await getRiskbotUser();
       const me = await getMe(apiKey);
@@ -251,7 +308,17 @@ export const handler: Handlers = {
       const betMsg = `slots bet ${bet}`;
       await sendManagram(apiKey, riskbot.id, bet, betMsg);
 
-      const outcome = makeOutcomeForUser(me.id, bet, icons);
+      const priorLossStreak = getLossStreak(me.id);
+
+      let outcome: Outcome;
+      if (priorLossStreak >= 3) {
+        outcome = forcedWinOutcome(bet);
+        setLossStreak(me.id, 0);
+      } else {
+        outcome = randomOutcome(bet);
+        if (outcome.win) setLossStreak(me.id, 0);
+        else setLossStreak(me.id, priorLossStreak + 1);
+      }
 
       let payoutSent = false;
       if (outcome.win && outcome.payout > 0) {
@@ -260,7 +327,20 @@ export const handler: Handlers = {
         payoutSent = true;
       }
 
-      return json(200, { ok: true, outcome, payoutSent });
+      return json(200, {
+        ok: true,
+        outcome: {
+          win: outcome.win,
+          payout: outcome.payout,
+          reason: outcome.reason,
+          combo: outcome.combo,
+          icons: outcome.icons,
+          stops: outcome.stops,
+          forced: outcome.forced,
+          priorLossStreak,
+        },
+        payoutSent,
+      });
     } catch (err) {
       console.error("slots-api error:", err);
       return json(500, { ok: false, error: "server error" });
