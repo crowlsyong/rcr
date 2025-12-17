@@ -129,7 +129,7 @@ export default function SlotsUI(props: Props) {
     : "";
 
   return (
-    <div class="w-full min-h-[70svh] grid place-items-center px-3 sm:px-4 slots-body text-[1.15rem] leading-relaxed">
+    <div class="w-full grid place-items-center px-3 sm:px-4 slots-body text-[1.15rem] leading-relaxed">
       <style
         dangerouslySetInnerHTML={{
           __html: `
