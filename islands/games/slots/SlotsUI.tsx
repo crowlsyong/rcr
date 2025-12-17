@@ -32,8 +32,6 @@ type Props = {
   error: string | null;
   result: SpinResult | null;
 
-  pityMeter: string;
-
   onSpin: () => void;
 };
 
@@ -45,13 +43,15 @@ function maskKey(k: string) {
 
 export default function SlotsUI(props: Props) {
   const showWinner = !!props.result?.win;
-  const isWin2 =
-    props.result?.win && props.result.combo[0] === props.result.combo[2];
+  const isWin2 = props.result?.win &&
+    props.result.combo[0] === props.result.combo[2];
 
   const reelBoxW = props.iconWidth + 8;
   const reelBoxH = props.iconHeight;
 
-  const [leverAnim, setLeverAnim] = useState<"idle" | "down" | "return">("idle");
+  const [leverAnim, setLeverAnim] = useState<"idle" | "down" | "return">(
+    "idle",
+  );
   const leverTRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -61,15 +61,17 @@ export default function SlotsUI(props: Props) {
     };
   }, []);
 
-  const leverTransform =
-    leverAnim === "down"
-      ? "translate3d(-50%, 140px, 0)"
-      : leverAnim === "return"
-      ? "translate3d(-50%, 0px, 0)"
-      : "translate3d(-50%, 0px, 0)";
+  const leverTransform = leverAnim === "down"
+    ? "translate3d(-50%, 140px, 0)"
+    : leverAnim === "return"
+    ? "translate3d(-50%, 0px, 0)"
+    : "translate3d(-50%, 0px, 0)";
 
-  const leverDur =
-    leverAnim === "down" ? "140ms" : leverAnim === "return" ? "220ms" : "0ms";
+  const leverDur = leverAnim === "down"
+    ? "140ms"
+    : leverAnim === "return"
+    ? "220ms"
+    : "0ms";
 
   return (
     <div class="w-full min-h-[70svh] grid place-items-center px-4 slots-body text-[1.15rem] leading-relaxed">
@@ -108,32 +110,28 @@ export default function SlotsUI(props: Props) {
             <div class="flex items-stretch gap-5 sm:gap-6">
               <div class="flex-1 min-w-0">
                 <div
-                  class={
-                    "rounded-3xl bg-black/30 border border-white/10 p-6 ring-1 ring-white/10 " +
+                  class={"rounded-3xl bg-black/30 border border-white/10 p-6 ring-1 ring-white/10 " +
                     (props.spinState === "spinning"
                       ? "ring-2 ring-white/20"
                       : "") +
                     (props.result?.win
-                      ? isWin2
-                        ? " slotsWin2"
-                        : " slotsWin1"
-                      : "")
-                  }
+                      ? isWin2 ? " slotsWin2" : " slotsWin1"
+                      : "")}
                 >
                   <div class="flex items-center justify-between mb-4 gap-3">
                     <div class="text-lg text-white/75">
                       result
                     </div>
                     <div class="text-lg sm:text-xl tabular-nums">
-                      {props.result == null ? (
-                        <span class="text-white/50">—</span>
-                      ) : props.result.win ? (
-                        <span class="font-semibold text-white">
-                          +{props.result.payout}
-                        </span>
-                      ) : (
-                        <span class="text-white/50">+0</span>
-                      )}
+                      {props.result == null
+                        ? <span class="text-white/50">—</span>
+                        : props.result.win
+                        ? (
+                          <span class="font-semibold text-white">
+                            +{props.result.payout}
+                          </span>
+                        )
+                        : <span class="text-white/50">+0</span>}
                     </div>
                   </div>
 
@@ -182,8 +180,12 @@ export default function SlotsUI(props: Props) {
                                       draggable={false}
                                       class="select-none pointer-events-none"
                                       style={{
-                                        width: `${Math.floor(props.iconWidth * 0.92)}px`,
-                                        height: `${Math.floor(props.iconHeight * 0.92)}px`,
+                                        width: `${
+                                          Math.floor(props.iconWidth * 0.92)
+                                        }px`,
+                                        height: `${
+                                          Math.floor(props.iconHeight * 0.92)
+                                        }px`,
                                         objectFit: "contain",
                                       }}
                                     />
@@ -215,15 +217,6 @@ export default function SlotsUI(props: Props) {
                     </div>
                   </div>
 
-                  <div class="mt-3 flex items-center justify-between gap-3">
-                    <div class="text-base text-white/65">
-                      pity
-                    </div>
-                    <div class="text-base text-white/80 tabular-nums tracking-widest">
-                      {props.pityMeter}
-                    </div>
-                  </div>
-
                   <div class="mt-6">
                     <div class="text-base tracking-widest text-white/70 mb-2 slots-title">
                       bet
@@ -237,15 +230,13 @@ export default function SlotsUI(props: Props) {
                             type="button"
                             disabled={disabled}
                             onClick={() => props.setBet(b)}
-                            class={
-                              "px-5 py-3 rounded-xl border text-lg font-semibold transition " +
+                            class={"px-5 py-3 rounded-xl border text-lg font-semibold transition " +
                               (disabled
                                 ? "opacity-50 cursor-not-allowed "
                                 : "cursor-pointer hover:-translate-y-[1px] active:translate-y-0 ") +
                               (active
                                 ? "bg-white/90 text-black border-white"
-                                : "bg-black/20 text-white/85 border-white/10 hover:border-white/25")
-                            }
+                                : "bg-black/20 text-white/85 border-white/10 hover:border-white/25")}
                           >
                             {b}
                           </button>
@@ -285,19 +276,18 @@ export default function SlotsUI(props: Props) {
                         transform: leverTransform,
                         transitionProperty: "transform",
                         transitionDuration: leverDur,
-                        transitionTimingFunction:
-                          leverAnim === "return"
-                            ? "cubic-bezier(.2,.8,.2,1)"
-                            : "cubic-bezier(.2,.7,.2,1)",
+                        transitionTimingFunction: leverAnim === "return"
+                          ? "cubic-bezier(.2,.8,.2,1)"
+                          : "cubic-bezier(.2,.7,.2,1)",
                         willChange: "transform",
                       }}
                     />
                     <button
                       type="button"
-                      class={
-                        "absolute left-0 top-0 w-24 h-72 rounded-2xl " +
-                        (props.canSpin ? "cursor-pointer" : "cursor-not-allowed")
-                      }
+                      class={"absolute left-0 top-0 w-24 h-72 rounded-2xl " +
+                        (props.canSpin
+                          ? "cursor-pointer"
+                          : "cursor-not-allowed")}
                       disabled={!props.canSpin}
                       onClick={() => {
                         try {

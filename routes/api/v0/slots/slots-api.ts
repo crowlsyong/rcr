@@ -46,7 +46,9 @@ function pick<T>(arr: readonly T[]) {
 async function mfFetch<T>(
   path: string,
   init: RequestInit,
-): Promise<{ ok: true; data: T } | { ok: false; status: number; text: string }> {
+): Promise<
+  { ok: true; data: T } | { ok: false; status: number; text: string }
+> {
   const res = await fetch(`${API_BASE}${path}`, init);
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -170,81 +172,38 @@ function multFor(icon: number, table: number[]) {
   return table[i];
 }
 
-const JACKPOT_MULT = [3374, 843, 187, 52, 18];
-const PAIR_MULT = [120, 41, 23, 9, 5];
+const JACKPOT_MULT = [250, 50, 10, 4, 2];
+const PAIR_MULT = [10, 5, 3.5, 2.3, 1.6];
 
 function computePayout(bet: number, a: number, b: number, c: number) {
   if (a === b && b === c) {
     const mult = multFor(a, JACKPOT_MULT);
-    return { win: true, payout: Math.floor(bet * mult), reason: `jackpot-icon-${a}` };
+    return {
+      win: true,
+      payout: Math.floor(bet * mult),
+      reason: `jackpot-icon-${a}`,
+    };
   }
 
   if (a === b) {
     const mult = multFor(a, PAIR_MULT);
-    return { win: true, payout: Math.floor(bet * mult), reason: `pair-left-icon-${a}` };
+    return {
+      win: true,
+      payout: Math.floor(bet * mult),
+      reason: `pair-left-icon-${a}`,
+    };
   }
 
   if (b === c) {
     const mult = multFor(b, PAIR_MULT);
-    return { win: true, payout: Math.floor(bet * mult), reason: `pair-right-icon-${b}` };
+    return {
+      win: true,
+      payout: Math.floor(bet * mult),
+      reason: `pair-right-icon-${b}`,
+    };
   }
 
   return { win: false, payout: 0, reason: "loss" };
-}
-
-const FORCED_SCALE = 0.1;
-
-function pForCounts(counts: readonly number[]) {
-  const t = sumCounts(counts);
-  return counts.map((c) => c / t);
-}
-
-const P0 = pForCounts(REEL0_COUNTS);
-const P1 = pForCounts(REEL1_COUNTS);
-const P2 = pForCounts(REEL2_COUNTS);
-
-type ForcedEvent =
-  | { kind: "jackpot"; icon: number; weight: number }
-  | { kind: "pair-left"; icon: number; weight: number }
-  | { kind: "pair-right"; icon: number; weight: number };
-
-function buildForcedBag(): ForcedEvent[] {
-  const bag: ForcedEvent[] = [];
-
-  for (let i = 1; i <= 5; i++) {
-    const pJackpot = P0[i - 1] * P1[i - 1] * P2[i - 1];
-    if (i !== 1) bag.push({ kind: "jackpot", icon: i, weight: pJackpot });
-
-    const pPairLeftOnly = P0[i - 1] * P1[i - 1] * (1 - P2[i - 1]);
-    const pPairRightOnly = (1 - P0[i - 1]) * P1[i - 1] * P2[i - 1];
-
-    bag.push({ kind: "pair-left", icon: i, weight: pPairLeftOnly });
-    bag.push({ kind: "pair-right", icon: i, weight: pPairRightOnly });
-  }
-
-  const filtered = bag.filter((e) => Number.isFinite(e.weight) && e.weight > 0);
-  const sumW = filtered.reduce((s, e) => s + e.weight, 0);
-  if (sumW <= 0) return filtered;
-
-  return filtered.map((e) => ({ ...e, weight: e.weight / sumW }));
-}
-
-const FORCED_BAG = buildForcedBag();
-
-function pickWeighted<T extends { weight: number }>(items: readonly T[]): T {
-  if (!items.length) throw new Error("forced bag empty");
-  const r = Math.random();
-  let acc = 0;
-  for (let i = 0; i < items.length; i++) {
-    acc += items[i].weight;
-    if (r <= acc) return items[i];
-  }
-  return items[items.length - 1];
-}
-
-function pickDifferentIcon(except: number) {
-  const opts = [1, 2, 3, 4, 5].filter((x) => x !== except);
-  return pick(opts);
 }
 
 type Outcome = {
@@ -254,13 +213,14 @@ type Outcome = {
   combo: [string, string, string];
   icons: [number, number, number];
   stops: [number, number, number];
-  forced: boolean;
-  forcedScale?: number;
-  unscaledPayout?: number;
 };
 
 function randomOutcome(bet: number): Outcome {
-  const combo = [pick(REEL0), pick(REEL1), pick(REEL2)] as [string, string, string];
+  const combo = [pick(REEL0), pick(REEL1), pick(REEL2)] as [
+    string,
+    string,
+    string,
+  ];
   const [aS, bS, cS] = combo;
 
   const a = idxFromIcon(aS) + 1;
@@ -282,61 +242,7 @@ function randomOutcome(bet: number): Outcome {
     combo,
     icons: [a, b, c],
     stops,
-    forced: false,
   };
-}
-
-function forcedWinOutcome(bet: number): Outcome {
-  const ev = pickWeighted(FORCED_BAG);
-
-  let icons: [number, number, number];
-  if (ev.kind === "jackpot") {
-    icons = [ev.icon, ev.icon, ev.icon];
-  } else if (ev.kind === "pair-left") {
-    const right = pickDifferentIcon(ev.icon);
-    icons = [ev.icon, ev.icon, right] as [number, number, number];
-  } else {
-    const left = pickDifferentIcon(ev.icon);
-    icons = [left, ev.icon, ev.icon] as [number, number, number];
-  }
-
-  const combo: [string, string, string] = [
-    `icon-${icons[0]}`,
-    `icon-${icons[1]}`,
-    `icon-${icons[2]}`,
-  ];
-
-  const stops: [number, number, number] = [
-    randomStopForIcon(1, icons[0]),
-    randomStopForIcon(2, icons[1]),
-    randomStopForIcon(3, icons[2]),
-  ];
-
-  const base = computePayout(bet, icons[0], icons[1], icons[2]);
-  const unscaledPayout = Math.max(0, Math.floor(base.payout));
-  const payout = Math.max(0, Math.floor(unscaledPayout * FORCED_SCALE));
-
-  return {
-    win: payout > 0,
-    payout,
-    reason: `forced-${base.reason}`,
-    combo,
-    icons,
-    stops,
-    forced: true,
-    forcedScale: FORCED_SCALE,
-    unscaledPayout,
-  };
-}
-
-const streakByUserId = new Map<string, number>();
-
-function getLossStreak(userId: string) {
-  return streakByUserId.get(userId) ?? 0;
-}
-
-function setLossStreak(userId: string, n: number) {
-  streakByUserId.set(userId, n);
 }
 
 type Claim = {
@@ -385,22 +291,30 @@ export const handler: Handlers = {
 
       const action = (body?.action || "spin") as "spin" | "claim";
       const apiKey = (body?.apiKey || "").trim();
-
       if (!apiKey) return json(400, { ok: false, error: "missing api key" });
 
       const riskbotKey = Deno.env.get("RISKBOT_API_KEY")?.trim();
-      if (!riskbotKey) return json(500, { ok: false, error: "server missing RISKBOT_API_KEY" });
+      if (!riskbotKey) {
+        return json(500, {
+          ok: false,
+          error: "server missing RISKBOT_API_KEY",
+        });
+      }
 
       const riskbot = await getRiskbotUser();
       const me = await getMe(apiKey);
 
       if (action === "claim") {
         const claimId = (body?.claimId || "").trim();
-        if (!claimId) return json(400, { ok: false, error: "missing claim id" });
+        if (!claimId) {
+          return json(400, { ok: false, error: "missing claim id" });
+        }
 
         const claim = claimsById.get(claimId);
         if (!claim) return json(404, { ok: false, error: "claim not found" });
-        if (claim.userId !== me.id) return json(403, { ok: false, error: "claim mismatch" });
+        if (claim.userId !== me.id) {
+          return json(403, { ok: false, error: "claim mismatch" });
+        }
 
         claimsById.delete(claimId);
 
@@ -415,25 +329,13 @@ export const handler: Handlers = {
       }
 
       const bet = Number(body?.bet);
-      if (!Number.isFinite(bet) || bet < 10) return json(400, { ok: false, error: "bad bet" });
+      if (!Number.isFinite(bet) || bet < 10) {
+        return json(400, { ok: false, error: "bad bet" });
+      }
 
       await sendManagram(apiKey, riskbot.id, bet, `slots bet ${bet}`);
 
-      const priorLossStreak = getLossStreak(me.id);
-
-      const THRESHOLD = 5;
-      let outcome: Outcome;
-
-      if (priorLossStreak >= THRESHOLD - 1) {
-        outcome = forcedWinOutcome(bet);
-        setLossStreak(me.id, 0);
-      } else {
-        outcome = randomOutcome(bet);
-        if (outcome.win) setLossStreak(me.id, 0);
-        else setLossStreak(me.id, priorLossStreak + 1);
-      }
-
-      const lossStreakAfter = getLossStreak(me.id);
+      const outcome = randomOutcome(bet);
 
       let payoutSent = false;
       let claimId: string | null = null;
@@ -462,33 +364,17 @@ export const handler: Handlers = {
 
       return json(200, {
         ok: true,
-        outcome: {
-          win: outcome.win,
-          payout: outcome.payout,
-          reason: outcome.reason,
-          combo: outcome.combo,
-          icons: outcome.icons,
-          stops: outcome.stops,
-          forced: outcome.forced,
-          forcedScale: outcome.forcedScale,
-          unscaledPayout: outcome.unscaledPayout,
-        },
-        meta: {
-          priorLossStreak,
-          lossStreakAfter,
-          threshold: THRESHOLD,
-        },
+        outcome,
         claimId,
         payoutSent,
       });
     } catch (err) {
       console.error("slots-api error:", err);
-      const detail =
-        err instanceof Error
-          ? `${err.name}: ${err.message}`
-          : typeof err === "string"
-          ? err
-          : "unknown";
+      const detail = err instanceof Error
+        ? `${err.name}: ${err.message}`
+        : typeof err === "string"
+        ? err
+        : "unknown";
       return json(500, { ok: false, error: "server error", detail });
     }
   },

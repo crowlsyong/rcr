@@ -19,7 +19,9 @@ export default function ShaderBackground(props: Props) {
 
     const glMaybe =
       (canvas.getContext("webgl", { alpha: true, antialias: true }) ||
-        canvas.getContext("experimental-webgl")) as WebGLRenderingContext | null;
+        canvas.getContext("experimental-webgl")) as
+          | WebGLRenderingContext
+          | null;
 
     if (glMaybe === null) {
       console.error("ShaderBackground: WebGL not available");
@@ -200,7 +202,10 @@ void main() {
       gl.shaderSource(s, src);
       gl.compileShader(s);
       if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-        console.error("ShaderBackground: shader compile error:", gl.getShaderInfoLog(s));
+        console.error(
+          "ShaderBackground: shader compile error:",
+          gl.getShaderInfoLog(s),
+        );
         gl.deleteShader(s);
         return null;
       }
@@ -227,7 +232,10 @@ void main() {
     gl.linkProgram(prog);
 
     if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-      console.error("ShaderBackground: program link error:", gl.getProgramInfoLog(prog));
+      console.error(
+        "ShaderBackground: program link error:",
+        gl.getProgramInfoLog(prog),
+      );
       gl.deleteProgram(prog);
       setSupported(false);
       return;
@@ -311,7 +319,8 @@ void main() {
   return (
     <canvas
       ref={canvasRef}
-      class={"fixed inset-0 z-0 h-full w-full " + (props.class ? props.class : "")}
+      class={"fixed inset-0 z-0 h-full w-full " +
+        (props.class ? props.class : "")}
     />
   );
 }

@@ -282,10 +282,12 @@ export default function Chart() {
                   Latest League Rank:{" "}
                   <strong>{scoreData.details?.latestRank ?? "N/A"}</strong>
                 </p>
-                {/* <p class="text-sm md:text-base">
+                {
+                  /* <p class="text-sm md:text-base">
                   Debt:{" "}
                   <strong>{scoreData.details?.outstandingDebtImpact}</strong>
-                </p> */}
+                </p> */
+                }
                 <p class="text-sm md:text-base">
                   Calculated Profit:{" "}
                   <strong>

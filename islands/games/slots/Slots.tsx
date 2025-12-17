@@ -12,12 +12,6 @@ type SpinResult = {
   payoutSent: boolean;
 };
 
-type PityMeta = {
-  priorLossStreak: number;
-  lossStreakAfter: number;
-  threshold: number;
-};
-
 const ICON_COUNT = 5;
 const ICON_WIDTH = 88;
 const ICON_HEIGHT = 88;
@@ -42,18 +36,14 @@ function iconNumToIndex(n: number) {
   return clamp(Math.floor(n) - 1, 0, ICON_COUNT - 1);
 }
 
-function fmtForcedScale(x: number) {
-  if (!Number.isFinite(x)) return "0x";
-  if (Math.abs(x - 0.1) < 1e-9) return ".1x";
-  if (Math.abs(x - 0.2) < 1e-9) return ".2x";
-  return `${x}x`;
-}
-
-function buildPityMeter(lossStreak: number, threshold: number, forcedScale: number) {
-  const n = clamp(Math.floor(lossStreak), 0, threshold);
-  const nextGuaranteed = n >= threshold - 1;
-  if (nextGuaranteed) return `${"🎲".repeat(threshold)} ${fmtForcedScale(forcedScale)}`;
-  return `${"🎲".repeat(n)}${"🔘".repeat(threshold - n)}`;
+async function readJsonOrText(r: Response) {
+  const text = await r.text().catch(() => "");
+  try {
+    const j = text ? JSON.parse(text) : null;
+    return { ok: true, text, json: j };
+  } catch (_e) {
+    return { ok: false, text, json: null };
+  }
 }
 
 export default function Slots() {
@@ -66,9 +56,6 @@ export default function Slots() {
 
   const [bet, setBet] = useState<number>(BETS[0]);
   const [apiKey, setApiKey] = useState("");
-
-  const [pity, setPity] = useState<PityMeta>({ priorLossStreak: 0, lossStreakAfter: 0, threshold: 5 });
-  const [forcedScale, setForcedScale] = useState(0.1);
 
   const spinningRef = useRef(false);
   const currentIndexRef = useRef<[number, number, number]>([0, 0, 0]);
@@ -114,7 +101,8 @@ export default function Slots() {
 
       el.style.willChange = "transform";
       requestAnimationFrame(() => {
-        el.style.transition = `transform ${durMs}ms cubic-bezier(.22,.61,.36,1)`;
+        el.style.transition =
+          `transform ${durMs}ms cubic-bezier(.22,.61,.36,1)`;
         el.style.transform = `translate3d(0, ${endY}px, 0)`;
       });
 
@@ -134,12 +122,18 @@ export default function Slots() {
         body: JSON.stringify({ apiKey, action: "claim", claimId }),
       });
 
-      const j = (await r.json().catch(() => null)) as any;
+      const parsed = await readJsonOrText(r);
+      const j = parsed.json as any;
+
       if (!r.ok || !j?.ok) {
-        console.error("claim failed", { status: r.status, j });
+        console.error("claim failed", {
+          status: r.status,
+          text: parsed.text,
+          j,
+        });
         return { ok: false };
       }
-      return { ok: true, payoutSent: !!j.payoutSent, payoutError: j.payoutError ?? null };
+      return { ok: true, payoutSent: !!j.payoutSent };
     } catch (e) {
       console.error(e);
       return { ok: false };
@@ -162,10 +156,16 @@ export default function Slots() {
         body: JSON.stringify({ bet, apiKey, action: "spin" }),
       });
 
-      const j = (await r.json().catch(() => null)) as any;
+      const parsed = await readJsonOrText(r);
+      const j = parsed.json as any;
+
       if (!r.ok || !j?.ok || !j?.outcome) {
-        console.error("slots api bad response", { status: r.status, j });
-        setError(j?.error || "api error");
+        console.error("slots api bad response", {
+          status: r.status,
+          text: parsed.text,
+          j,
+        });
+        setError(j?.detail || j?.error || `api error ${r.status}`);
         setSpinState("idle");
         spinningRef.current = false;
         return;
@@ -177,13 +177,7 @@ export default function Slots() {
         reason: string;
         combo?: [string, string, string];
         icons?: [number, number, number];
-        forced?: boolean;
-        forcedScale?: number;
       };
-
-      const meta = j.meta as PityMeta | undefined;
-      if (meta) setPity(meta);
-      if (Number.isFinite(outcome.forcedScale)) setForcedScale(outcome.forcedScale as number);
 
       let payoutSent = !!j.payoutSent;
 
@@ -192,9 +186,7 @@ export default function Slots() {
         setStatus("payout retry");
         const cr = await claimIfNeeded(apiKey, claimId);
         payoutSent = !!cr.payoutSent;
-        if (!payoutSent) {
-          setError("payout failed");
-        }
+        if (!payoutSent) setError("payout failed");
       }
 
       const finalIdx: [number, number, number] = outcome.icons
@@ -270,8 +262,6 @@ export default function Slots() {
     return () => globalThis.removeEventListener("keydown", onKeyDown);
   }, [bet, apiKey]);
 
-  const pityMeter = buildPityMeter(pity.lossStreakAfter, pity.threshold, forcedScale);
-
   return (
     <SlotsUI
       icons={iconUrls}
@@ -289,7 +279,6 @@ export default function Slots() {
       status={status}
       error={error}
       result={result as any}
-      pityMeter={pityMeter}
       onSpin={spin}
     />
   );
