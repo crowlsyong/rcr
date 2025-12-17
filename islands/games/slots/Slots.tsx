@@ -15,7 +15,9 @@ type SpinResult = {
 const ICON_COUNT = 10;
 const ICON_WIDTH = 88;
 const ICON_HEIGHT = 88;
-const REPEAT_COUNT = 6;
+
+const REPEAT_COUNT = 22;
+const SAFE_REPEAT_MARGIN = 8;
 
 const BETS = [50, 100, 250, 500, 1000] as const;
 
@@ -28,7 +30,9 @@ function pickSymbol(): SymbolKey {
 }
 
 export default function Slots() {
-  const [spinState, setSpinState] = useState<"idle" | "spinning" | "done">("idle");
+  const [spinState, setSpinState] = useState<"idle" | "spinning" | "done">(
+    "idle",
+  );
   const [status, setStatus] = useState("pull to spin");
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SpinResult | null>(null);
@@ -44,7 +48,10 @@ export default function Slots() {
     (_, i) => `/styles/slots/slot-${i + 1}.png`,
   );
 
-  function evaluate(line: [SymbolKey, SymbolKey, SymbolKey], spinIndex: number): SpinResult {
+  function evaluate(
+    line: [SymbolKey, SymbolKey, SymbolKey],
+    spinIndex: number,
+  ): SpinResult {
     const [a, b, c] = line;
 
     const jackpotEligible =
@@ -62,14 +69,32 @@ export default function Slots() {
     }
 
     if (a === b && b === c) {
-      return { win: true, combo: [a, b, c], payout: 500, reason: "triple", payoutSent: false };
+      return {
+        win: true,
+        combo: [a, b, c],
+        payout: 500,
+        reason: "triple",
+        payoutSent: false,
+      };
     }
 
     if (a === b || b === c) {
-      return { win: true, combo: [a, b, c], payout: 50, reason: "pair", payoutSent: false };
+      return {
+        win: true,
+        combo: [a, b, c],
+        payout: 50,
+        reason: "pair",
+        payoutSent: false,
+      };
     }
 
-    return { win: false, combo: [a, b, c], payout: 0, reason: "lose", payoutSent: false };
+    return {
+      win: false,
+      combo: [a, b, c],
+      payout: 0,
+      reason: "lose",
+      payoutSent: false,
+    };
   }
 
   function animateReel(
@@ -78,39 +103,44 @@ export default function Slots() {
     delta: number,
   ): Promise<void> {
     return new Promise((resolve) => {
-      const el = document.getElementById(`slot-strip-${reelIndex}`) as HTMLDivElement;
+      const el = document.getElementById(
+        `slot-strip-${reelIndex}`,
+      ) as HTMLDivElement | null;
+
       if (!el) {
         resolve();
         return;
       }
 
-      const timePerIcon = 28;
-      const startDelay = 0;
-      const extraStop = (2 - reelIndex) * 180;
-      const dur = (5 + 0.55 * delta) * timePerIcon + extraStop;
-      const delay = startDelay;
+      const timePerIcon = 220;
 
-      const totalIcons = ICON_COUNT * REPEAT_COUNT;
-      const offsetIcons = totalIcons + delta + finalSymbol;
+      const baseIcons = ICON_COUNT *
+        Math.max(1, REPEAT_COUNT - SAFE_REPEAT_MARGIN);
+
+      const maxIcons = ICON_COUNT * REPEAT_COUNT - 1;
+      const desiredIcons = baseIcons + delta + finalSymbol;
+      const offsetIcons = Math.min(desiredIcons, maxIcons);
+
       const translateY = -(offsetIcons * ICON_HEIGHT);
 
+      const dur = (baseIcons + delta) * timePerIcon + reelIndex * 1400;
+
+      el.style.willChange = "transform";
       el.style.transition = "none";
-      el.style.transform = "translateY(0px)";
+      el.style.transform = "translate3d(0, 0px, 0)";
 
       requestAnimationFrame(() => {
-        setTimeout(() => {
-          el.style.transition = `transform ${dur}ms cubic-bezier(.22,.61,.36,1)`;
-          el.style.transform = `translateY(${translateY}px)`;
-        }, delay);
+        el.style.transition = `transform ${dur}ms cubic-bezier(.22,.61,.36,1)`;
+        el.style.transform = `translate3d(0, ${translateY}px, 0)`;
       });
 
       setTimeout(() => {
-        const normalized =
-          -(finalSymbol * ICON_HEIGHT);
+        const normalized = -(finalSymbol * ICON_HEIGHT);
         el.style.transition = "none";
-        el.style.transform = `translateY(${normalized}px)`;
+        el.style.transform = `translate3d(0, ${normalized}px, 0)`;
+        el.style.willChange = "auto";
         resolve();
-      }, dur + delay + 20);
+      }, dur + 40);
     });
   }
 
@@ -122,6 +152,7 @@ export default function Slots() {
       setSpinState("spinning");
       setStatus("spinning");
       setResult(null);
+      setError(null);
 
       const spinIndex = ++spinIndexRef.current;
 
@@ -131,11 +162,7 @@ export default function Slots() {
         pickSymbol(),
       ];
 
-      const deltas = [
-        randInt(10, 16),
-        randInt(12, 18),
-        randInt(14, 20),
-      ];
+      const deltas = [randInt(8, 10), randInt(10, 12), randInt(12, 14)];
 
       await Promise.all([
         animateReel(0, final[0], deltas[0]),
@@ -181,7 +208,7 @@ export default function Slots() {
       spinState={spinState}
       status={status}
       error={error}
-      result={result}
+      result={result as any}
       onSpin={spin}
     />
   );
