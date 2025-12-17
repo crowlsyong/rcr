@@ -27,6 +27,7 @@ import * as $api_v0_place_arbitrage_bets from "./routes/api/v0/place-arbitrage-b
 import * as $api_v0_place_limit_orders from "./routes/api/v0/place-limit-orders.ts";
 import * as $api_v0_score from "./routes/api/v0/score.ts";
 import * as $api_v0_score_username_lite from "./routes/api/v0/score/[username]/lite.ts";
+import * as $api_v0_slots_slots_api from "./routes/api/v0/slots/slots-api.ts";
 import * as $api_v0_validate_partner_code from "./routes/api/v0/validate-partner-code.ts";
 import * as $arbitrage from "./routes/arbitrage.tsx";
 import * as $auth_oauth2callback from "./routes/auth/oauth2callback.ts";
@@ -49,6 +50,8 @@ import * as $limits_index from "./routes/limits/index.tsx";
 import * as $old_ext_username_ from "./routes/old-ext/[username].tsx";
 import * as $qr_string_ from "./routes/qr/[string].tsx";
 import * as $refund from "./routes/refund.tsx";
+import * as $slots_layout from "./routes/slots/_layout.tsx";
+import * as $slots_index from "./routes/slots/index.tsx";
 import * as $test from "./routes/test.tsx";
 import * as $u_username_ from "./routes/u/[username].tsx";
 import * as $admin_AdjustmentForm from "./islands/admin/AdjustmentForm.tsx";
@@ -60,6 +63,10 @@ import * as $buttons_Button from "./islands/buttons/Button.tsx";
 import * as $buttons_ChartButton from "./islands/buttons/ChartButton.tsx";
 import * as $buttons_ShareButton from "./islands/buttons/ShareButton.tsx";
 import * as $buttons_ShareURL from "./islands/buttons/ShareURL.tsx";
+import * as $games_slots_ShaderBackground from "./islands/games/slots/ShaderBackground.tsx";
+import * as $games_slots_Slots from "./islands/games/slots/Slots.tsx";
+import * as $games_slots_SlotsUI from "./islands/games/slots/SlotsUI.tsx";
+import * as $games_slots_Winner from "./islands/games/slots/Winner.tsx";
 import * as $menu_LinkDataProvider from "./islands/menu/LinkDataProvider.tsx";
 import * as $menu_MenuBar from "./islands/menu/MenuBar.tsx";
 import * as $menu_MenuDropdown from "./islands/menu/MenuDropdown.tsx";
@@ -154,6 +161,7 @@ const manifest = {
     "./routes/api/v0/place-limit-orders.ts": $api_v0_place_limit_orders,
     "./routes/api/v0/score.ts": $api_v0_score,
     "./routes/api/v0/score/[username]/lite.ts": $api_v0_score_username_lite,
+    "./routes/api/v0/slots/slots-api.ts": $api_v0_slots_slots_api,
     "./routes/api/v0/validate-partner-code.ts": $api_v0_validate_partner_code,
     "./routes/arbitrage.tsx": $arbitrage,
     "./routes/auth/oauth2callback.ts": $auth_oauth2callback,
@@ -177,6 +185,8 @@ const manifest = {
     "./routes/old-ext/[username].tsx": $old_ext_username_,
     "./routes/qr/[string].tsx": $qr_string_,
     "./routes/refund.tsx": $refund,
+    "./routes/slots/_layout.tsx": $slots_layout,
+    "./routes/slots/index.tsx": $slots_index,
     "./routes/test.tsx": $test,
     "./routes/u/[username].tsx": $u_username_,
   },
@@ -190,6 +200,10 @@ const manifest = {
     "./islands/buttons/ChartButton.tsx": $buttons_ChartButton,
     "./islands/buttons/ShareButton.tsx": $buttons_ShareButton,
     "./islands/buttons/ShareURL.tsx": $buttons_ShareURL,
+    "./islands/games/slots/ShaderBackground.tsx": $games_slots_ShaderBackground,
+    "./islands/games/slots/Slots.tsx": $games_slots_Slots,
+    "./islands/games/slots/SlotsUI.tsx": $games_slots_SlotsUI,
+    "./islands/games/slots/Winner.tsx": $games_slots_Winner,
     "./islands/menu/LinkDataProvider.tsx": $menu_LinkDataProvider,
     "./islands/menu/MenuBar.tsx": $menu_MenuBar,
     "./islands/menu/MenuDropdown.tsx": $menu_MenuDropdown,
