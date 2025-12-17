@@ -21,6 +21,11 @@ const START_CYCLE = 2;
 
 const BETS = [50, 100, 250, 1000, 10000] as const;
 
+const REEL_SCALE = 3;
+const REEL_VIEW_H = ICON_HEIGHT * REEL_SCALE;
+const CENTER_OFFSET = Math.floor((REEL_VIEW_H - ICON_HEIGHT) / 2);
+const ALIGN_OFFSET = CENTER_OFFSET + ICON_HEIGHT;
+
 function clamp(n: number, a: number, b: number) {
   return Math.max(a, Math.min(b, n));
 }
@@ -69,7 +74,7 @@ export default function Slots() {
   );
 
   function setStripPosition(el: HTMLDivElement, cycle: number, idx: number) {
-    const y = -((cycle * ICON_COUNT + idx) * ICON_HEIGHT);
+    const y = -((cycle * ICON_COUNT + idx) * ICON_HEIGHT) + ALIGN_OFFSET;
     el.style.transition = "none";
     el.style.transform = `translate3d(0, ${y}px, 0)`;
   }
@@ -97,7 +102,8 @@ export default function Slots() {
 
       setStripPosition(el, startCycle, fromIdx);
 
-      const endY = -((endCycle * ICON_COUNT + targetIdx) * ICON_HEIGHT);
+      const endY = -((endCycle * ICON_COUNT + targetIdx) * ICON_HEIGHT) +
+        ALIGN_OFFSET;
 
       el.style.willChange = "transform";
       requestAnimationFrame(() => {
@@ -178,6 +184,7 @@ export default function Slots() {
         combo?: [string, string, string];
         icons?: [number, number, number];
       };
+
       console.log("[slots] response", {
         bet,
         claimId: typeof j.claimId === "string" ? j.claimId : null,
@@ -216,6 +223,7 @@ export default function Slots() {
       const p1 = animateTo(1, finalIdx[1], base + gap, 5);
       const p2 = animateTo(2, finalIdx[2], base + 2 * gap, 6);
       await Promise.all([p0, p1, p2]);
+
       console.log("[slots] final", {
         bet,
         finalIdx,
