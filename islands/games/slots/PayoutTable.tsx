@@ -30,8 +30,8 @@ export default function PayoutTable(props: { iconUrls: readonly string[] }) {
   }));
 
   return (
-    <details class="rounded-[18px] border border-amber-200/12 bg-gradient-to-b from-[#141018] via-[#0f0b12] to-black shadow-[0_18px_48px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.08)] overflow-hidden group">
-      <summary class="list-none cursor-pointer select-none px-4 py-3 flex items-center justify-between gap-3 bg-[linear-gradient(to_right,rgba(255,196,88,0.18),rgba(255,255,255,0.04),rgba(82,255,214,0.10))] border-b border-white/8">
+    <details class="rounded-[18px] bg-gradient-to-b from-[#141018] via-[#0f0b12] to-black shadow-[0_18px_48px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.08)] overflow-hidden group">
+      <summary class="list-none cursor-pointer select-none px-4 py-3 flex items-center justify-between gap-3 bg-[linear-gradient(to_right,rgba(255,196,88,0.18),rgba(255,255,255,0.04),rgba(82,255,214,0.10))] border-b border-white/20">
         <div class="flex items-center gap-3">
           <div class="text-[12px] tracking-[0.18em] font-black text-white/90">
             PAYOUTS

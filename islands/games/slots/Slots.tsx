@@ -178,6 +178,12 @@ export default function Slots() {
         combo?: [string, string, string];
         icons?: [number, number, number];
       };
+      console.log("[slots] response", {
+        bet,
+        claimId: typeof j.claimId === "string" ? j.claimId : null,
+        payoutSent: !!j.payoutSent,
+        outcome,
+      });
 
       let payoutSent = !!j.payoutSent;
 
@@ -210,6 +216,14 @@ export default function Slots() {
       const p1 = animateTo(1, finalIdx[1], base + gap, 5);
       const p2 = animateTo(2, finalIdx[2], base + 2 * gap, 6);
       await Promise.all([p0, p1, p2]);
+      console.log("[slots] final", {
+        bet,
+        finalIdx,
+        outcomePayout: outcome.payout,
+        reason: outcome.reason,
+        win: outcome.win,
+        payoutSent,
+      });
 
       setResult({
         win: outcome.win,

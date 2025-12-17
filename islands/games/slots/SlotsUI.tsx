@@ -95,8 +95,10 @@ export default function SlotsUI(props: Props) {
   const isWin2 = props.result?.win &&
     props.result.combo[0] === props.result.combo[2];
 
-  const reelBoxW = props.iconWidth + 10;
-  const reelBoxH = props.iconHeight;
+  const REEL_SCALE = 3;
+
+  const reelBoxW = props.iconWidth * REEL_SCALE + 16;
+  const reelBoxH = props.iconHeight * REEL_SCALE;
 
   const [leverAnim, setLeverAnim] = useState<"idle" | "down" | "return">(
     "idle",
@@ -122,6 +124,9 @@ export default function SlotsUI(props: Props) {
     ? "220ms"
     : "0ms";
 
+  const slotFadeOverlay =
+    "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 28%, rgba(0,0,0,0) 72%, rgba(0,0,0,1) 100%)";
+
   return (
     <div class="w-full grid place-items-center pt-10 px-3 sm:px-4 slots-body text-[1.2rem] leading-relaxed">
       <style
@@ -138,8 +143,11 @@ export default function SlotsUI(props: Props) {
 
       <div class="w-full max-w-6xl">
         <div class="w-full rounded-[30px] overflow-hidden border border-white/10 bg-gradient-to-b from-white/6 via-black/55 to-black shadow-2xl">
-          <div class="px-4 sm:px-8 py-5 sm:py-6 border-b border-white/8 flex items-center justify-center bg-[radial-gradient(circle_at_50%_0%,rgba(255,214,120,0.22),transparent_60%),linear-gradient(to_bottom,rgba(255,255,255,0.06),transparent)]">
-            <svg viewBox="0 0 360 120" class="w-[310px] sm:w-[420px] h-[92px]">
+          <div class="pt-10 pb-4 sm:px-8 py-5 sm:py-6 border-b border-white/8 flex items-center justify-center bg-[radial-gradient(circle_at_50%_0%,rgba(255,214,120,0.22),transparent_60%),linear-gradient(to_bottom,rgba(255,255,255,0.06),transparent)]">
+            <svg
+              viewBox="0 -20 360 160"
+              class="w-[320px] sm:w-[440px] h-[120px]"
+            >
               <defs>
                 <path id="arc" d="M 30 98 C 90 18, 270 18, 330 98" />
                 <linearGradient id="gold" x1="0" x2="0" y1="0" y2="1">
@@ -213,7 +221,7 @@ export default function SlotsUI(props: Props) {
 
           <div class="p-4 sm:p-8">
             <div class="rounded-[24px] bg-white/4 border border-white/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] overflow-hidden">
-              <div class="p-4 sm:p-5">
+              <div class="p-4 sm:p-5 bg-black/90">
                 <PayoutTable iconUrls={props.iconUrls} />
 
                 <div class="mt-5 flex flex-col lg:flex-row items-stretch gap-5 lg:gap-7">
@@ -229,7 +237,7 @@ export default function SlotsUI(props: Props) {
                     >
                       <div class="rounded-[24px] bg-[radial-gradient(circle_at_50%_0%,rgba(120,220,255,0.10),transparent_55%),linear-gradient(to_bottom,rgba(255,255,255,0.06),rgba(0,0,0,0.35))] border border-white/8 shadow-[0_18px_46px_rgba(0,0,0,0.40),inset_0_1px_0_rgba(255,255,255,0.10)] p-3 sm:p-4">
                         <div class="rounded-[20px] bg-white/5 border border-white/8 p-3 sm:p-4">
-                          <div class="flex items-center justify-center gap-3 sm:gap-5">
+                          <div class="flex items-center justify-center gap-5 sm:gap-7">
                             {[0, 1, 2].map((i) => (
                               <div
                                 key={i}
@@ -244,61 +252,91 @@ export default function SlotsUI(props: Props) {
                                   class="absolute inset-0 pointer-events-none"
                                   style={{
                                     background:
-                                      "radial-gradient(circle_at_50%_18%, rgba(255,255,255,0.14), transparent 56%), linear-gradient(rgba(0,0,0,0.58) 0%, transparent 28%, transparent 72%, rgba(0,0,0,0.58) 100%)",
+                                      "radial-gradient(circle_at_50%_18%, rgba(255,255,255,0.14), transparent 56%)",
                                   }}
                                 />
-                                <div class="absolute inset-0 pointer-events-none rounded-[18px] ring-1 ring-white/8" />
 
                                 <div
-                                  id={`slot-strip-${i}`}
-                                  class="absolute left-0 top-0"
+                                  class="absolute left-1/2 -translate-x-1/2 top-0"
                                   style={{
                                     width: `${props.iconWidth}px`,
-                                    transform: "translate3d(0, 0px, 0)",
-                                    willChange: "transform",
+                                    height: "100%",
                                   }}
                                 >
-                                  {Array.from({ length: props.repeatCount })
-                                    .map((_, rep) => (
-                                      <div key={rep}>
-                                        {props.iconUrls.map((src, idx) => (
-                                          <div
-                                            key={`${rep}-${idx}`}
-                                            class="flex items-center justify-center"
-                                            style={{
-                                              width: `${props.iconWidth}px`,
-                                              height: `${props.iconHeight}px`,
-                                            }}
-                                          >
-                                            <img
-                                              src={src}
-                                              draggable={false}
-                                              class="select-none pointer-events-none"
+                                  <div
+                                    id={`slot-strip-${i}`}
+                                    class="absolute left-0 top-0"
+                                    style={{
+                                      width: `${props.iconWidth}px`,
+                                      transform: "translate3d(0, 0px, 0)",
+                                      willChange: "transform",
+                                    }}
+                                  >
+                                    {Array.from({ length: props.repeatCount })
+                                      .map((_, rep) => (
+                                        <div key={rep}>
+                                          {props.iconUrls.map((src, idx) => (
+                                            <div
+                                              key={`${rep}-${idx}`}
+                                              class="flex items-center justify-center"
                                               style={{
-                                                width: `${
-                                                  Math.floor(
-                                                    props.iconWidth * 0.94,
-                                                  )
-                                                }px`,
-                                                height: `${
-                                                  Math.floor(
-                                                    props.iconHeight * 0.94,
-                                                  )
-                                                }px`,
-                                                objectFit: "contain",
-                                                filter:
-                                                  "drop-shadow(0 12px 20px rgba(0,0,0,0.30))",
+                                                width: `${props.iconWidth}px`,
+                                                height: `${props.iconHeight}px`,
                                               }}
-                                            />
-                                          </div>
-                                        ))}
-                                      </div>
-                                    ))}
+                                            >
+                                              <img
+                                                src={src}
+                                                draggable={false}
+                                                class="select-none pointer-events-none"
+                                                style={{
+                                                  width: `${
+                                                    Math.floor(
+                                                      props.iconWidth *
+                                                        REEL_SCALE * 0.92,
+                                                    )
+                                                  }px`,
+                                                  height: `${
+                                                    Math.floor(
+                                                      props.iconHeight *
+                                                        REEL_SCALE * 0.92,
+                                                    )
+                                                  }px`,
+                                                  objectFit: "contain",
+                                                  transform:
+                                                    "translate3d(0,0,0)",
+                                                  filter:
+                                                    "drop-shadow(0 18px 30px rgba(0,0,0,0.42))",
+                                                }}
+                                              />
+                                            </div>
+                                          ))}
+                                        </div>
+                                      ))}
+                                  </div>
                                 </div>
 
                                 <div
-                                  class="absolute left-0 right-0 top-1/2 -translate-y-1/2 pointer-events-none border-y border-white/24"
-                                  style={{ height: `${props.iconHeight}px` }}
+                                  class="absolute inset-0 pointer-events-none"
+                                  style={{
+                                    background: slotFadeOverlay,
+                                  }}
+                                />
+
+                                <div
+                                  class="absolute inset-0 pointer-events-none rounded-[18px]"
+                                  style={{
+                                    boxShadow:
+                                      "inset 0 0 0 1px rgba(255,255,255,0.08), inset 0 18px 30px rgba(0,0,0,0.55), inset 0 -18px 30px rgba(0,0,0,0.55)",
+                                  }}
+                                />
+
+                                <div
+                                  class="absolute left-0 right-0 top-1/2 -translate-y-1/2 pointer-events-none border-y border-white/20"
+                                  style={{
+                                    height: `${
+                                      props.iconHeight * REEL_SCALE
+                                    }px`,
+                                  }}
                                 />
                               </div>
                             ))}
@@ -338,16 +376,22 @@ export default function SlotsUI(props: Props) {
                       <div class="mt-6">
                         <input
                           value={props.apiKey}
-                          onInput={(e) =>
-                            props.setApiKey(
-                              (e.currentTarget as HTMLInputElement).value,
-                            )}
+                          onInput={(e) => props.setApiKey(
+                            (e.currentTarget as HTMLInputElement).value,
+                          )}
                           placeholder="paste api key here"
                           type="password"
                           class="w-full px-4 py-3 rounded-xl bg-black/20 text-white border border-white/10 outline-none focus:border-white/25 text-lg placeholder:text-white/40"
                           spellcheck={false}
                           autocomplete="off"
                         />
+                        {props.apiKey
+                          ? (
+                            <div class="mt-2 text-[12px] text-white/60 tabular-nums">
+                              {maskKey(props.apiKey)}
+                            </div>
+                          )
+                          : null}
                       </div>
                     </div>
                   </div>
