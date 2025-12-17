@@ -10,7 +10,7 @@ export const handler: Handlers = {
 
 export default function SlotsPage() {
   return (
-    <div class="min-h-screen w-screen flex items-center justify-center px-4 py-10">
+    <div class="min-h-[100svh] w-screen overflow-hidden flex items-center justify-center px-4 py-8 md:px-8">
       <Slots />
     </div>
   );

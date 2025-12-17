@@ -40,23 +40,72 @@ function pick<T>(arr: readonly T[]) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function makeOutcomeForUser(userId: string, bet: number, icons: readonly string[]) {
+function hasAdjacentPair(combo: readonly string[]) {
+  return combo[0] === combo[1] || combo[1] === combo[2];
+}
+
+function isTriple(combo: readonly string[]) {
+  return combo[0] === combo[1] && combo[1] === combo[2];
+}
+
+function makeLossCombo(icons: readonly string[]) {
+  for (let i = 0; i < 50; i++) {
+    const c = [pick(icons), pick(icons), pick(icons)] as [
+      string,
+      string,
+      string,
+    ];
+    if (!hasAdjacentPair(c) && !isTriple(c)) return c;
+  }
+  const a = pick(icons);
+  const b = pick(icons.filter((x) => x !== a));
+  const c = pick(icons.filter((x) => x !== a && x !== b));
+  return [a, b, c] as [string, string, string];
+}
+
+function makeTwoferCombo(icons: readonly string[]) {
+  const a = pick(icons);
+  const other = pick(icons.filter((x) => x !== a));
+  if (Math.random() < 0.5) return [a, a, other] as [string, string, string];
+  return [other, a, a] as [string, string, string];
+}
+
+function makeOutcomeForUser(
+  userId: string,
+  bet: number,
+  icons: readonly string[],
+) {
   const streak = streaks.get(userId) ?? 0;
 
-  const TWOFER_CHANCE = 0.20;
-  const THREEFER_CHANCE = 0.05;
+  const JACKPOT_777_CHANCE = 1 / 10000;
+  const TWOFER_CHANCE = 0.22;
+  const THREEFER_CHANCE = 0.018;
 
   const TWOFER_MULT = 0.6;
   const THREEFER_MULT = 15;
+
+  const roll = Math.random();
+
+  // routes/api/v0/slots/slots-api.ts
+  if (roll < JACKPOT_777_CHANCE) {
+    streaks.set(userId, 0);
+    return {
+      win: true,
+      payout: 5000,
+      combo: ["slot-7", "slot-7", "slot-7"] as [string, string, string],
+      reason: "777-jackpot",
+      streak: 0,
+    };
+  }
 
   let winType: "twofer" | "threefer" | "loss" = "loss";
 
   if (streak >= 5) {
     winType = "twofer";
   } else {
-    const roll = Math.random();
-    if (roll < THREEFER_CHANCE) winType = "threefer";
-    else if (roll < THREEFER_CHANCE + TWOFER_CHANCE) winType = "twofer";
+    const r = Math.random();
+    if (r < THREEFER_CHANCE) winType = "threefer";
+    else if (r < THREEFER_CHANCE + TWOFER_CHANCE) winType = "twofer";
     else winType = "loss";
   }
 
@@ -65,7 +114,7 @@ function makeOutcomeForUser(userId: string, bet: number, icons: readonly string[
     return {
       win: false,
       payout: 0,
-      combo: [pick(icons), pick(icons), pick(icons)] as [string, string, string],
+      combo: makeLossCombo(icons),
       reason: "loss",
       streak: streak + 1,
     };
@@ -74,26 +123,24 @@ function makeOutcomeForUser(userId: string, bet: number, icons: readonly string[
   streaks.set(userId, 0);
 
   if (winType === "twofer") {
-    const a = pick(icons);
-    const b = a;
-    const c = pick(icons.filter((x) => x !== a));
+    const combo = makeTwoferCombo(icons);
     const payout = Math.max(10, Math.floor(bet * TWOFER_MULT));
     return {
       win: true,
       payout,
-      combo: [a, b, c] as [string, string, string],
+      combo,
       reason: "twofer",
       streak: 0,
     };
   }
 
-  const sym = Math.random() < 0.5 ? "7️⃣" : "🪙";
+  const sym = Math.random() < 0.5 ? "🪙" : "⭐";
   const payout = Math.max(10, Math.floor(bet * THREEFER_MULT));
   return {
     win: true,
     payout,
     combo: [sym, sym, sym] as [string, string, string],
-    reason: sym === "7️⃣" ? "777" : "coins",
+    reason: sym === "🪙" ? "coins" : "stars",
     streak: 0,
   };
 }
@@ -101,7 +148,9 @@ function makeOutcomeForUser(userId: string, bet: number, icons: readonly string[
 async function mfFetch<T>(
   path: string,
   init: RequestInit,
-): Promise<{ ok: true; data: T } | { ok: false; status: number; text: string }> {
+): Promise<
+  { ok: true; data: T } | { ok: false; status: number; text: string }
+> {
   const res = await fetch(`${API_BASE}${path}`, init);
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -139,7 +188,7 @@ async function sendManagram(
   fromApiKey: string,
   toId: string,
   amount: number,
-  message?: string,
+  message: string,
 ) {
   const r = await mfFetch<ManagramResponse>("/v0/managram", {
     method: "POST",
@@ -176,20 +225,24 @@ export const handler: Handlers = {
 
       const riskbotKey = Deno.env.get("RISKBOT_API_KEY")?.trim();
       if (!riskbotKey) {
-        return json(500, { ok: false, error: "server missing RISKBOT_API_KEY" });
+        return json(500, {
+          ok: false,
+          error: "server missing RISKBOT_API_KEY",
+        });
       }
 
+      // routes/api/v0/slots/slots-api.ts
       const icons = [
-        "7️⃣",
-        "🪙",
-        "🍒",
-        "🍋",
-        "🔔",
-        "⭐",
-        "💎",
-        "🧲",
-        "🦝",
-        "🧠",
+        "slot-1",
+        "slot-2",
+        "slot-3",
+        "slot-4",
+        "slot-5",
+        "slot-6",
+        "slot-7",
+        "slot-8",
+        "slot-9",
+        "slot-10",
       ] as const;
 
       const riskbot = await getRiskbotUser();
@@ -207,16 +260,9 @@ export const handler: Handlers = {
         payoutSent = true;
       }
 
-      return json(200, {
-        ok: true,
-        bet,
-        user: { id: me.id, username: me.username, name: me.name },
-        riskbot: { id: riskbot.id, username: riskbot.username, name: riskbot.name },
-        outcome,
-        payoutSent,
-      });
+      return json(200, { ok: true, outcome, payoutSent });
     } catch (err) {
-      console.error("slots-api POST error:", err);
+      console.error("slots-api error:", err);
       return json(500, { ok: false, error: "server error" });
     }
   },

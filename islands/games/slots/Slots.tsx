@@ -1,215 +1,188 @@
 // islands/games/slots/Slots.tsx
-import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import { IS_BROWSER } from "$fresh/runtime.ts";
+import { useEffect, useRef, useState } from "preact/hooks";
 import SlotsUI from "./SlotsUI.tsx";
 
-type SpinState = "idle" | "spinning" | "settling" | "done";
+type SymbolKey = number;
 
-const BETS = [50, 100, 150, 500, 1000] as const;
+type SpinResult = {
+  win: boolean;
+  combo: [SymbolKey, SymbolKey, SymbolKey];
+  payout: number;
+  reason: string;
+  payoutSent: boolean;
+};
 
-function pick<T>(arr: readonly T[]) {
-  return arr[Math.floor(Math.random() * arr.length)];
+const ICON_COUNT = 10;
+const ICON_WIDTH = 88;
+const ICON_HEIGHT = 88;
+const REPEAT_COUNT = 6;
+
+const BETS = [50, 100, 250, 500, 1000] as const;
+
+function randInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function pickSymbol(): SymbolKey {
+  return Math.floor(Math.random() * ICON_COUNT);
 }
 
 export default function Slots() {
-  const icons = useMemo(
-    () =>
-      [
-        "7️⃣",
-        "🪙",
-        "🍒",
-        "🍋",
-        "🔔",
-        "⭐",
-        "💎",
-        "🧲",
-        "🦝",
-        "🧠",
-      ] as const,
-    [],
+  const [spinState, setSpinState] = useState<"idle" | "spinning" | "done">("idle");
+  const [status, setStatus] = useState("pull to spin");
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<SpinResult | null>(null);
+
+  const [bet, setBet] = useState<number>(BETS[0]);
+  const [apiKey, setApiKey] = useState("");
+
+  const spinningRef = useRef(false);
+  const spinIndexRef = useRef(0);
+  const last777Ref = useRef(-10_000);
+
+  const iconUrls = Array.from({ length: ICON_COUNT }).map(
+    (_, i) => `/styles/slots/slot-${i + 1}.png`,
   );
 
-  const [apiKey, setApiKey] = useState("");
-  const [bet, setBet] = useState<(typeof BETS)[number]>(100);
-  const [spinState, setSpinState] = useState<SpinState>("idle");
-  const [status, setStatus] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  function evaluate(line: [SymbolKey, SymbolKey, SymbolKey], spinIndex: number): SpinResult {
+    const [a, b, c] = line;
 
-  const [reels, setReels] = useState<[string, string, string]>([
-    pick(icons),
-    pick(icons),
-    pick(icons),
-  ]);
+    const jackpotEligible =
+      spinIndex - last777Ref.current >= 10_000 && Math.random() < 1 / 10_000;
 
-  const [result, setResult] = useState<
-    | null
-    | {
-      win: boolean;
-      combo: [string, string, string];
-      payout: number;
-      reason: string;
-      payoutSent: boolean;
+    if (jackpotEligible) {
+      last777Ref.current = spinIndex;
+      return {
+        win: true,
+        combo: [7, 7, 7],
+        payout: 5000,
+        reason: "jackpot",
+        payoutSent: false,
+      };
     }
-  >(null);
 
-  const [leverPulled, setLeverPulled] = useState(false);
-
-  const timersRef = useRef<number[]>([]);
-  const spinningRef = useRef(false);
-
-  function clearTimers() {
-    for (const id of timersRef.current) {
-      globalThis.clearInterval(id);
-      globalThis.clearTimeout(id);
+    if (a === b && b === c) {
+      return { win: true, combo: [a, b, c], payout: 500, reason: "triple", payoutSent: false };
     }
-    timersRef.current = [];
+
+    if (a === b || b === c) {
+      return { win: true, combo: [a, b, c], payout: 50, reason: "pair", payoutSent: false };
+    }
+
+    return { win: false, combo: [a, b, c], payout: 0, reason: "lose", payoutSent: false };
   }
 
-  useEffect(() => {
-    return () => clearTimers();
-  }, []);
-
-  async function spinServer(spinBet: number, key: string) {
-    try {
-      const res = await fetch("/api/v0/slots/slots-api", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ bet: spinBet, apiKey: key }),
-      });
-
-      const data = await res.json().catch(() => null) as any;
-
-      if (!res.ok || !data?.ok) {
-        console.error("slots-api response:", res.status, data);
-        return { ok: false as const, error: String(data?.error || "spin failed") };
-      }
-
-      const combo = data?.outcome?.combo as [string, string, string];
-      const win = !!data?.outcome?.win;
-      const payout = Number(data?.outcome?.payout || 0);
-      const reason = String(data?.outcome?.reason || "");
-      const payoutSent = !!data?.payoutSent;
-
-      if (!combo || combo.length !== 3) return { ok: false as const, error: "bad combo" };
-
-      return { ok: true as const, combo, win, payout, reason, payoutSent };
-    } catch (err) {
-      console.error("slots-api fetch error:", err);
-      return { ok: false as const, error: "network error" };
-    }
-  }
-
-  function beginSpin() {
-    setError(null);
-    setResult(null);
-    setStatus("");
-    setLeverPulled(true);
-    globalThis.setTimeout(() => setLeverPulled(false), 450);
-
-    if (!IS_BROWSER) {
-      setError("Browser only");
-      return;
-    }
-
-    const trimmed = apiKey.trim();
-    if (!trimmed) {
-      setError("API key required");
-      return;
-    }
-
-    if (spinningRef.current) return;
-
-    spinningRef.current = true;
-    setSpinState("spinning");
-    setStatus("Sending bet…");
-
-    clearTimers();
-
-    spinServer(bet, trimmed).then((r) => {
-      if (!r.ok) {
-        setError(r.error);
-        setStatus("");
-        setSpinState("done");
-        spinningRef.current = false;
+  function animateReel(
+    reelIndex: number,
+    finalSymbol: number,
+    delta: number,
+  ): Promise<void> {
+    return new Promise((resolve) => {
+      const el = document.getElementById(`slot-strip-${reelIndex}`) as HTMLDivElement;
+      if (!el) {
+        resolve();
         return;
       }
 
-      const final = r.combo;
+      const timePerIcon = 28;
+      const startDelay = 0;
+      const extraStop = (2 - reelIndex) * 180;
+      const dur = (5 + 0.55 * delta) * timePerIcon + extraStop;
+      const delay = startDelay;
 
-      const r0 = globalThis.setInterval(() => {
-        setReels((prev) => [pick(icons), prev[1], prev[2]]);
-      }, 50);
+      const totalIcons = ICON_COUNT * REPEAT_COUNT;
+      const offsetIcons = totalIcons + delta + finalSymbol;
+      const translateY = -(offsetIcons * ICON_HEIGHT);
 
-      const r1 = globalThis.setInterval(() => {
-        setReels((prev) => [prev[0], pick(icons), prev[2]]);
-      }, 70);
+      el.style.transition = "none";
+      el.style.transform = "translateY(0px)";
 
-      const r2 = globalThis.setInterval(() => {
-        setReels((prev) => [prev[0], prev[1], pick(icons)]);
-      }, 90);
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          el.style.transition = `transform ${dur}ms cubic-bezier(.22,.61,.36,1)`;
+          el.style.transform = `translateY(${translateY}px)`;
+        }, delay);
+      });
 
-      timersRef.current.push(r0, r1, r2);
-
-      const stop1 = globalThis.setTimeout(() => {
-        globalThis.clearInterval(r0);
-        setReels((prev) => [final[0], prev[1], prev[2]]);
-      }, 900);
-
-      const stop2 = globalThis.setTimeout(() => {
-        globalThis.clearInterval(r1);
-        setReels((prev) => [prev[0], final[1], prev[2]]);
-      }, 1450);
-
-      const stop3 = globalThis.setTimeout(() => {
-        globalThis.clearInterval(r2);
-        setReels((prev) => [prev[0], prev[1], final[2]]);
-        setSpinState("settling");
-
-        const settle = globalThis.setTimeout(() => {
-          setResult({
-            win: r.win,
-            combo: final,
-            payout: r.payout,
-            reason: r.reason,
-            payoutSent: r.payoutSent,
-          });
-
-          setStatus(r.win ? `Win: ${r.payout} mana` : "Loss");
-          setSpinState("done");
-          spinningRef.current = false;
-        }, 320);
-
-        timersRef.current.push(settle);
-      }, 2050);
-
-      timersRef.current.push(stop1, stop2, stop3);
+      setTimeout(() => {
+        const normalized =
+          -(finalSymbol * ICON_HEIGHT);
+        el.style.transition = "none";
+        el.style.transform = `translateY(${normalized}px)`;
+        resolve();
+      }, dur + delay + 20);
     });
   }
 
-  const canSpin = spinState === "idle" || spinState === "done";
+  async function spin() {
+    if (spinningRef.current) return;
+
+    try {
+      spinningRef.current = true;
+      setSpinState("spinning");
+      setStatus("spinning");
+      setResult(null);
+
+      const spinIndex = ++spinIndexRef.current;
+
+      const final: [number, number, number] = [
+        pickSymbol(),
+        pickSymbol(),
+        pickSymbol(),
+      ];
+
+      const deltas = [
+        randInt(10, 16),
+        randInt(12, 18),
+        randInt(14, 20),
+      ];
+
+      await Promise.all([
+        animateReel(0, final[0], deltas[0]),
+        animateReel(1, final[1], deltas[1]),
+        animateReel(2, final[2], deltas[2]),
+      ]);
+
+      const evaluated = evaluate(final, spinIndex);
+      setResult(evaluated);
+      setStatus(evaluated.win ? evaluated.reason : "no win");
+      setSpinState("done");
+    } catch (e) {
+      console.error(e);
+      setError("spin error");
+      setSpinState("idle");
+    } finally {
+      spinningRef.current = false;
+    }
+  }
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.repeat) return;
+      if (e.code === "Space" || e.code === "Enter") spin();
+    };
+    globalThis.addEventListener("keydown", onKeyDown);
+    return () => globalThis.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   return (
     <SlotsUI
-      icons={icons}
+      icons={iconUrls}
+      iconUrls={iconUrls}
+      iconWidth={ICON_WIDTH}
+      iconHeight={ICON_HEIGHT}
+      repeatCount={REPEAT_COUNT}
       apiKey={apiKey}
-      setApiKey={(v) => {
-        setApiKey(v);
-        setError(null);
-      }}
+      setApiKey={setApiKey}
       bet={bet}
-      setBet={(b) => {
-        if (!canSpin) return;
-        setBet(b);
-      }}
+      setBet={setBet}
       bets={BETS}
-      reels={reels}
+      canSpin={!spinningRef.current}
       spinState={spinState}
-      canSpin={canSpin}
-      leverPulled={leverPulled}
       status={status}
       error={error}
       result={result}
-      onSpin={beginSpin}
+      onSpin={spin}
     />
   );
 }
