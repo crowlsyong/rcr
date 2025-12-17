@@ -12,6 +12,12 @@ type SpinResult = {
   payoutSent: boolean;
 };
 
+type PityMeta = {
+  priorLossStreak: number;
+  lossStreakAfter: number;
+  threshold: number;
+};
+
 const ICON_COUNT = 5;
 const ICON_WIDTH = 88;
 const ICON_HEIGHT = 88;
@@ -31,6 +37,25 @@ function parseIconToIndex(sym: string) {
   return clamp(n - 1, 0, ICON_COUNT - 1);
 }
 
+function iconNumToIndex(n: number) {
+  if (!Number.isFinite(n)) return 0;
+  return clamp(Math.floor(n) - 1, 0, ICON_COUNT - 1);
+}
+
+function fmtForcedScale(x: number) {
+  if (!Number.isFinite(x)) return "0x";
+  if (Math.abs(x - 0.1) < 1e-9) return ".1x";
+  if (Math.abs(x - 0.2) < 1e-9) return ".2x";
+  return `${x}x`;
+}
+
+function buildPityMeter(lossStreak: number, threshold: number, forcedScale: number) {
+  const n = clamp(Math.floor(lossStreak), 0, threshold);
+  const nextGuaranteed = n >= threshold - 1;
+  if (nextGuaranteed) return `${"🎲".repeat(threshold)} ${fmtForcedScale(forcedScale)}`;
+  return `${"🎲".repeat(n)}${"🔘".repeat(threshold - n)}`;
+}
+
 export default function Slots() {
   const [spinState, setSpinState] = useState<"idle" | "spinning" | "done">(
     "idle",
@@ -42,8 +67,10 @@ export default function Slots() {
   const [bet, setBet] = useState<number>(BETS[0]);
   const [apiKey, setApiKey] = useState("");
 
-  const spinningRef = useRef(false);
+  const [pity, setPity] = useState<PityMeta>({ priorLossStreak: 0, lossStreakAfter: 0, threshold: 5 });
+  const [forcedScale, setForcedScale] = useState(0.1);
 
+  const spinningRef = useRef(false);
   const currentIndexRef = useRef<[number, number, number]>([0, 0, 0]);
 
   const iconUrls = useMemo(
@@ -99,6 +126,26 @@ export default function Slots() {
     });
   }
 
+  async function claimIfNeeded(apiKey: string, claimId: string) {
+    try {
+      const r = await fetch("/api/v0/slots/slots-api", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ apiKey, action: "claim", claimId }),
+      });
+
+      const j = (await r.json().catch(() => null)) as any;
+      if (!r.ok || !j?.ok) {
+        console.error("claim failed", { status: r.status, j });
+        return { ok: false };
+      }
+      return { ok: true, payoutSent: !!j.payoutSent, payoutError: j.payoutError ?? null };
+    } catch (e) {
+      console.error(e);
+      return { ok: false };
+    }
+  }
+
   async function spin() {
     if (spinningRef.current) return;
 
@@ -112,7 +159,7 @@ export default function Slots() {
       const r = await fetch("/api/v0/slots/slots-api", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ bet, apiKey }),
+        body: JSON.stringify({ bet, apiKey, action: "spin" }),
       });
 
       const j = (await r.json().catch(() => null)) as any;
@@ -127,26 +174,50 @@ export default function Slots() {
       const outcome = j.outcome as {
         win: boolean;
         payout: number;
-        combo: [string, string, string];
         reason: string;
+        combo?: [string, string, string];
+        icons?: [number, number, number];
+        forced?: boolean;
+        forcedScale?: number;
       };
 
-      const payoutSent = !!j.payoutSent;
+      const meta = j.meta as PityMeta | undefined;
+      if (meta) setPity(meta);
+      if (Number.isFinite(outcome.forcedScale)) setForcedScale(outcome.forcedScale as number);
 
-      const finalIdx: [number, number, number] = [
-        parseIconToIndex(outcome.combo[0]),
-        parseIconToIndex(outcome.combo[1]),
-        parseIconToIndex(outcome.combo[2]),
-      ];
+      let payoutSent = !!j.payoutSent;
+
+      const claimId = typeof j.claimId === "string" ? j.claimId : null;
+      if (outcome.win && !payoutSent && claimId && apiKey) {
+        setStatus("payout retry");
+        const cr = await claimIfNeeded(apiKey, claimId);
+        payoutSent = !!cr.payoutSent;
+        if (!payoutSent) {
+          setError("payout failed");
+        }
+      }
+
+      const finalIdx: [number, number, number] = outcome.icons
+        ? [
+          iconNumToIndex(outcome.icons[0]),
+          iconNumToIndex(outcome.icons[1]),
+          iconNumToIndex(outcome.icons[2]),
+        ]
+        : [
+          parseIconToIndex(outcome.combo?.[0] ?? "icon-1"),
+          parseIconToIndex(outcome.combo?.[1] ?? "icon-1"),
+          parseIconToIndex(outcome.combo?.[2] ?? "icon-1"),
+        ];
 
       setStatus("spinning");
 
-      const base = 2400;
-      const gap = 650;
+      const base = 2200;
+      const gap = 420;
 
-      await animateTo(0, finalIdx[0], base, 4);
-      await animateTo(1, finalIdx[1], base + gap, 5);
-      await animateTo(2, finalIdx[2], base + 2 * gap, 6);
+      const p0 = animateTo(0, finalIdx[0], base, 4);
+      const p1 = animateTo(1, finalIdx[1], base + gap, 5);
+      const p2 = animateTo(2, finalIdx[2], base + 2 * gap, 6);
+      await Promise.all([p0, p1, p2]);
 
       setResult({
         win: outcome.win,
@@ -156,7 +227,8 @@ export default function Slots() {
         payoutSent,
       });
 
-      setStatus(outcome.win ? outcome.reason : "loss");
+      const paid = outcome.win ? (payoutSent ? "paid" : "unpaid") : "loss";
+      setStatus(outcome.win ? `${outcome.reason} (${paid})` : "loss");
       setSpinState("done");
     } catch (e) {
       console.error(e);
@@ -198,6 +270,8 @@ export default function Slots() {
     return () => globalThis.removeEventListener("keydown", onKeyDown);
   }, [bet, apiKey]);
 
+  const pityMeter = buildPityMeter(pity.lossStreakAfter, pity.threshold, forcedScale);
+
   return (
     <SlotsUI
       icons={iconUrls}
@@ -215,6 +289,7 @@ export default function Slots() {
       status={status}
       error={error}
       result={result as any}
+      pityMeter={pityMeter}
       onSpin={spin}
     />
   );

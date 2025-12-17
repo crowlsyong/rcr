@@ -1,3 +1,4 @@
+// islands/games/slots/SlotsUI.tsx
 import { useEffect, useRef, useState } from "preact/hooks";
 import Winner from "./Winner.tsx";
 
@@ -30,6 +31,8 @@ type Props = {
   status: string;
   error: string | null;
   result: SpinResult | null;
+
+  pityMeter: string;
 
   onSpin: () => void;
 };
@@ -117,7 +120,7 @@ export default function SlotsUI(props: Props) {
                       : "")
                   }
                 >
-                  <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center justify-between mb-4 gap-3">
                     <div class="text-lg text-white/75">
                       result
                     </div>
@@ -209,6 +212,15 @@ export default function SlotsUI(props: Props) {
                       <span class="text-white/80">
                         {maskKey(props.apiKey)}
                       </span>
+                    </div>
+                  </div>
+
+                  <div class="mt-3 flex items-center justify-between gap-3">
+                    <div class="text-base text-white/65">
+                      pity
+                    </div>
+                    <div class="text-base text-white/80 tabular-nums tracking-widest">
+                      {props.pityMeter}
                     </div>
                   </div>
 
@@ -331,7 +343,7 @@ export default function SlotsUI(props: Props) {
               </div>
               <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
                 <div class="text-white/80 mb-1">rare</div>
-                <div>5000 mana jackpot</div>
+                <div>jackpot is very rare</div>
               </div>
             </div>
           </div>
