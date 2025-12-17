@@ -8,28 +8,10 @@ export default function SlotsLayout({ Component }: PageProps) {
     <>
       <Head>
         <title>Slots</title>
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
-@font-face{
-  font-family:"AntiHero";
-  src:url("/styles/slots/Anti%20Hero.TTF") format("truetype");
-  font-display:swap;
-}
-@font-face{
-  font-family:"PeyoteHandwrite";
-  src:url("/styles/slots/PeyoteHandwrite.otf") format("opentype");
-  font-display:swap;
-}
-.slots-title{font-family:"AntiHero",serif}
-.slots-body{font-family:"PeyoteHandwrite",serif}
-html,body{width:100%;height:100%;overflow:hidden}
-`,
-          }}
-        />
+        <style />
       </Head>
 
-      <div class="min-h-[100svh] w-screen overflow-hidden bg-black relative">
+      <div class="min-h-[100svh] overflow-hidden bg-black relative">
         <ShaderBackground class="pointer-events-none" />
 
         <div class="absolute inset-0 bg-black/80 pointer-events-none z-5" />

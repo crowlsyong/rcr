@@ -50,7 +50,7 @@ export default function Slots() {
   const [spinState, setSpinState] = useState<"idle" | "spinning" | "done">(
     "idle",
   );
-  const [status, setStatus] = useState("pull to spin");
+  const [status, setStatus] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SpinResult | null>(null);
 

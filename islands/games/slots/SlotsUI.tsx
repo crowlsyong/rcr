@@ -1,3 +1,4 @@
+// islands/games/slots/SlotsUI.tsx
 import { useEffect, useRef, useState } from "preact/hooks";
 import Winner from "./Winner.tsx";
 
@@ -35,7 +36,7 @@ type Props = {
 };
 
 function maskKey(k: string) {
-  if (!k) return "empty";
+  if (!k) return "";
   if (k.length <= 6) return k;
   return `${k.slice(0, 3)}…${k.slice(-3)}`;
 }
@@ -46,15 +47,12 @@ function betTheme(bet: number, active: boolean) {
     "active:translate-y-[1px] " +
     "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ";
 
-  const disabled =
-    "opacity-55 cursor-not-allowed translate-y-0 hover:translate-y-0";
-
   const commonEnabled = "cursor-pointer hover:-translate-y-[1px]";
 
   const themes: Record<number, { on: string; off: string }> = {
     50: {
       on:
-        "bg-white text-black border-white shadow-[0_10px_30px_rgba(255,255,255,0.10)]",
+        "bg-white/80 text-black border-white shadow-[0_10px_30px_rgba(255,255,255,0.10)]",
       off:
         "bg-white/10 text-white border-white/15 hover:border-white/30 hover:bg-white/15",
     },
@@ -123,7 +121,12 @@ export default function SlotsUI(props: Props) {
     ? "220ms"
     : "0ms";
 
-  const statusText = props.error ?? props.status ?? "pull to spin";
+  const statusText = props.error ?? props.status ?? "";
+  const payoutText = props.result?.win
+    ? `+${props.result.payout}`
+    : props.result
+    ? "+0"
+    : "";
 
   return (
     <div class="w-full min-h-[70svh] grid place-items-center px-3 sm:px-4 slots-body text-[1.15rem] leading-relaxed">
@@ -134,7 +137,7 @@ export default function SlotsUI(props: Props) {
 @keyframes slotsWin2{0%{filter:contrast(1.15) brightness(1.15)}100%{filter:contrast(1) brightness(1)}}
 .slotsWin1{animation:slotsWin1 200ms steps(2,end) infinite}
 .slotsWin2{animation:slotsWin2 200ms steps(2,end) infinite}
-@keyframes softFloat{0%{transform:translateY(0px)}50%{transform:translateY(-2px)}100%{transform:translateY(0px)}}
+@keyframes knobGlow{0%{filter:brightness(1)}50%{filter:brightness(1.08)}100%{filter:brightness(1)}}
 `,
         }}
       />
@@ -159,7 +162,11 @@ export default function SlotsUI(props: Props) {
             <div class="shrink-0 text-lg">
               <span class="text-white/60">mana</span>{" "}
               <span class="font-semibold tabular-nums text-white">
-                {props.result?.win ? `+${props.result.payout}` : "—"}
+                {props.result?.win
+                  ? `+${props.result.payout}`
+                  : props.result
+                  ? "+0"
+                  : ""}
               </span>
             </div>
           </div>
@@ -173,23 +180,22 @@ export default function SlotsUI(props: Props) {
                       ? "ring-2 ring-white/20"
                       : "") +
                     (props.result?.win
-                      ? isWin2 ? " slotsWin2" : " slotsWin1"
+                      ? (isWin2 ? " slotsWin2" : " slotsWin1")
                       : "")}
                 >
-                  <div class="flex items-center justify-between mb-4 gap-3">
-                    <div class="text-lg text-white/75">
-                      result
-                    </div>
+                  <div class="flex items-center justify-end mb-4 gap-3">
                     <div class="text-lg sm:text-xl tabular-nums">
-                      {props.result == null
-                        ? <span class="text-white/50">—</span>
-                        : props.result.win
+                      {payoutText
                         ? (
-                          <span class="font-black text-white">
-                            +{props.result.payout}
+                          <span
+                            class={props.result?.win
+                              ? "font-black text-white"
+                              : "text-white/65"}
+                          >
+                            {payoutText}
                           </span>
                         )
-                        : <span class="text-white/50">+0</span>}
+                        : null}
                     </div>
                   </div>
 
@@ -221,37 +227,38 @@ export default function SlotsUI(props: Props) {
                             willChange: "transform",
                           }}
                         >
-                          {Array.from({ length: props.repeatCount }).map(
-                            (_, rep) => (
-                              <div key={rep}>
-                                {props.iconUrls.map((src, idx) => (
-                                  <div
-                                    key={`${rep}-${idx}`}
-                                    class="flex items-center justify-center"
+                          {Array.from({ length: props.repeatCount }).map((
+                            _,
+                            rep,
+                          ) => (
+                            <div key={rep}>
+                              {props.iconUrls.map((src, idx) => (
+                                <div
+                                  key={`${rep}-${idx}`}
+                                  class="flex items-center justify-center"
+                                  style={{
+                                    width: `${props.iconWidth}px`,
+                                    height: `${props.iconHeight}px`,
+                                  }}
+                                >
+                                  <img
+                                    src={src}
+                                    draggable={false}
+                                    class="select-none pointer-events-none"
                                     style={{
-                                      width: `${props.iconWidth}px`,
-                                      height: `${props.iconHeight}px`,
+                                      width: `${
+                                        Math.floor(props.iconWidth * 0.92)
+                                      }px`,
+                                      height: `${
+                                        Math.floor(props.iconHeight * 0.92)
+                                      }px`,
+                                      objectFit: "contain",
                                     }}
-                                  >
-                                    <img
-                                      src={src}
-                                      draggable={false}
-                                      class="select-none pointer-events-none"
-                                      style={{
-                                        width: `${
-                                          Math.floor(props.iconWidth * 0.92)
-                                        }px`,
-                                        height: `${
-                                          Math.floor(props.iconHeight * 0.92)
-                                        }px`,
-                                        objectFit: "contain",
-                                      }}
-                                    />
-                                  </div>
-                                ))}
-                              </div>
-                            ),
-                          )}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          ))}
                         </div>
 
                         <div
@@ -262,31 +269,21 @@ export default function SlotsUI(props: Props) {
                     ))}
                   </div>
 
-                  <div class="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
-                    <div class="text-lg text-white/75 truncate">
-                      {statusText}
-                    </div>
-
-                    <div class="text-sm sm:text-base text-white/65">
-                      key{" "}
-                      <span class="text-white/80">
-                        {maskKey(props.apiKey)}
-                      </span>
-                    </div>
-                  </div>
+                  {statusText
+                    ? (
+                      <div class="mt-5 text-lg text-white/75 truncate">
+                        {statusText}
+                      </div>
+                    )
+                    : null}
 
                   <div class="mt-6">
-                    <div class="text-base tracking-widest text-white/70 mb-2 slots-title">
-                      bet
-                    </div>
-
                     <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
                       {props.bets.map((b) => {
                         const active = b === props.bet;
                         const disabled = !props.canSpin;
                         const cls = betTheme(b, active) +
                           (disabled ? " opacity-55 cursor-not-allowed" : "");
-
                         return (
                           <button
                             type="button"
@@ -308,18 +305,15 @@ export default function SlotsUI(props: Props) {
                   </div>
 
                   <div class="mt-6">
-                    <div class="text-base tracking-widest text-white/70 mb-2 slots-title">
-                      api key
-                    </div>
                     <input
                       value={props.apiKey}
                       onInput={(e) =>
                         props.setApiKey(
                           (e.currentTarget as HTMLInputElement).value,
                         )}
-                      placeholder="paste key"
+                      placeholder="paste api key here"
                       type="password"
-                      class="w-full px-4 py-3 rounded-xl bg-black/20 text-white border border-white/10 outline-none focus:border-white/25 text-lg"
+                      class="w-full px-4 py-3 rounded-xl bg-black/20 text-white border border-white/10 outline-none focus:border-white/25 text-lg placeholder:text-white/40"
                       spellcheck={false}
                       autocomplete="off"
                     />
@@ -333,7 +327,7 @@ export default function SlotsUI(props: Props) {
                     <div class="absolute left-1/2 -translate-x-1/2 top-4 w-3 h-40 sm:h-56 rounded-full bg-white/10" />
                     <div
                       id="slot-lever-knob"
-                      class="absolute left-1/2 top-2 w-20 h-20 rounded-full bg-gradient-to-b from-white to-white/70 shadow-xl"
+                      class="absolute left-1/2 top-2 w-20 h-20 rounded-full bg-red-800 shadow-xl"
                       style={{
                         transform: leverTransform,
                         transitionProperty: "transform",
@@ -344,10 +338,11 @@ export default function SlotsUI(props: Props) {
                         willChange: "transform",
                         animation:
                           props.canSpin && props.spinState !== "spinning"
-                            ? "softFloat 2.2s ease-in-out infinite"
+                            ? "knobGlow 2.2s ease-in-out infinite"
                             : "none",
                       }}
                     />
+
                     <button
                       type="button"
                       class={"absolute left-0 top-0 w-24 h-56 sm:h-72 rounded-2xl " +
@@ -381,48 +376,6 @@ export default function SlotsUI(props: Props) {
                       aria-label="spin"
                     />
                   </div>
-                </div>
-
-                <div class="mt-3 text-sm sm:text-base text-white/65 text-center">
-                  lever
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 text-base leading-relaxed">
-              <div class="rounded-2xl border border-emerald-400/20 bg-gradient-to-b from-emerald-500/15 to-black/20 p-4 shadow-[0_14px_38px_rgba(16,185,129,0.10)]">
-                <div class="text-emerald-200/90 font-extrabold tracking-widest text-xs mb-2">
-                  win rule
-                </div>
-                <div class="text-white/90 font-semibold">
-                  any adjacent pair
-                </div>
-                <div class="text-white/60 text-sm mt-1">
-                  12 / 23 / 34
-                </div>
-              </div>
-
-              <div class="rounded-2xl border border-sky-400/20 bg-gradient-to-b from-sky-500/15 to-black/20 p-4 shadow-[0_14px_38px_rgba(59,130,246,0.10)]">
-                <div class="text-sky-200/90 font-extrabold tracking-widest text-xs mb-2">
-                  bonus
-                </div>
-                <div class="text-white/90 font-semibold">
-                  3 of a kind pays more
-                </div>
-                <div class="text-white/60 text-sm mt-1">
-                  bigger multiplier tiers
-                </div>
-              </div>
-
-              <div class="rounded-2xl border border-fuchsia-400/20 bg-gradient-to-b from-fuchsia-500/15 to-black/20 p-4 shadow-[0_14px_38px_rgba(217,70,239,0.10)]">
-                <div class="text-fuchsia-200/90 font-extrabold tracking-widest text-xs mb-2">
-                  rare
-                </div>
-                <div class="text-white/90 font-semibold">
-                  jackpot is very rare
-                </div>
-                <div class="text-white/60 text-sm mt-1">
-                  highest tier protected
                 </div>
               </div>
             </div>
