@@ -63,6 +63,7 @@ import * as $buttons_Button from "./islands/buttons/Button.tsx";
 import * as $buttons_ChartButton from "./islands/buttons/ChartButton.tsx";
 import * as $buttons_ShareButton from "./islands/buttons/ShareButton.tsx";
 import * as $buttons_ShareURL from "./islands/buttons/ShareURL.tsx";
+import * as $games_slots_About from "./islands/games/slots/About.tsx";
 import * as $games_slots_ShaderBackground from "./islands/games/slots/ShaderBackground.tsx";
 import * as $games_slots_Slots from "./islands/games/slots/Slots.tsx";
 import * as $games_slots_SlotsUI from "./islands/games/slots/SlotsUI.tsx";
@@ -200,6 +201,7 @@ const manifest = {
     "./islands/buttons/ChartButton.tsx": $buttons_ChartButton,
     "./islands/buttons/ShareButton.tsx": $buttons_ShareButton,
     "./islands/buttons/ShareURL.tsx": $buttons_ShareURL,
+    "./islands/games/slots/About.tsx": $games_slots_About,
     "./islands/games/slots/ShaderBackground.tsx": $games_slots_ShaderBackground,
     "./islands/games/slots/Slots.tsx": $games_slots_Slots,
     "./islands/games/slots/SlotsUI.tsx": $games_slots_SlotsUI,

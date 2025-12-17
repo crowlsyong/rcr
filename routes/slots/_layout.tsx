@@ -31,6 +31,9 @@ html,body{width:100%;height:100%;overflow:hidden}
 
       <div class="min-h-[100svh] w-screen overflow-hidden bg-black relative">
         <ShaderBackground class="pointer-events-none" />
+
+        <div class="absolute inset-0 bg-black/80 pointer-events-none z-5" />
+
         <div class="relative z-10 min-h-[100svh] w-screen overflow-hidden">
           <Component />
         </div>

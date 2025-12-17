@@ -19,7 +19,7 @@ const ICON_HEIGHT = 88;
 const REPEAT_COUNT = 14;
 const START_CYCLE = 2;
 
-const BETS = [50, 100, 250, 500, 1000] as const;
+const BETS = [50, 100, 250, 1000, 10000] as const;
 
 function clamp(n: number, a: number, b: number) {
   return Math.max(a, Math.min(b, n));

@@ -1,4 +1,3 @@
-// islands/games/slots/SlotsUI.tsx
 import { useEffect, useRef, useState } from "preact/hooks";
 import Winner from "./Winner.tsx";
 
@@ -41,6 +40,57 @@ function maskKey(k: string) {
   return `${k.slice(0, 3)}…${k.slice(-3)}`;
 }
 
+function betTheme(bet: number, active: boolean) {
+  const base =
+    "relative overflow-hidden select-none rounded-2xl border font-extrabold tabular-nums tracking-wide transition " +
+    "active:translate-y-[1px] " +
+    "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ";
+
+  const disabled =
+    "opacity-55 cursor-not-allowed translate-y-0 hover:translate-y-0";
+
+  const commonEnabled = "cursor-pointer hover:-translate-y-[1px]";
+
+  const themes: Record<number, { on: string; off: string }> = {
+    50: {
+      on:
+        "bg-white text-black border-white shadow-[0_10px_30px_rgba(255,255,255,0.10)]",
+      off:
+        "bg-white/10 text-white border-white/15 hover:border-white/30 hover:bg-white/15",
+    },
+    100: {
+      on:
+        "bg-gradient-to-b from-amber-300 to-orange-500 text-black border-amber-200/60 shadow-[0_14px_38px_rgba(251,146,60,0.22)]",
+      off:
+        "bg-gradient-to-b from-amber-500/15 to-orange-500/10 text-white border-amber-400/20 hover:border-amber-300/35 hover:from-amber-500/20 hover:to-orange-500/15",
+    },
+    250: {
+      on:
+        "bg-gradient-to-b from-sky-300 to-blue-600 text-white border-sky-200/60 shadow-[0_14px_38px_rgba(59,130,246,0.25)]",
+      off:
+        "bg-gradient-to-b from-sky-500/15 to-blue-600/10 text-white border-sky-400/20 hover:border-sky-300/35 hover:from-sky-500/20 hover:to-blue-600/15",
+    },
+    1000: {
+      on:
+        "bg-gradient-to-b from-fuchsia-300 to-violet-700 text-white border-fuchsia-200/60 shadow-[0_14px_38px_rgba(139,92,246,0.28)]",
+      off:
+        "bg-gradient-to-b from-fuchsia-500/15 to-violet-700/10 text-white border-fuchsia-400/20 hover:border-fuchsia-300/35 hover:from-fuchsia-500/20 hover:to-violet-700/15",
+    },
+    10000: {
+      on:
+        "bg-gradient-to-b from-emerald-300 to-green-700 text-white border-emerald-200/60 shadow-[0_14px_38px_rgba(16,185,129,0.28)]",
+      off:
+        "bg-gradient-to-b from-emerald-500/15 to-green-700/10 text-white border-emerald-400/20 hover:border-emerald-300/35 hover:from-emerald-500/20 hover:to-green-700/15",
+    },
+  };
+
+  const t = themes[bet] ?? themes[50];
+  const size = "px-5 py-4 sm:px-6 sm:py-4 text-lg sm:text-xl";
+  const face = active ? t.on : t.off;
+
+  return base + " " + size + " " + face + " " + commonEnabled;
+}
+
 export default function SlotsUI(props: Props) {
   const showWinner = !!props.result?.win;
   const isWin2 = props.result?.win &&
@@ -62,7 +112,7 @@ export default function SlotsUI(props: Props) {
   }, []);
 
   const leverTransform = leverAnim === "down"
-    ? "translate3d(-50%, 140px, 0)"
+    ? "translate3d(-50%, 120px, 0)"
     : leverAnim === "return"
     ? "translate3d(-50%, 0px, 0)"
     : "translate3d(-50%, 0px, 0)";
@@ -73,32 +123,40 @@ export default function SlotsUI(props: Props) {
     ? "220ms"
     : "0ms";
 
+  const statusText = props.error ?? props.status ?? "pull to spin";
+
   return (
-    <div class="w-full min-h-[70svh] grid place-items-center px-4 slots-body text-[1.15rem] leading-relaxed">
+    <div class="w-full min-h-[70svh] grid place-items-center px-3 sm:px-4 slots-body text-[1.15rem] leading-relaxed">
       <style
         dangerouslySetInnerHTML={{
           __html: `
-@keyframes slotsWin1{0%{filter:saturate(1.2) brightness(1.1)}100%{filter:saturate(1) brightness(1)}}
-@keyframes slotsWin2{0%{filter:contrast(1.1) brightness(1.15)}100%{filter:contrast(1) brightness(1)}}
+@keyframes slotsWin1{0%{filter:saturate(1.25) brightness(1.1)}100%{filter:saturate(1) brightness(1)}}
+@keyframes slotsWin2{0%{filter:contrast(1.15) brightness(1.15)}100%{filter:contrast(1) brightness(1)}}
 .slotsWin1{animation:slotsWin1 200ms steps(2,end) infinite}
 .slotsWin2{animation:slotsWin2 200ms steps(2,end) infinite}
+@keyframes softFloat{0%{transform:translateY(0px)}50%{transform:translateY(-2px)}100%{transform:translateY(0px)}}
 `,
         }}
       />
 
-      <div class="w-full max-w-3xl">
-        <div class="rounded-3xl border border-white/10 bg-black/90 shadow-2xl overflow-hidden">
-          <div class="px-6 py-5 border-b border-white/10 flex items-center justify-between">
-            <div class="flex items-baseline gap-3">
-              <div class="text-3xl sm:text-4xl tracking-tight slots-title text-white">
-                slots
+      <div class="w-5xl">
+        <div class="w-5xl border border-white/10 bg-black/90 shadow-2xl overflow-hidden">
+          <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-white/10 flex items-center justify-between gap-4">
+            <div class="min-w-0">
+              <div class="flex items-baseline gap-3">
+                <div class="text-3xl sm:text-4xl tracking-tight slots-title text-white">
+                  slots
+                </div>
+                <div class="hidden sm:block text-base text-white/60">
+                  space / enter or lever
+                </div>
               </div>
-              <div class="text-base text-white/60">
-                space / enter or lever
+              <div class="sm:hidden text-sm text-white/60">
+                tap lever or press space/enter
               </div>
             </div>
 
-            <div class="text-lg">
+            <div class="shrink-0 text-lg">
               <span class="text-white/60">mana</span>{" "}
               <span class="font-semibold tabular-nums text-white">
                 {props.result?.win ? `+${props.result.payout}` : "—"}
@@ -106,11 +164,11 @@ export default function SlotsUI(props: Props) {
             </div>
           </div>
 
-          <div class="p-6 sm:p-8">
-            <div class="flex items-stretch gap-5 sm:gap-6">
+          <div class="p-4 sm:p-8">
+            <div class="flex flex-col sm:flex-row items-stretch gap-4 sm:gap-6">
               <div class="flex-1 min-w-0">
                 <div
-                  class={"rounded-3xl bg-black/30 border border-white/10 p-6 ring-1 ring-white/10 " +
+                  class={"rounded-3xl bg-black/30 border border-white/10 p-4 sm:p-6 ring-1 ring-white/10 " +
                     (props.spinState === "spinning"
                       ? "ring-2 ring-white/20"
                       : "") +
@@ -127,7 +185,7 @@ export default function SlotsUI(props: Props) {
                         ? <span class="text-white/50">—</span>
                         : props.result.win
                         ? (
-                          <span class="font-semibold text-white">
+                          <span class="font-black text-white">
                             +{props.result.payout}
                           </span>
                         )
@@ -135,7 +193,7 @@ export default function SlotsUI(props: Props) {
                     </div>
                   </div>
 
-                  <div class="flex items-center justify-center gap-3 sm:gap-4">
+                  <div class="flex items-center justify-center gap-2 sm:gap-4">
                     {[0, 1, 2].map((i) => (
                       <div
                         key={i}
@@ -150,7 +208,7 @@ export default function SlotsUI(props: Props) {
                           class="absolute inset-0 pointer-events-none"
                           style={{
                             background:
-                              "linear-gradient(rgba(0,0,0,0.55) 0%, transparent 28%, transparent 72%, rgba(0,0,0,0.55) 100%)",
+                              "linear-gradient(rgba(0,0,0,0.60) 0%, transparent 28%, transparent 72%, rgba(0,0,0,0.60) 100%)",
                           }}
                         />
 
@@ -204,12 +262,12 @@ export default function SlotsUI(props: Props) {
                     ))}
                   </div>
 
-                  <div class="mt-5 flex items-center justify-between gap-3">
+                  <div class="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
                     <div class="text-lg text-white/75 truncate">
-                      {props.error ?? props.status ?? "pull to spin"}
+                      {statusText}
                     </div>
 
-                    <div class="text-base text-white/65">
+                    <div class="text-sm sm:text-base text-white/65">
                       key{" "}
                       <span class="text-white/80">
                         {maskKey(props.apiKey)}
@@ -221,24 +279,28 @@ export default function SlotsUI(props: Props) {
                     <div class="text-base tracking-widest text-white/70 mb-2 slots-title">
                       bet
                     </div>
-                    <div class="flex flex-wrap gap-3">
+
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
                       {props.bets.map((b) => {
                         const active = b === props.bet;
                         const disabled = !props.canSpin;
+                        const cls = betTheme(b, active) +
+                          (disabled ? " opacity-55 cursor-not-allowed" : "");
+
                         return (
                           <button
                             type="button"
                             disabled={disabled}
                             onClick={() => props.setBet(b)}
-                            class={"px-5 py-3 rounded-xl border text-lg font-semibold transition " +
-                              (disabled
-                                ? "opacity-50 cursor-not-allowed "
-                                : "cursor-pointer hover:-translate-y-[1px] active:translate-y-0 ") +
-                              (active
-                                ? "bg-white/90 text-black border-white"
-                                : "bg-black/20 text-white/85 border-white/10 hover:border-white/25")}
+                            class={cls}
                           >
-                            {b}
+                            <span class="relative z-10">{b}</span>
+                            {active && (
+                              <span class="absolute inset-0 opacity-25 pointer-events-none">
+                                <span class="absolute -top-10 -left-10 w-24 h-24 rounded-full bg-white blur-2xl" />
+                                <span class="absolute -bottom-10 -right-10 w-24 h-24 rounded-full bg-white blur-2xl" />
+                              </span>
+                            )}
                           </button>
                         );
                       })}
@@ -265,10 +327,10 @@ export default function SlotsUI(props: Props) {
                 </div>
               </div>
 
-              <div class="w-32 sm:w-40 flex flex-col items-center justify-center">
-                <div class="w-full h-full rounded-3xl bg-black/30 border border-white/10 grid place-items-center">
-                  <div class="relative w-24 h-72">
-                    <div class="absolute left-1/2 -translate-x-1/2 top-4 w-3 h-56 rounded-full bg-white/10" />
+              <div class="sm:w-40 flex flex-col items-center justify-center">
+                <div class="w-full rounded-3xl bg-black/30 border border-white/10 grid place-items-center p-3 sm:p-0">
+                  <div class="relative w-24 h-56 sm:h-72">
+                    <div class="absolute left-1/2 -translate-x-1/2 top-4 w-3 h-40 sm:h-56 rounded-full bg-white/10" />
                     <div
                       id="slot-lever-knob"
                       class="absolute left-1/2 top-2 w-20 h-20 rounded-full bg-gradient-to-b from-white to-white/70 shadow-xl"
@@ -280,11 +342,15 @@ export default function SlotsUI(props: Props) {
                           ? "cubic-bezier(.2,.8,.2,1)"
                           : "cubic-bezier(.2,.7,.2,1)",
                         willChange: "transform",
+                        animation:
+                          props.canSpin && props.spinState !== "spinning"
+                            ? "softFloat 2.2s ease-in-out infinite"
+                            : "none",
                       }}
                     />
                     <button
                       type="button"
-                      class={"absolute left-0 top-0 w-24 h-72 rounded-2xl " +
+                      class={"absolute left-0 top-0 w-24 h-56 sm:h-72 rounded-2xl " +
                         (props.canSpin
                           ? "cursor-pointer"
                           : "cursor-not-allowed")}
@@ -312,28 +378,52 @@ export default function SlotsUI(props: Props) {
                           console.error(e);
                         }
                       }}
+                      aria-label="spin"
                     />
                   </div>
                 </div>
 
-                <div class="mt-3 text-base text-white/65 text-center">
+                <div class="mt-3 text-sm sm:text-base text-white/65 text-center">
                   lever
                 </div>
               </div>
             </div>
 
-            <div class="mt-6 grid grid-cols-3 gap-3 text-base leading-relaxed text-white/70">
-              <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
-                <div class="text-white/80 mb-1">win rule</div>
-                <div>any adjacent pair</div>
+            <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 text-base leading-relaxed">
+              <div class="rounded-2xl border border-emerald-400/20 bg-gradient-to-b from-emerald-500/15 to-black/20 p-4 shadow-[0_14px_38px_rgba(16,185,129,0.10)]">
+                <div class="text-emerald-200/90 font-extrabold tracking-widest text-xs mb-2">
+                  win rule
+                </div>
+                <div class="text-white/90 font-semibold">
+                  any adjacent pair
+                </div>
+                <div class="text-white/60 text-sm mt-1">
+                  12 / 23 / 34
+                </div>
               </div>
-              <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
-                <div class="text-white/80 mb-1">bonus</div>
-                <div>3 of a kind pays more</div>
+
+              <div class="rounded-2xl border border-sky-400/20 bg-gradient-to-b from-sky-500/15 to-black/20 p-4 shadow-[0_14px_38px_rgba(59,130,246,0.10)]">
+                <div class="text-sky-200/90 font-extrabold tracking-widest text-xs mb-2">
+                  bonus
+                </div>
+                <div class="text-white/90 font-semibold">
+                  3 of a kind pays more
+                </div>
+                <div class="text-white/60 text-sm mt-1">
+                  bigger multiplier tiers
+                </div>
               </div>
-              <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
-                <div class="text-white/80 mb-1">rare</div>
-                <div>jackpot is very rare</div>
+
+              <div class="rounded-2xl border border-fuchsia-400/20 bg-gradient-to-b from-fuchsia-500/15 to-black/20 p-4 shadow-[0_14px_38px_rgba(217,70,239,0.10)]">
+                <div class="text-fuchsia-200/90 font-extrabold tracking-widest text-xs mb-2">
+                  rare
+                </div>
+                <div class="text-white/90 font-semibold">
+                  jackpot is very rare
+                </div>
+                <div class="text-white/60 text-sm mt-1">
+                  highest tier protected
+                </div>
               </div>
             </div>
           </div>

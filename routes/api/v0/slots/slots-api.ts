@@ -173,7 +173,7 @@ function multFor(icon: number, table: number[]) {
 }
 
 const JACKPOT_MULT = [250, 50, 10, 4, 2];
-const PAIR_MULT = [10, 5, 3.5, 2.3, 1.6];
+const PAIR_MULT = [10, 5, 2.5, 1.3, .6];
 
 function computePayout(bet: number, a: number, b: number, c: number) {
   if (a === b && b === c) {
