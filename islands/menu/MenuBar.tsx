@@ -81,7 +81,7 @@ export default function MenuBar({ theme = "default" }: MenuBarProps) { // Defaul
           <a href="/">
             <img
               class="hidden md:block h-10"
-              src="/risk-horizontal-transparent.png"
+              src="/risk-horizontal-transparent-winter.png" // remove winter after winter
               alt="the RISK mascot: a raccoon"
             />
             <img
