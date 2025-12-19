@@ -42,6 +42,49 @@ function maskKey(k: string) {
   return `${k.slice(0, 3)}…${k.slice(-3)}`;
 }
 
+const betGroups: Record<string, number[]> = {
+  amber: [50, 100],
+  sky: [250],
+  fuchsia: [1000],
+  emerald: [10000],
+};
+
+const palettes: Record<string, { on: string; off: string }> = {
+  amber: {
+    on:
+      "bg-gradient-to-b from-amber-200 to-orange-500 text-black border-amber-100/35 shadow-[0_20px_56px_rgba(251,146,60,0.34)]",
+    off:
+      "bg-gradient-to-b from-amber-500/20 to-orange-500/14 text-white border-amber-300/16 hover:border-amber-200/26 hover:from-amber-500/26 hover:to-orange-500/18",
+  },
+  sky: {
+    on:
+      "bg-gradient-to-b from-sky-200 to-blue-600 text-white border-sky-100/30 shadow-[0_20px_56px_rgba(59,130,246,0.36)]",
+    off:
+      "bg-gradient-to-b from-sky-500/18 to-blue-600/12 text-white border-sky-300/14 hover:border-sky-200/24 hover:from-sky-500/24 hover:to-blue-600/16",
+  },
+  fuchsia: {
+    on:
+      "bg-gradient-to-b from-fuchsia-200 to-violet-700 text-white border-fuchsia-100/28 shadow-[0_20px_56px_rgba(139,92,246,0.38)]",
+    off:
+      "bg-gradient-to-b from-fuchsia-500/18 to-violet-700/12 text-white border-fuchsia-300/14 hover:border-fuchsia-200/24 hover:from-fuchsia-500/24 hover:to-violet-700/16",
+  },
+  emerald: {
+    on:
+      "bg-gradient-to-b from-emerald-200 to-green-700 text-white border-emerald-100/28 shadow-[0_20px_56px_rgba(16,185,129,0.38)]",
+    off:
+      "bg-gradient-to-b from-emerald-500/18 to-green-700/12 text-white border-emerald-300/14 hover:border-emerald-200/24 hover:from-emerald-500/24 hover:to-green-700/16",
+  },
+};
+
+function getPaletteForBet(bet: number): { on: string; off: string } {
+  for (const [name, bets] of Object.entries(betGroups)) {
+    if (bets.includes(bet)) {
+      return palettes[name];
+    }
+  }
+  return palettes.amber;
+}
+
 function betTheme(bet: number, active: boolean) {
   const base =
     "relative overflow-hidden select-none rounded-2xl border font-extrabold tabular-nums tracking-wide transition " +
@@ -50,42 +93,10 @@ function betTheme(bet: number, active: boolean) {
 
   const commonEnabled = "cursor-pointer hover:-translate-y-[1px]";
 
-  const themes: Record<number, { on: string; off: string }> = {
-    50: {
-      on:
-        "bg-white/90 text-black border-white/25 shadow-[0_16px_46px_rgba(255,255,255,0.12)]",
-      off:
-        "bg-white/10 text-white border-white/10 hover:border-white/18 hover:bg-white/14",
-    },
-    100: {
-      on:
-        "bg-gradient-to-b from-amber-200 to-orange-500 text-black border-amber-100/35 shadow-[0_20px_56px_rgba(251,146,60,0.34)]",
-      off:
-        "bg-gradient-to-b from-amber-500/20 to-orange-500/14 text-white border-amber-300/16 hover:border-amber-200/26 hover:from-amber-500/26 hover:to-orange-500/18",
-    },
-    250: {
-      on:
-        "bg-gradient-to-b from-sky-200 to-blue-600 text-white border-sky-100/30 shadow-[0_20px_56px_rgba(59,130,246,0.36)]",
-      off:
-        "bg-gradient-to-b from-sky-500/18 to-blue-600/12 text-white border-sky-300/14 hover:border-sky-200/24 hover:from-sky-500/24 hover:to-blue-600/16",
-    },
-    1000: {
-      on:
-        "bg-gradient-to-b from-fuchsia-200 to-violet-700 text-white border-fuchsia-100/28 shadow-[0_20px_56px_rgba(139,92,246,0.38)]",
-      off:
-        "bg-gradient-to-b from-fuchsia-500/18 to-violet-700/12 text-white border-fuchsia-300/14 hover:border-fuchsia-200/24 hover:from-fuchsia-500/24 hover:to-violet-700/16",
-    },
-    10000: {
-      on:
-        "bg-gradient-to-b from-emerald-200 to-green-700 text-white border-emerald-100/28 shadow-[0_20px_56px_rgba(16,185,129,0.38)]",
-      off:
-        "bg-gradient-to-b from-emerald-500/18 to-green-700/12 text-white border-emerald-300/14 hover:border-emerald-200/24 hover:from-emerald-500/24 hover:to-green-700/16",
-    },
-  };
-
-  const t = themes[bet] ?? themes[50];
   const size = "px-5 py-4 sm:px-6 sm:py-4 text-lg sm:text-xl";
-  const face = active ? t.on : t.off;
+
+  const palette = getPaletteForBet(bet);
+  const face = active ? palette.on : palette.off;
 
   return base + " " + size + " " + face + " " + commonEnabled;
 }
