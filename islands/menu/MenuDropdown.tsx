@@ -98,10 +98,10 @@ export default function MenuDropdown(
       </button>
       <div
         class={`transition-all duration-300 ease-in-out overflow-hidden ${
-          isOpen.value ? "max-h-96 mt-2" : "max-h-0"
+          isOpen.value ? "mt-2 max-h-[70vh]" : "max-h-0"
         }`}
       >
-        <div class="space-y-2 pl-4 border-l-2 border-gray-700/50">
+        <div class="space-y-2 pl-4 border-l-2 border-gray-700/50 max-h-[70vh] overflow-y-auto hide-scrollbar">
           {links.map((link) => {
             if (link.children && link.children.length > 0) {
               return (
@@ -126,7 +126,7 @@ export default function MenuDropdown(
               const isActive = normalizedLinkUrl === normalizedActivePath;
 
               const linkClasses =
-                `relative flex items-center justify-start border border-[#334155] text-white py-2 px-3 rounded-md transition-colors duration-200 text-sm ${
+                `relative w-full flex items-center justify-start border border-[#334155] text-white py-2 px-3 rounded-md transition-colors duration-200 text-sm ${
                   isActive ? "bg-blue-700" : "hover:bg-[#1E293B]"
                 }`;
 
