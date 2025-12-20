@@ -241,7 +241,7 @@ async function main() {
 
   for (const investor of investorsToProcess) {
     const message =
-      `Here is your quarterly RISK investor dividend! Read the Q${currentQuarter} ${currentYear} report here: ${reportLink}`;
+      `Here is your quarterly RISK investor dividend of M0 + M10 late fee! Read the Q${currentQuarter} ${currentYear} report here: ${reportLink}`;
     const dividendAmount = investor.dividend;
 
     console.log(
