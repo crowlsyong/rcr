@@ -156,11 +156,11 @@ async function main() {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth();
-  const currentQuarter = Math.floor(currentMonth / 3) + 1;
+  const currentQuarter = 3; // Math.floor(currentMonth / 3) + 1;
 
   const reportLink =
-    `https://risk.markets/reports/RISK_${currentYear}_Q3_REPORT.pdf`;
-  // normal:    `https://risk.markets/reports/RISK_${currentYear}_Q${currentQuarter}_REPORT.pdf`;
+    `https://risk.markets/reports/RISK_${currentYear}_Q${currentQuarter}_REPORT.pdf`;
+
   for (const investor of investorsToProcess) {
     const message =
       `Here is your quarterly RISK investor dividend! Read the Q${currentQuarter} ${currentYear} report here: ${reportLink}`;
