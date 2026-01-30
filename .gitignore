@@ -13,3 +13,4 @@ node_modules/
 # Exclude folders
 trash/
 database/backups
+deno.lock
