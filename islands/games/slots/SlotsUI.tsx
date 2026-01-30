@@ -20,8 +20,8 @@ type Props = {
   iconHeight: number;
   repeatCount: number;
 
-  apiKey: string;
-  setApiKey: (v: string) => void;
+  apiKeyInput: string;
+  setApiKeyInput: (value: string) => void;
 
   bet: number;
   setBet: (b: any) => void;
@@ -386,20 +386,21 @@ export default function SlotsUI(props: Props) {
 
                       <div class="mt-6">
                         <input
-                          value={props.apiKey}
-                          onInput={(e) => props.setApiKey(
-                            (e.currentTarget as HTMLInputElement).value,
-                          )}
-                          placeholder="paste api key here"
                           type="password"
+                          id="api-key"
+                          name="apiKey"
+                          value={props.apiKeyInput}
+                          onInput={(e) =>
+                            props.setApiKeyInput(e.currentTarget.value)}
+                          placeholder="paste api key here"
                           class="w-full px-4 py-3 rounded-xl bg-black/20 text-white border border-white/10 outline-none focus:border-white/25 text-lg placeholder:text-white/40"
                           spellcheck={false}
                           autocomplete="off"
                         />
-                        {props.apiKey
+                        {props.apiKeyInput
                           ? (
                             <div class="mt-2 text-[12px] text-white/60 tabular-nums">
-                              {maskKey(props.apiKey)}
+                              {maskKey(props.apiKeyInput)}
                             </div>
                           )
                           : null}
