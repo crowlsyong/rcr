@@ -6,7 +6,7 @@
 .env.local
 
 # Fresh build directory
-_fresh/ 📌2026-2-1 BUG FIX ATTEMPT: PREBUILD
+# _fresh/ 📌2026-2-1 BUG FIX ATTEMPT: PREBUILD
 # npm dependencies
 node_modules/
 
