@@ -12,7 +12,7 @@ jobs:
 
     permissions:
       id-token: write # Needed for auth with Deno Deploy
-      contents: read # Needed to clone the repository.
+      contents: read # Needed to clone the repository
 
     steps:
       - name: Clone repository
@@ -24,7 +24,7 @@ jobs:
           deno-version: v2.x
 
       - name: Build step
-        run: "deno task build --unstable-kv"
+        run: "deno run -A dev.ts build --unstable-kv"
 
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
@@ -32,3 +32,5 @@ jobs:
           project: "risk"
           entrypoint: "main.ts"
           root: "."
+          
+          
