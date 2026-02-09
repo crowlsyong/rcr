@@ -4,12 +4,12 @@ import { load } from "https://deno.land/std@0.224.0/dotenv/mod.ts";
 
 const MANIFOLD_API_BASE_URL = "https://api.manifold.markets";
 const CONTRACT_ID = "QEytQ5ch0P";
-const COMMENT_MARKDOWN = `# Q3 PAYMENTS
-RISK net income was **M0** in fees during Q3. 30% goes to investor dividends and the rest goes to RISKBOT which is the official financial holder of RISK's income. 
+const COMMENT_MARKDOWN = `# Q4 PAYMENTS
+RISK net income was [CLASSIFIED] in fees during Q4. 30% goes to investor dividends and the rest goes to RISKBOT which is the official financial holder of RISK's income. 
 ## DIVIDEND REQUEST
-Requesting M140 (M10 late fee) to distribute as for Q3 dividend distribution
+Requesting M[CLASSIFIED] to distribute as for Q4 dividend distribution
 ## PROFIT REQUEST
-Requesting M0 (70% of M0) Q2 net profits.`;
+Requesting M[CLASSIFIED] (70% of M[CLASSIFIED]) Q4 net profits.`;
 
 async function main() {
   await load({ envPath: "../.env", export: true });

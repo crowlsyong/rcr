@@ -97,61 +97,61 @@ async function main() {
     {
       name: "crowlsyong",
       userId: "p9Y7TzXx4NO1JQb9kjdbUYRUU3X2",
-      dividend: 10,
-      percentageOwned: 1.00,
+      dividend: 550,
+      percentageOwned: 0.55,
     },
     {
       name: "RIPE",
       userId: "p9Y7TzXx4NO1JQb9kjdbUYRUU3X3",
-      dividend: 10,
+      dividend: 50,
       percentageOwned: 0.05,
     },
     {
       name: "Ziddletwix",
       userId: "Iua2KQvL6KYcfGLGNI6PVeGkseo1",
-      dividend: 10,
+      dividend: 110,
       percentageOwned: 0.11,
     },
     {
       name: "Bayesian",
       userId: "srFlJRuVlGa7SEJDM4cY9B5k4Lj2",
-      dividend: 10,
+      dividend: 100,
       percentageOwned: 0.10,
     },
     {
       name: "The Board",
       userId: "p9Y7TzXx4NO1JQb9kjdbUYRUU3X5",
-      dividend: 10,
+      dividend: 23,
       percentageOwned: 0.0225,
     },
     {
       name: "POOR",
       userId: "p9Y7TzXx4NO1JQb9kjdbUYRUU3X6",
-      dividend: 10,
+      dividend: 20,
       percentageOwned: 0.02,
     },
     {
       name: "100Anonymous",
       userId: "PzsQWyEwpNgPRd6PbJmWFd3mEz23",
-      dividend: 10,
+      dividend: 50,
       percentageOwned: 0.05,
     },
     {
       name: "AllMemeingEye",
       userId: "a4Y150jRVKWdZnH0wnciZuENtjN2",
-      dividend: 10,
+      dividend: 20,
       percentageOwned: 0.02,
     },
     {
       name: "Qoiuoiuoiu",
       userId: "qIjH5KDOG9WVsa3265yCTICxHjx2",
-      dividend: 10,
+      dividend: 15,
       percentageOwned: 0.015,
     },
     {
       name: "Odoacre",
       userId: "HSB5OZ8jBHQZZLjs9oWS7avZTqE3",
-      dividend: 10,
+      dividend: 13,
       percentageOwned: 0.0125,
     },
     {
@@ -169,7 +169,7 @@ async function main() {
     {
       name: "Khazar_Man_From_Turan",
       userId: "Cc1rw0NVHVS56Ew3MpW6g2L30pO2",
-      dividend: 10,
+      dividend: 20,
       percentageOwned: 0.02,
     },
     {
@@ -233,15 +233,15 @@ async function main() {
 
   const now = new Date();
   const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
-  const currentQuarter = 3; // Math.floor(currentMonth / 3) + 1;
+  // const currentMonth = now.getMonth();
+  const currentQuarter = 4; // Math.floor(currentMonth / 3) + 1;
 
   const reportLink =
     `https://risk.markets/reports/RISK_${currentYear}_Q${currentQuarter}_REPORT.pdf`;
 
   for (const investor of investorsToProcess) {
     const message =
-      `Here is your quarterly RISK investor dividend of M0 + M10 late fee! Read the Q${currentQuarter} ${currentYear} report here: ${reportLink}`;
+      `Here is your quarterly RISK investor dividend! Read the Q${currentQuarter} ${currentYear} report here: ${reportLink}`;
     const dividendAmount = investor.dividend;
 
     console.log(
