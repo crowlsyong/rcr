@@ -82,6 +82,16 @@ const globularConglomerateLinks: Link[] = [
             url: "/reports/RISK_2025_Q2_REPORT.pdf",
             targetBlank: true,
           },
+          {
+            label: "Q3 Report",
+            url: "/reports/RISK_2025_Q3_REPORT.pdf",
+            targetBlank: true,
+          },
+          {
+            label: "Q4 Report",
+            url: "/reports/RISK_2025_Q4_REPORT.pdf",
+            targetBlank: true,
+          },
         ],
       },
     ],
