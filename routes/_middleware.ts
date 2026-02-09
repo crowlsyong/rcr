@@ -10,107 +10,120 @@ export interface AdminState {
   githubLogin: string | null;
 }
 
+const REDIRECTS: Record<string, string> = {
+  "/reports/RISK_2026_Q4_REPORT.pdf": "/reports/RISK_2025_Q4_REPORT.pdf",
+};
+
 export async function handler(
   req: Request,
   ctx: FreshContext<AdminState>,
 ) {
-  const url = new URL(req.url);
-  ctx.state.isAdmin = false;
-  ctx.state.githubLogin = null;
+  try {
+    const url = new URL(req.url);
 
-  if (url.hostname === "localhost" && url.port === "8000") {
-    ctx.state.isAdmin = true;
-    ctx.state.githubLogin = "localhost_admin";
-  } else {
-    const cookies = getCookies(req.headers);
-    const adminSessionId = cookies["session"];
+    const target = REDIRECTS[url.pathname];
+    if (target) return Response.redirect(new URL(target, url), 307);
 
-    if (adminSessionId) {
-      const githubLogin = await getAdminLoginBySession(adminSessionId);
-      if (githubLogin && ALLOWED_ADMIN_LOGINS.includes(githubLogin)) {
-        ctx.state.isAdmin = true;
-        ctx.state.githubLogin = githubLogin;
-      } else if (githubLogin) {
-        await deleteAdminSession(adminSessionId);
-        const resp = new Response("", { status: 401 });
-        deleteCookie(resp.headers, "session", { path: "/" });
-        return resp;
+    ctx.state.isAdmin = false;
+    ctx.state.githubLogin = null;
+
+    if (url.hostname === "localhost" && url.port === "8000") {
+      ctx.state.isAdmin = true;
+      ctx.state.githubLogin = "localhost_admin";
+    } else {
+      const cookies = getCookies(req.headers);
+      const adminSessionId = cookies["session"];
+
+      if (adminSessionId) {
+        const githubLogin = await getAdminLoginBySession(adminSessionId);
+        if (githubLogin && ALLOWED_ADMIN_LOGINS.includes(githubLogin)) {
+          ctx.state.isAdmin = true;
+          ctx.state.githubLogin = githubLogin;
+        } else if (githubLogin) {
+          await deleteAdminSession(adminSessionId);
+          const resp = new Response("", { status: 401 });
+          deleteCookie(resp.headers, "session", { path: "/" });
+          return resp;
+        }
       }
     }
+
+    const resp = await ctx.next();
+
+    const origin = req.headers.get("Origin") || "*";
+    const headers = resp.headers;
+
+    headers.set("Access-Control-Allow-Origin", origin);
+    headers.set("Access-Control-Allow-Credentials", "true");
+    headers.set(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With",
+    );
+    headers.set(
+      "Access-Control-Allow-Methods",
+      "POST, OPTIONS, GET, PUT, DELETE",
+    );
+
+    const cspDirectives: Record<string, string[]> = {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "https://manifold.markets",
+        "'unsafe-eval'",
+        "'unsafe-inline'",
+      ],
+      styleSrc: [
+        "'self'",
+        "https://manifold.markets",
+        "'unsafe-inline'",
+      ],
+      imgSrc: [
+        "'self'",
+        "https://firebasestorage.googleapis.com",
+        "https://lh3.googleusercontent.com",
+        "data:",
+        "https://www.notion.so",
+        "https://notion.site",
+        "https://atom-club-701.notion.site",
+      ],
+      fontSrc: ["'self'", "https://manifold.markets"],
+      connectSrc: [
+        "'self'",
+        "https://manifold.markets",
+        "https://api.manifold.markets",
+        "https://www.notion.so",
+        "https://notion.site",
+        "https://atom-club-701.notion.site",
+      ],
+      frameSrc: [
+        "'self'",
+        "https://notion.site",
+        "https://www.notion.so",
+        "https://atom-club-701.notion.site",
+        "https://docs.google.com",
+      ],
+      childSrc: [
+        "'self'",
+        "https://notion.site",
+        "https://www.notion.so",
+        "https://atom-club-701.notion.site",
+        "https://docs.google.com",
+      ],
+    };
+
+    const cspString = Object.entries(cspDirectives)
+      .map(([directive, sources]) =>
+        `${kebabCase(directive)} ${sources.join(" ")}`
+      )
+      .join("; ");
+
+    headers.set("Content-Security-Policy", cspString);
+
+    return resp;
+  } catch (err) {
+    console.error("middleware error", err);
+    return await ctx.next();
   }
-
-  const resp = await ctx.next();
-
-  const origin = req.headers.get("Origin") || "*";
-  const headers = resp.headers;
-
-  headers.set("Access-Control-Allow-Origin", origin);
-  headers.set("Access-Control-Allow-Credentials", "true");
-  headers.set(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With",
-  );
-  headers.set(
-    "Access-Control-Allow-Methods",
-    "POST, OPTIONS, GET, PUT, DELETE",
-  );
-
-  const cspDirectives: Record<string, string[]> = {
-    defaultSrc: ["'self'"],
-    scriptSrc: [
-      "'self'",
-      "https://manifold.markets",
-      "'unsafe-eval'",
-      "'unsafe-inline'",
-    ],
-    styleSrc: [
-      "'self'",
-      "https://manifold.markets",
-      "'unsafe-inline'",
-    ],
-    imgSrc: [
-      "'self'",
-      "https://firebasestorage.googleapis.com",
-      "https://lh3.googleusercontent.com",
-      "data:",
-      "https://www.notion.so",
-      "https://notion.site",
-      "https://atom-club-701.notion.site",
-    ],
-    fontSrc: ["'self'", "https://manifold.markets"],
-    connectSrc: [
-      "'self'",
-      "https://manifold.markets",
-      "https://api.manifold.markets",
-      "https://www.notion.so",
-      "https://notion.site",
-      "https://atom-club-701.notion.site",
-    ],
-    frameSrc: [
-      "'self'",
-      "https://notion.site",
-      "https://www.notion.so",
-      "https://atom-club-701.notion.site",
-      "https://docs.google.com", // Added for Google Docs iframes
-    ],
-    childSrc: [
-      "'self'",
-      "https://notion.site",
-      "https://www.notion.so",
-      "https://atom-club-701.notion.site",
-      "https://docs.google.com", // Added for Google Docs iframes
-    ],
-  };
-
-  const cspString = Object.entries(cspDirectives)
-    .map(([directive, sources]) =>
-      `${kebabCase(directive)} ${sources.join(" ")}`
-    )
-    .join("; ");
-
-  headers.set("Content-Security-Policy", cspString);
-
-  return resp;
 }
 
 function kebabCase(str: string): string {
