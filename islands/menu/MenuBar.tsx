@@ -197,6 +197,7 @@ export default function MenuBar({ theme = "default" }: MenuBarProps) { // Defaul
               <a
                 href="https://github.com/crowlsyong/rcr/releases/tag/v2.1.9"
                 class="hover:text-blue-500"
+                target="_blank"
                 tabIndex={isMenuOpen.value ? 0 : -1}
               >
                 v2.1.9
