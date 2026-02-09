@@ -193,7 +193,16 @@ export default function MenuBar({ theme = "default" }: MenuBarProps) { // Defaul
           </div>
 
           <div class="pt-10 text-xs w-full text-center text-[10px] text-gray-500 mt-auto">
-            <p>v2.1.8 | this is a 3rd party app</p>
+            <p>
+              <a
+                href="https://github.com/crowlsyong/rcr/releases/tag/v2.1.9"
+                class="hover:text-blue-500"
+                tabIndex={isMenuOpen.value ? 0 : -1}
+              >
+                v2.1.9
+              </a>{" "}
+              | this is a 3rd party app
+            </p>
             <hr class="my-2 border-gray-600" />
             <div class="flex items-center justify-center gap-1.5">
               <span>built by</span>
