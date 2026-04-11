@@ -1,15 +1,7 @@
 // routes/chart/index.tsx
 import Chart from "../../islands/tools/chart/Chart.tsx"; // The main chart island
 import ShareURL from "../../islands/buttons/ShareURL.tsx";
-import { Handlers } from "fresh/compat";
-
 // The handler now simply renders the page, the island handles URL parsing.
-export const handler: Handlers = {
-  GET(ctx) {
-    return ctx.render();
-  },
-};
-
 // The page component now includes the ShareURL button in the header.
 export default function ChartPage() {
   return (

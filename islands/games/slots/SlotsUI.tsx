@@ -3,11 +3,11 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import Winner from "./Winner.tsx";
 import PayoutTable from "./PayoutTable.tsx";
 
-type SpinState = "idle" | "spinning" | "settling" | "done";
+type SpinState = "idle" | "spinning" | "done";
 
 type SpinResult = {
   win: boolean;
-  combo: [string, string, string];
+  combo: [number, number, number];
   payout: number;
   reason: string;
   payoutSent: boolean;
@@ -24,7 +24,7 @@ type Props = {
   setApiKeyInput: (value: string) => void;
 
   bet: number;
-  setBet: (b: any) => void;
+  setBet: (b: number) => void;
   bets: readonly number[];
 
   canSpin: boolean;
@@ -33,7 +33,7 @@ type Props = {
   error: string | null;
   result: SpinResult | null;
 
-  onSpin: () => void;
+  onSpin: () => Promise<void>;
 };
 
 function maskKey(k: string) {
@@ -153,11 +153,11 @@ export default function SlotsUI(props: Props) {
       />
 
       <div class="w-full max-w-6xl">
-        <div class="w-full rounded-[30px] overflow-hidden border border-white/10 bg-gradient-to-b from-white/6 via-black/55 to-black shadow-2xl">
+        <div class="w-full rounded-[30px] overflow-hidden border border-white/10 bg-linear-to-b from-white/6 via-black/55 to-black shadow-2xl">
           <div class="pt-10 pb-4 sm:px-8 py-5 sm:py-6 border-b border-white/8 flex items-center justify-center bg-[radial-gradient(circle_at_50%_0%,rgba(255,214,120,0.22),transparent_60%),linear-gradient(to_bottom,rgba(255,255,255,0.06),transparent)]">
             <svg
               viewBox="0 -20 360 160"
-              class="w-[320px] sm:w-[440px] h-[120px]"
+              class="w-[320px] sm:w-110 h-30"
             >
               <defs>
                 <path id="arc" d="M 30 98 C 90 18, 270 18, 330 98" />
@@ -231,14 +231,14 @@ export default function SlotsUI(props: Props) {
           </div>
 
           <div class="p-4 sm:p-8">
-            <div class="rounded-[24px] bg-white/4 border border-white/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] overflow-hidden">
+            <div class="rounded-3xl bg-white/4 border border-white/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] overflow-hidden">
               <div class="p-4 sm:p-5 bg-black/90">
                 <PayoutTable iconUrls={props.iconUrls} />
 
                 <div class="mt-5 flex flex-col lg:flex-row items-stretch gap-5 lg:gap-7">
                   <div class="flex-1 min-w-0">
                     <div
-                      class={"rounded-[26px] bg-gradient-to-b from-white/6 via-black/35 to-black/55 border border-white/10 p-4 sm:p-6 shadow-[0_18px_44px_rgba(0,0,0,0.38),inset_0_1px_0_rgba(255,255,255,0.10)] " +
+                      class={"rounded-[26px] bg-linear-to-b from-white/6 via-black/35 to-black/55 border border-white/10 p-4 sm:p-6 shadow-[0_18px_44px_rgba(0,0,0,0.38),inset_0_1px_0_rgba(255,255,255,0.10)] " +
                         (props.spinState === "spinning"
                           ? "ring-1 ring-fuchsia-300/25"
                           : "") +
@@ -246,13 +246,13 @@ export default function SlotsUI(props: Props) {
                           ? (isWin2 ? " slotsWin2" : " slotsWin1")
                           : "")}
                     >
-                      <div class="rounded-[24px] bg-[radial-gradient(circle_at_50%_0%,rgba(120,220,255,0.10),transparent_55%),linear-gradient(to_bottom,rgba(255,255,255,0.06),rgba(0,0,0,0.35))] border border-white/8 shadow-[0_18px_46px_rgba(0,0,0,0.40),inset_0_1px_0_rgba(255,255,255,0.10)] p-3 sm:p-4">
+                      <div class="rounded-3xl bg-[radial-gradient(circle_at_50%_0%,rgba(120,220,255,0.10),transparent_55%),linear-gradient(to_bottom,rgba(255,255,255,0.06),rgba(0,0,0,0.35))] border border-white/8 shadow-[0_18px_46px_rgba(0,0,0,0.40),inset_0_1px_0_rgba(255,255,255,0.10)] p-3 sm:p-4">
                         <div class="rounded-[20px] bg-white/5 border border-white/8 p-3 sm:p-4">
                           <div class="flex items-center justify-center gap-5 sm:gap-7">
                             {[0, 1, 2].map((i) => (
                               <div
                                 key={i}
-                                class="relative rounded-[18px] bg-gradient-to-b from-white/8 via-black/35 to-black/55 border border-white/10 shadow-[0_14px_28px_rgba(0,0,0,0.40),inset_0_1px_0_rgba(255,255,255,0.12)] overflow-hidden"
+                                class="relative rounded-[18px] bg-linear-to-b from-white/8 via-black/35 to-black/55 border border-white/10 shadow-[0_14px_28px_rgba(0,0,0,0.40),inset_0_1px_0_rgba(255,255,255,0.12)] overflow-hidden"
                                 style={{
                                   width: `${reelBoxW}px`,
                                   height: `${reelBoxH}px`,
@@ -409,12 +409,12 @@ export default function SlotsUI(props: Props) {
                   </div>
 
                   <div class="lg:w-44 flex flex-col items-center justify-center">
-                    <div class="w-full rounded-[26px] bg-gradient-to-b from-white/6 via-black/35 to-black/55 border border-white/10 grid place-items-center p-4 shadow-[0_18px_44px_rgba(0,0,0,0.38),inset_0_1px_0_rgba(255,255,255,0.10)]">
+                    <div class="w-full rounded-[26px] bg-linear-to-b from-white/6 via-black/35 to-black/55 border border-white/10 grid place-items-center p-4 shadow-[0_18px_44px_rgba(0,0,0,0.38),inset_0_1px_0_rgba(255,255,255,0.10)]">
                       <div class="relative w-28 h-60 sm:h-80">
                         <div class="absolute left-1/2 -translate-x-1/2 top-5 w-3.5 h-44 sm:h-60 rounded-full bg-white/10" />
                         <div
                           id="slot-lever-knob"
-                          class="absolute left-1/2 top-3 rounded-full bg-gradient-to-b from-rose-500 to-red-800 shadow-[0_18px_40px_rgba(0,0,0,0.45),inset_0_2px_0_rgba(255,255,255,0.16)]"
+                          class="absolute left-1/2 top-3 rounded-full bg-linear-to-b from-rose-500 to-red-800 shadow-[0_18px_40px_rgba(0,0,0,0.45),inset_0_2px_0_rgba(255,255,255,0.16)]"
                           style={{
                             width: "88px",
                             height: "88px",
@@ -472,7 +472,7 @@ export default function SlotsUI(props: Props) {
                   </div>
                 </div>
 
-                <div class="h-3 bg-gradient-to-b from-black/0 via-black/30 to-black/0 mt-6" />
+                <div class="h-3 bg-linear-to-b from-black/0 via-black/30 to-black/0 mt-6" />
               </div>
             </div>
           </div>

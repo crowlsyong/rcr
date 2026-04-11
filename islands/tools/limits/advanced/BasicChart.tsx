@@ -204,7 +204,7 @@ export default function BasicChart(
                   return context.label;
                 }
                 return `${context.dataset.label}: ${
-                  Math.round(context.parsed.y)
+                  Math.round(context.parsed.y ?? 0)
                 }`;
               },
             },

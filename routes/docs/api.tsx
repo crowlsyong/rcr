@@ -12,7 +12,7 @@ export default function NotionDocsEmbed() {
     "Manifold Markets, Risk Markets, API, documentation, credit score, insurance, loan, transaction, partner code, Manifold Mana, blockchain, web3";
 
   return (
-    <Fragment>
+    <>
       <Head>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
@@ -83,6 +83,6 @@ export default function NotionDocsEmbed() {
           </p>
         </iframe>
       </div>
-    </Fragment>
+    </>
   );
 }

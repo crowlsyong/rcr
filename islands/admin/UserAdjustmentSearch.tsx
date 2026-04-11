@@ -77,6 +77,7 @@ export default function UserAdjustmentSearch({
         riskBaseFee: data.riskBaseFee,
         userDeleted: data.userDeleted,
         existingOverrideEvents: data.overrideEvents || [],
+        allHistoricalData: data.historicalData || [],
       };
       setUserOverview(overview);
       onUserOverviewFetched(overview);

@@ -12,6 +12,21 @@ type SpinResult = {
   payoutSent: boolean;
 };
 
+type SlotsApiResponse = {
+  ok?: boolean;
+  outcome?: {
+    win: boolean;
+    payout: number;
+    reason: string;
+    combo?: [string, string, string];
+    icons?: [number, number, number];
+  };
+  claimId?: string;
+  payoutSent?: boolean;
+  detail?: string;
+  error?: string;
+};
+
 const ICON_COUNT = 5;
 const ICON_WIDTH = 88;
 const ICON_HEIGHT = 88;
@@ -129,7 +144,7 @@ export default function Slots() {
       });
 
       const parsed = await readJsonOrText(r);
-      const j = parsed.json as any;
+      const j = parsed.json as SlotsApiResponse | null;
 
       if (!r.ok || !j?.ok) {
         console.error("claim failed", {
@@ -163,7 +178,7 @@ export default function Slots() {
       });
 
       const parsed = await readJsonOrText(r);
-      const j = parsed.json as any;
+      const j = parsed.json as SlotsApiResponse | null;
 
       if (!r.ok || !j?.ok || !j?.outcome) {
         console.error("slots api bad response", {
@@ -291,16 +306,16 @@ export default function Slots() {
       iconWidth={ICON_WIDTH}
       iconHeight={ICON_HEIGHT}
       repeatCount={REPEAT_COUNT}
-      apiKey={apiKey}
-      setApiKey={setApiKey}
+      apiKeyInput={apiKey}
+      setApiKeyInput={setApiKey}
       bet={bet}
       setBet={setBet}
       bets={BETS}
       canSpin={!spinningRef.current}
-      spinState={spinState as any}
+      spinState={spinState}
       status={status}
       error={error}
-      result={result as any}
+      result={result}
       onSpin={spin}
     />
   );

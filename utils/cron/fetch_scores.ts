@@ -3,7 +3,6 @@
 /// <reference lib="deno.unstable" />
 
 import db from "../../database/db.ts";
-import { handler as scoreHandler } from "../../routes/api/v0/score.ts";
 
 const CRON_NAME = "Update User Credit Scores";
 // Process 100 users per cron job execution.
@@ -43,13 +42,13 @@ async function processUserScore(user: User): Promise<void> {
   );
   try {
     const mockRequest = new Request(
-      `http://localhost/api/v0/score?username=${
+      `http://localhost:8000/api/v0/score?username=${
         encodeURIComponent(user.username)
       }`,
       { method: "GET" },
     );
 
-    const response = await scoreHandler(mockRequest);
+    const response = await fetch(mockRequest);
     const responseBody = await response.json().catch(() => ({}));
 
     if (response.ok) {

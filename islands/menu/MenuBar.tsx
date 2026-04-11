@@ -183,10 +183,7 @@ export default function MenuBar({ theme = "default" }: MenuBarProps) { // Defaul
               >
                 <span>❤️ Donate Mana</span>
                 {isClient && ( // Conditionally render icon on client
-                  <ExternalLinkIcon
-                    size={16}
-                    class="absolute right-3 w-4 h-4 opacity-70"
-                  /> // Added size prop
+                  <ExternalLinkIcon class="absolute right-3 w-4 h-4 opacity-70" /> // Added size prop
                 )}
               </a>
             </div>

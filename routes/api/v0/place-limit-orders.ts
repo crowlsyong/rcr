@@ -37,7 +37,7 @@ type IncomingRequestBody =
   });
 
 export const handler: Handlers = {
-  async POST(_ctx) {
+  async POST(ctx) {
     const req = ctx.req;
 
     try {

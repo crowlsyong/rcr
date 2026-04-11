@@ -1,6 +1,6 @@
 // routes/_middleware.ts
 
-import { FreshContext } from "fresh";
+import { FreshContext, HttpError } from "fresh";
 import { deleteCookie, getCookies } from "$std/http/cookie.ts";
 import { deleteAdminSession, getAdminLoginBySession } from "../database/db.ts";
 import { ALLOWED_ADMIN_LOGINS } from "../utils/allowed_users.ts";
@@ -122,6 +122,10 @@ export async function handler(
 
     return resp;
   } catch (err) {
+    if (err instanceof HttpError && err.status === 404) {
+      return await ctx.next();
+    }
+
     console.error("middleware error", err);
     return await ctx.next();
   }

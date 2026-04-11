@@ -351,18 +351,8 @@ export default function LimitOrderCalculator() {
                   >
                     {isClient // Conditionally render icons
                       ? (isVolatilityBet
-                        ? (
-                          <ToggleOnIcon
-                            size={40}
-                            class="w-10 h-10 text-blue-500"
-                          />
-                        )
-                        : (
-                          <ToggleOffIcon
-                            size={40}
-                            class="w-10 h-10 text-gray-500"
-                          />
-                        ))
+                        ? <ToggleOnIcon class="w-10 h-10 text-blue-500" />
+                        : <ToggleOffIcon class="w-10 h-10 text-gray-500" />)
                       : ( // Placeholder for SSR
                         <div class="w-10 h-10 bg-gray-700 rounded-full animate-pulse">
                         </div>
@@ -383,18 +373,8 @@ export default function LimitOrderCalculator() {
                     >
                       {isClient // Conditionally render icons
                         ? (isAdvancedMode
-                          ? (
-                            <ToggleOnIcon
-                              size={40}
-                              class="w-10 h-10 text-blue-500"
-                            />
-                          )
-                          : (
-                            <ToggleOffIcon
-                              size={40}
-                              class="w-10 h-10 text-gray-500"
-                            />
-                          ))
+                          ? <ToggleOnIcon class="w-10 h-10 text-blue-500" />
+                          : <ToggleOffIcon class="w-10 h-10 text-gray-500" />)
                         : ( // Placeholder for SSR
                           <div class="w-10 h-10 bg-gray-700 rounded-full animate-pulse">
                           </div>

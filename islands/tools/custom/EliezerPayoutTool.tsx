@@ -398,8 +398,8 @@ export default function EliezerPayoutTool(): JSX.Element {
           >
             {isClient && (
               useStartingBetLogic.value
-                ? <ToggleOnIcon class="w-10 h-10 text-blue-500" size={40} />
-                : <ToggleOffIcon class="w-10 h-10 text-gray-500" size={40} />
+                ? <ToggleOnIcon class="w-10 h-10 text-blue-500" />
+                : <ToggleOffIcon class="w-10 h-10 text-gray-500" />
             )}
           </button>
         </div>

@@ -1,8 +1,9 @@
 // islands/PasswordGate.tsx
 import { useState } from "preact/hooks";
+import type { JSX } from "preact";
 
 export default function PasswordGate(
-  { children }: { children: h.JSX.Element },
+  { children }: { children: JSX.Element },
 ) {
   const [authorized, setAuthorized] = useState(false);
   const [input, setInput] = useState("");

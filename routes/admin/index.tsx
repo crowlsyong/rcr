@@ -4,7 +4,6 @@
 import { PageProps } from "fresh";
 import db from "../../database/db.ts";
 import { AdminState } from "../_middleware.ts";
-import { Handlers } from "fresh/compat";
 
 interface DisplayKvEntry {
   key: Deno.KvKey;
@@ -17,41 +16,40 @@ interface AdminPageData {
   error?: string;
 }
 
-export const handler: Handlers<AdminPageData, AdminState> = {
-  async GET(ctx) {
-    if (!ctx.state.isAdmin) {
-      // Render page without data if not admin, component will show sign-in prompt
-      return ctx.render({ entries: [] });
-    }
+export async function handler(ctx: PageProps<AdminPageData, AdminState>) {
+  if (!ctx.state.isAdmin) {
+    return { data: { entries: [] } };
+  }
 
-    const entries: DisplayKvEntry[] = [];
-    let error: string | undefined;
-    try {
-      // Use the 'list' method with limit and reverse: true to get the latest entries
-      const MAX_ENTRIES_TO_DISPLAY = 40; // Define the limit
-      for await (
-        const entry of db.list({ prefix: [] }, {
-          limit: MAX_ENTRIES_TO_DISPLAY,
-          reverse: true, // Get the latest entries first
-        })
-      ) {
-        entries.push({
-          key: entry.key,
-          value: entry.value,
-          versionstamp: entry.versionstamp,
-        });
-      }
-    } catch (err) {
-      console.error("Error fetching KV data for admin panel:", err);
-      error = `An error occurred while fetching database entries: ${
-        typeof err === "object" && err !== null && "message" in err
-          ? (err as { message: string }).message
-          : String(err)
-      }`;
+  const entries: DisplayKvEntry[] = [];
+  let error: string | undefined;
+
+  try {
+    const MAX_ENTRIES_TO_DISPLAY = 40;
+
+    for await (
+      const entry of db.list({ prefix: [] }, {
+        limit: MAX_ENTRIES_TO_DISPLAY,
+        reverse: true,
+      })
+    ) {
+      entries.push({
+        key: entry.key,
+        value: entry.value,
+        versionstamp: entry.versionstamp,
+      });
     }
-    return ctx.render({ entries, error });
-  },
-};
+  } catch (err) {
+    console.error("Error fetching KV data for admin panel:", err);
+    error = `An error occurred while fetching database entries: ${
+      typeof err === "object" && err !== null && "message" in err
+        ? (err as { message: string }).message
+        : String(err)
+    }`;
+  }
+
+  return { data: { entries, error } };
+}
 
 export default function AdminPage(
   { data, state }: PageProps<AdminPageData, AdminState>,
@@ -60,7 +58,7 @@ export default function AdminPage(
   const { isAdmin, githubLogin } = state;
 
   return (
-    <div class="pt-16 p-4 mx-auto max-w-screen-lg">
+    <div class="pt-16 p-4 mx-auto max-w-5xl">
       <div class="flex justify-end mb-6 items-center">
         {isAdmin
           ? (

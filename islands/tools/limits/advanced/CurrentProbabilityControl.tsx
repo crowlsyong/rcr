@@ -167,8 +167,8 @@ export default function CurrentProbabilityControl(
           >
             {isClient // Conditionally render icon
               ? (useCustom
-                ? <LockOpenIcon size={16} class="w-4 h-4 text-gray-600" />
-                : <LockFilledIcon size={16} class="w-4 h-4 text-blue-500" />)
+                ? <LockOpenIcon class="w-4 h-4 text-gray-600" />
+                : <LockFilledIcon class="w-4 h-4 text-blue-500" />)
               : ( // Placeholder for SSR
                 <div class="w-4 h-4 bg-gray-700 rounded animate-pulse">
                 </div>
@@ -241,8 +241,8 @@ export default function CurrentProbabilityControl(
           >
             {isClient // Conditionally render icon
               ? (isShiftLockedToCurrentProb.value
-                ? <LockFilledIcon size={16} class="h-4 w-4 text-blue-500" />
-                : <LockOpenIcon size={16} class="h-4 w-4 text-gray-600" />)
+                ? <LockFilledIcon class="h-4 w-4 text-blue-500" />
+                : <LockOpenIcon class="h-4 w-4 text-gray-600" />)
               : ( // Placeholder for SSR
                 <div class="w-4 h-4 bg-gray-700 rounded animate-pulse">
                 </div>

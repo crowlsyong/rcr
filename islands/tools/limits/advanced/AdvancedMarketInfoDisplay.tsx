@@ -88,7 +88,7 @@ export default function AdvancedMarketInfoDisplay({
                         Copied!
                       </span>
                     )
-                    : <CopyIcon size={16} class="w-4 h-4 text-gray-300" />)
+                    : <CopyIcon class="w-4 h-4 text-gray-300" />)
                   : ( // Placeholder for SSR
                     <div class="w-4 h-4 bg-gray-600 rounded animate-pulse">
                     </div>

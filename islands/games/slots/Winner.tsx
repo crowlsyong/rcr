@@ -120,7 +120,7 @@ export default function Winner(props: Props) {
 
       <div class="absolute inset-0 flex items-center justify-center px-4 pointer-events-none">
         <div
-          class="max-w-md w-full rounded-3xl border border-emerald-400/30 bg-gradient-to-b from-gray-950 to-black shadow-2xl pointer-events-none"
+          class="max-w-md w-full rounded-3xl border border-emerald-400/30 bg-linear-to-b from-gray-950 to-black shadow-2xl pointer-events-none"
           style={{ animation: "winner-pop 420ms ease-out both" }}
         >
           <div class="p-6">
