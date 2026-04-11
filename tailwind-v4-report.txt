@@ -1,93 +1,92 @@
 
-===== islands/games/slots/JumboSlotMachine.tsx (18) =====
+===== islands/games/slots/JumboSlotMachine.tsx (4) =====
 
--     <div class="rounded-lg border border-black/30 bg-gradient-to-b from-white/10 via-white/5 to-black/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
-+     <div class="rounded-lg border border-black/30 bg-linear-to-b from-white/10 via-white/5 to-black/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
+match: max-w-[520px]
+next:  max-w-130
 
--       class={`h-14 rounded-xl border border-black/35 bg-gradient-to-b from-zinc-100/15 via-white/5 to-black/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),inset_0_-12px_20px_rgba(0,0,0,0.45)] flex items-center justify-center ${
-+       class={`h-14 rounded-xl border border-black/35 bg-linear-to-b from-zinc-100/15 via-white/5 to-black/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),inset_0_-12px_20px_rgba(0,0,0,0.45)] flex items-center justify-center ${
+match: max-w-[360px]
+next:  max-w-90
 
--       <div class="relative rounded-[28px] p-4 sm:p-5 bg-gradient-to-b from-zinc-200 via-zinc-300 to-zinc-700 shadow-[0_28px_60px_rgba(0,0,0,0.55)] border border-black/40">
-+       <div class="relative rounded-[28px] p-4 sm:p-5 bg-linear-to-b from-zinc-200 via-zinc-300 to-zinc-700 shadow-[0_28px_60px_rgba(0,0,0,0.55)] border border-black/40">
+match: h-[88px]
+next:  h-22
 
--         <div class="relative rounded-[22px] border border-black/45 bg-gradient-to-b from-zinc-900 via-zinc-950 to-black shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] overflow-hidden">
-+         <div class="relative rounded-[22px] border border-black/45 bg-linear-to-b from-zinc-900 via-zinc-950 to-black shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] overflow-hidden">
+match: h-[120px]
+next:  h-30
 
--             <div class="relative rounded-[18px] border border-black/50 bg-gradient-to-b from-amber-900 via-amber-950 to-black shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] overflow-hidden">
-+             <div class="relative rounded-[18px] border border-black/50 bg-linear-to-b from-amber-900 via-amber-950 to-black shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] overflow-hidden">
+--- line diff ---
 
--                 <div class="mt-1 rounded-2xl border border-black/55 bg-gradient-to-b from-zinc-950 via-black to-black px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-+                 <div class="mt-1 rounded-2xl border border-black/55 bg-linear-to-b from-zinc-950 via-black to-black px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+-       class={`w-full max-w-[520px] mx-auto ${props.class || ""}`}
++       class={`w-full max-w-130 mx-auto ${props.class || ""}`}
 
--             <div class="mt-3 rounded-[22px] border border-black/55 bg-gradient-to-b from-zinc-800 via-zinc-900 to-black shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] p-3">
-+             <div class="mt-3 rounded-[22px] border border-black/55 bg-linear-to-b from-zinc-800 via-zinc-900 to-black shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] p-3">
+-                     class="w-full max-w-[360px] h-[88px]"
++                     class="w-full max-w-90 h-22"
 
--               <div class="rounded-[18px] border border-black/65 bg-gradient-to-b from-zinc-950 via-black to-black p-3">
-+               <div class="rounded-[18px] border border-black/65 bg-linear-to-b from-zinc-950 via-black to-black p-3">
-
--                 <div class="mt-3 rounded-xl border border-black/60 bg-gradient-to-b from-zinc-900 to-black p-2 flex items-center justify-between gap-2">
-+                 <div class="mt-3 rounded-xl border border-black/60 bg-linear-to-b from-zinc-900 to-black p-2 flex items-center justify-between gap-2">
-
--                       <div class="w-9 h-full bg-gradient-to-r from-emerald-300/70 to-emerald-500/70" />
-+                       <div class="w-9 h-full bg-linear-to-r from-emerald-300/70 to-emerald-500/70" />
-
--                 <div class="flex-1 rounded-2xl border border-black/55 bg-gradient-to-b from-zinc-950 via-black to-black p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-+                 <div class="flex-1 rounded-2xl border border-black/55 bg-linear-to-b from-zinc-950 via-black to-black p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-
--                   <div class="rounded-xl border border-black/60 bg-gradient-to-b from-amber-950 via-black to-black px-3 py-2">
-+                   <div class="rounded-xl border border-black/60 bg-linear-to-b from-amber-950 via-black to-black px-3 py-2">
-
--                   <div class="mt-2 rounded-xl border border-black/60 bg-gradient-to-b from-zinc-900 to-black px-3 py-3">
-+                   <div class="mt-2 rounded-xl border border-black/60 bg-linear-to-b from-zinc-900 to-black px-3 py-3">
-
--                     <div class="absolute top-7 left-1/2 -translate-x-1/2 w-3 h-[120px] rounded-full bg-gradient-to-b from-zinc-100 via-zinc-300 to-zinc-700 border border-black/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_18px_rgba(0,0,0,0.5)] rotate-[8deg]" />
-+                     <div class="absolute top-7 left-1/2 -translate-x-1/2 w-3 h-[120px] rounded-full bg-linear-to-b from-zinc-100 via-zinc-300 to-zinc-700 border border-black/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_18px_rgba(0,0,0,0.5)] rotate-[8deg]" />
-
--                     <div class="absolute bottom-1 left-1/2 -translate-x-1/2 w-16 h-7 rounded-full bg-gradient-to-b from-zinc-300 via-zinc-500 to-zinc-800 border border-black/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]" />
-+                     <div class="absolute bottom-1 left-1/2 -translate-x-1/2 w-16 h-7 rounded-full bg-linear-to-b from-zinc-300 via-zinc-500 to-zinc-800 border border-black/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]" />
-
--             <div class="mt-3 rounded-[18px] border border-black/55 bg-gradient-to-b from-zinc-900 via-zinc-950 to-black px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-+             <div class="mt-3 rounded-[18px] border border-black/55 bg-linear-to-b from-zinc-900 via-zinc-950 to-black px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-
--           <div class="h-3 bg-gradient-to-b from-black/0 via-black/25 to-black/0" />
-+           <div class="h-3 bg-linear-to-b from-black/0 via-black/25 to-black/0" />
-
--           <div class="w-[92%] h-6 rounded-full border border-black/50 bg-gradient-to-b from-zinc-100 via-zinc-400 to-zinc-800 shadow-[0_14px_22px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.2)]" />
-+           <div class="w-[92%] h-6 rounded-full border border-black/50 bg-linear-to-b from-zinc-100 via-zinc-400 to-zinc-800 shadow-[0_14px_22px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.2)]" />
+-                     <div class="absolute top-7 left-1/2 -translate-x-1/2 w-3 h-[120px] rounded-full bg-linear-to-b from-zinc-100 via-zinc-300 to-zinc-700 border border-black/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_18px_rgba(0,0,0,0.5)] rotate-[8deg]" />
++                     <div class="absolute top-7 left-1/2 -translate-x-1/2 w-3 h-30 rounded-full bg-linear-to-b from-zinc-100 via-zinc-300 to-zinc-700 border border-black/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_18px_rgba(0,0,0,0.5)] rotate-[8deg]" />
 
 
-===== islands/games/slots/SlotsUI.tsx (8) =====
+===== islands/games/slots/SlotsUI.tsx (1) =====
 
--       "bg-gradient-to-b from-amber-200 to-orange-500 text-black border-amber-100/35 shadow-[0_20px_56px_rgba(251,146,60,0.34)]",
-+       "bg-linear-to-b from-amber-200 to-orange-500 text-black border-amber-100/35 shadow-[0_20px_56px_rgba(251,146,60,0.34)]",
+match: w-[320px]
+next:  w-80
 
--       "bg-gradient-to-b from-amber-500/20 to-orange-500/14 text-white border-amber-300/16 hover:border-amber-200/26 hover:from-amber-500/26 hover:to-orange-500/18",
-+       "bg-linear-to-b from-amber-500/20 to-orange-500/14 text-white border-amber-300/16 hover:border-amber-200/26 hover:from-amber-500/26 hover:to-orange-500/18",
+--- line diff ---
 
--       "bg-gradient-to-b from-sky-200 to-blue-600 text-white border-sky-100/30 shadow-[0_20px_56px_rgba(59,130,246,0.36)]",
-+       "bg-linear-to-b from-sky-200 to-blue-600 text-white border-sky-100/30 shadow-[0_20px_56px_rgba(59,130,246,0.36)]",
-
--       "bg-gradient-to-b from-sky-500/18 to-blue-600/12 text-white border-sky-300/14 hover:border-sky-200/24 hover:from-sky-500/24 hover:to-blue-600/16",
-+       "bg-linear-to-b from-sky-500/18 to-blue-600/12 text-white border-sky-300/14 hover:border-sky-200/24 hover:from-sky-500/24 hover:to-blue-600/16",
-
--       "bg-gradient-to-b from-fuchsia-200 to-violet-700 text-white border-fuchsia-100/28 shadow-[0_20px_56px_rgba(139,92,246,0.38)]",
-+       "bg-linear-to-b from-fuchsia-200 to-violet-700 text-white border-fuchsia-100/28 shadow-[0_20px_56px_rgba(139,92,246,0.38)]",
-
--       "bg-gradient-to-b from-fuchsia-500/18 to-violet-700/12 text-white border-fuchsia-300/14 hover:border-fuchsia-200/24 hover:from-fuchsia-500/24 hover:to-violet-700/16",
-+       "bg-linear-to-b from-fuchsia-500/18 to-violet-700/12 text-white border-fuchsia-300/14 hover:border-fuchsia-200/24 hover:from-fuchsia-500/24 hover:to-violet-700/16",
-
--       "bg-gradient-to-b from-emerald-200 to-green-700 text-white border-emerald-100/28 shadow-[0_20px_56px_rgba(16,185,129,0.38)]",
-+       "bg-linear-to-b from-emerald-200 to-green-700 text-white border-emerald-100/28 shadow-[0_20px_56px_rgba(16,185,129,0.38)]",
-
--       "bg-gradient-to-b from-emerald-500/18 to-green-700/12 text-white border-emerald-300/14 hover:border-emerald-200/24 hover:from-emerald-500/24 hover:to-green-700/16",
-+       "bg-linear-to-b from-emerald-500/18 to-green-700/12 text-white border-emerald-300/14 hover:border-emerald-200/24 hover:from-emerald-500/24 hover:to-green-700/16",
+-               class="w-[320px] sm:w-110 h-30"
++               class="w-80 sm:w-110 h-30"
 
 
-===== routes/extension.tsx (2) =====
+===== islands/tools/arbitrage/ArbitrageResults.tsx (1) =====
 
--           <div className="sm:absolute sm:top-0 sm:left-0 sm:right-0 sm:h-[4px] sm:bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400">
-+           <div className="sm:absolute sm:top-0 sm:left-0 sm:right-0 sm:h-[4px] sm:bg-linear-to-r from-blue-600 via-blue-500 to-blue-400">
+match: min-h-[120px]
+next:  min-h-30
 
--               className="inline-block w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold py-3 px-8 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 text-lg sm:text-xl"
-+               className="inline-block w-full sm:w-auto bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold py-3 px-8 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 text-lg sm:text-xl"
+--- line diff ---
+
+-     <div class="bg-gray-800 shadow-lg rounded-lg p-3 mt-6 border border-gray-700 min-h-[120px] flex items-center justify-center">
++     <div class="bg-gray-800 shadow-lg rounded-lg p-3 mt-6 border border-gray-700 min-h-30 flex items-center justify-center">
+
+
+===== islands/tools/insurance/Institutions.tsx (1) =====
+
+match: min-w-[100px]
+next:  min-w-25
+
+--- line diff ---
+
+-                 class={`flex-1 p-2 rounded-md font-semibold text-sm transition-colors duration-200 min-w-[100px] ${
++                 class={`flex-1 p-2 rounded-md font-semibold text-sm transition-colors duration-200 min-w-25 ${
+
+
+===== islands/tools/limits/advanced/AdvancedMarketInfoDisplay.tsx (1) =====
+
+match: min-w-[48px]
+next:  min-w-12
+
+--- line diff ---
+
+-                        min-w-[48px] h-6"
++                        min-w-12 h-6"
+
+
+===== routes/docs/_layout.tsx (1) =====
+
+match: pt-[44px]
+next:  pt-11
+
+--- line diff ---
+
+-       <div class="fixed pt-[44px] inset-0 bg-white dark:bg-gray-900 transition-colors duration-200">
++       <div class="fixed pt-11 inset-0 bg-white dark:bg-gray-900 transition-colors duration-200">
+
+
+===== routes/gameshow/[usernames].tsx (1) =====
+
+match: max-w-[240px]
+next:  max-w-60
+
+--- line diff ---
+
+-           class="max-w-[240px] md:max-w-sm lg:max-w-md mx-auto" // Adjusted max-width for mobile
++           class="max-w-60 md:max-w-sm lg:max-w-md mx-auto" // Adjusted max-width for mobile
 
