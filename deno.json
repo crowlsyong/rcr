@@ -1,27 +1,53 @@
 {
+  "nodeModulesDir": "auto",
   "unstable": ["kv"],
   "tasks": {
-    "check": "deno fmt --check && deno lint && deno check **/*.ts && deno check **/*.tsx",
-    "dev": "deno run -A --node-modules-dir=auto npm:vite",
-    "build": "deno run -A --node-modules-dir=auto npm:vite build",
+    "check": "deno fmt --check . && deno lint . && deno check **/*.ts **/*.tsx",
+    "dev": "vite",
+    "build": "vite build",
+    "start": "deno serve -A _fresh/server.js",
     "preview": "deno serve -A _fresh/server.js",
     "update": "deno run -A -r jsr:@fresh/update ."
   },
-  "lint": { "rules": { "tags": ["fresh", "recommended"] } },
+  "lint": {
+    "rules": {
+      "tags": ["fresh", "recommended"]
+    }
+  },
   "exclude": ["**/_fresh/*", "node_modules/"],
   "imports": {
-    "fresh": "jsr:@fresh/core@^2.0.0-alpha.25",
+    "fresh": "jsr:@fresh/core@^2.2.2",
     "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@^1.0.8",
-    "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.2.2",
-    "chart.js": "npm:chart.js@^4.5.0",
-    "chart.js/auto": "npm:chart.js@^4.5.0/auto",
+    "vite": "npm:vite@^6.0.0",
+    "tailwindcss": "npm:tailwindcss@^4.0.0",
+    "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.0.0",
     "preact": "npm:preact@^10.28.3",
-    "preact/": "https://esm.sh/preact@10.22.0/",
     "@preact/signals": "npm:@preact/signals@^2.7.1",
     "@preact-icons/tb": "jsr:@preact-icons/tb@^1.0.14",
-    "$std/": "https://deno.land/std@0.216.0/",
-    "vite": "npm:vite@^8.0.8"
+    "chart.js": "npm:chart.js@^4.5.0",
+    "chart.js/auto": "npm:chart.js@^4.5.0/auto",
+    "$std/": "https://deno.land/std@0.216.0/"
   },
-  "compilerOptions": { "jsx": "react-jsx", "jsxImportSource": "preact" },
-  "nodeModulesDir": "auto"
+  "compilerOptions": {
+    "lib": ["dom", "dom.asynciterable", "dom.iterable", "deno.ns"],
+    "jsx": "precompile",
+    "jsxImportSource": "preact",
+    "jsxPrecompileSkipElements": [
+      "a",
+      "img",
+      "source",
+      "body",
+      "html",
+      "head",
+      "title",
+      "meta",
+      "script",
+      "link",
+      "style",
+      "base",
+      "noscript",
+      "template"
+    ],
+    "types": ["vite/client"]
+  }
 }
