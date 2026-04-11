@@ -7,7 +7,7 @@ function PayBox(
   { label, mult, accent }: { label: string; mult: string; accent: string },
 ) {
   return (
-    <div class="rounded-lg border border-black/30 bg-gradient-to-b from-white/10 via-white/5 to-black/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
+    <div class="rounded-lg border border-black/30 bg-linear-to-b from-white/10 via-white/5 to-black/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
       <div class="px-2 py-1 flex items-center justify-between gap-2">
         <div class={`text-[10px] font-semibold tracking-wide ${accent}`}>
           {label}
@@ -27,7 +27,7 @@ function ReelCell(
 ) {
   return (
     <div
-      class={`h-14 rounded-xl border border-black/35 bg-gradient-to-b from-zinc-100/15 via-white/5 to-black/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),inset_0_-12px_20px_rgba(0,0,0,0.45)] flex items-center justify-center ${
+      class={`h-14 rounded-xl border border-black/35 bg-linear-to-b from-zinc-100/15 via-white/5 to-black/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),inset_0_-12px_20px_rgba(0,0,0,0.45)] flex items-center justify-center ${
         hot ? "ring-1 ring-amber-300/50" : ""
       }`}
     >
@@ -55,12 +55,12 @@ export default function JumboSlotMachine(props: Props) {
       {...props}
       class={`w-full max-w-[520px] mx-auto ${props.class || ""}`}
     >
-      <div class="relative rounded-[28px] p-4 sm:p-5 bg-gradient-to-b from-zinc-200 via-zinc-300 to-zinc-700 shadow-[0_28px_60px_rgba(0,0,0,0.55)] border border-black/40">
+      <div class="relative rounded-[28px] p-4 sm:p-5 bg-linear-to-b from-zinc-200 via-zinc-300 to-zinc-700 shadow-[0_28px_60px_rgba(0,0,0,0.55)] border border-black/40">
         <div class="absolute inset-0 rounded-[28px] bg-[radial-gradient(circle_at_20%_10%,rgba(255,255,255,0.45),transparent_35%),radial-gradient(circle_at_85%_20%,rgba(255,255,255,0.25),transparent_40%),linear-gradient(to_bottom,rgba(255,255,255,0.12),rgba(0,0,0,0.2))] pointer-events-none" />
 
-        <div class="relative rounded-[22px] border border-black/45 bg-gradient-to-b from-zinc-900 via-zinc-950 to-black shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] overflow-hidden">
+        <div class="relative rounded-[22px] border border-black/45 bg-linear-to-b from-zinc-900 via-zinc-950 to-black shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] overflow-hidden">
           <div class="px-3 pt-3 pb-2">
-            <div class="relative rounded-[18px] border border-black/50 bg-gradient-to-b from-amber-900 via-amber-950 to-black shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] overflow-hidden">
+            <div class="relative rounded-[18px] border border-black/50 bg-linear-to-b from-amber-900 via-amber-950 to-black shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] overflow-hidden">
               <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,215,128,0.35),transparent_55%),linear-gradient(to_bottom,rgba(255,255,255,0.06),rgba(0,0,0,0.25))]" />
               <div class="relative px-3 pt-3 pb-2">
                 <div class="flex items-center justify-center">
@@ -146,7 +146,7 @@ export default function JumboSlotMachine(props: Props) {
                   </svg>
                 </div>
 
-                <div class="mt-1 rounded-2xl border border-black/55 bg-gradient-to-b from-zinc-950 via-black to-black px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                <div class="mt-1 rounded-2xl border border-black/55 bg-linear-to-b from-zinc-950 via-black to-black px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
                   <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     <PayBox
                       label="💎 7 7 7"
@@ -181,15 +181,15 @@ export default function JumboSlotMachine(props: Props) {
               </div>
             </div>
 
-            <div class="mt-3 rounded-[22px] border border-black/55 bg-gradient-to-b from-zinc-800 via-zinc-900 to-black shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] p-3">
-              <div class="rounded-[18px] border border-black/65 bg-gradient-to-b from-zinc-950 via-black to-black p-3">
+            <div class="mt-3 rounded-[22px] border border-black/55 bg-linear-to-b from-zinc-800 via-zinc-900 to-black shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] p-3">
+              <div class="rounded-[18px] border border-black/65 bg-linear-to-b from-zinc-950 via-black to-black p-3">
                 <div class="grid grid-cols-3 gap-2">
                   <ReelCell hot>7</ReelCell>
                   <ReelCell>🍒</ReelCell>
                   <ReelCell>BAR</ReelCell>
                 </div>
 
-                <div class="mt-3 rounded-xl border border-black/60 bg-gradient-to-b from-zinc-900 to-black p-2 flex items-center justify-between gap-2">
+                <div class="mt-3 rounded-xl border border-black/60 bg-linear-to-b from-zinc-900 to-black p-2 flex items-center justify-between gap-2">
                   <div class="flex items-center gap-2">
                     <div class="w-2.5 h-2.5 rounded-full bg-red-400 shadow-[0_0_18px_rgba(248,113,113,0.65)]" />
                     <div class="text-[11px] font-semibold tracking-wide text-white/80">
@@ -201,21 +201,21 @@ export default function JumboSlotMachine(props: Props) {
                       PLAY
                     </div>
                     <div class="w-16 h-2 rounded-full bg-zinc-700/60 border border-black/60 overflow-hidden">
-                      <div class="w-9 h-full bg-gradient-to-r from-emerald-300/70 to-emerald-500/70" />
+                      <div class="w-9 h-full bg-linear-to-r from-emerald-300/70 to-emerald-500/70" />
                     </div>
                   </div>
                 </div>
               </div>
 
               <div class="mt-3 flex items-stretch justify-between gap-3">
-                <div class="flex-1 rounded-2xl border border-black/55 bg-gradient-to-b from-zinc-950 via-black to-black p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-                  <div class="rounded-xl border border-black/60 bg-gradient-to-b from-amber-950 via-black to-black px-3 py-2">
+                <div class="flex-1 rounded-2xl border border-black/55 bg-linear-to-b from-zinc-950 via-black to-black p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                  <div class="rounded-xl border border-black/60 bg-linear-to-b from-amber-950 via-black to-black px-3 py-2">
                     <div class="text-center text-sm font-black tracking-wide text-amber-200 drop-shadow-[0_2px_0_rgba(0,0,0,0.75)]">
                       Bars &amp; 7s Wins!
                     </div>
                   </div>
 
-                  <div class="mt-2 rounded-xl border border-black/60 bg-gradient-to-b from-zinc-900 to-black px-3 py-3">
+                  <div class="mt-2 rounded-xl border border-black/60 bg-linear-to-b from-zinc-900 to-black px-3 py-3">
                     <div class="text-center text-4xl font-black tracking-[0.22em] text-red-200 drop-shadow-[0_3px_0_rgba(0,0,0,0.7)]">
                       777
                     </div>
@@ -228,15 +228,15 @@ export default function JumboSlotMachine(props: Props) {
                 <div class="w-[94px] sm:w-[110px] flex items-center justify-center">
                   <div class="relative h-[190px] w-full flex items-center justify-center">
                     <div class="absolute top-1 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-red-500 border border-black/50 shadow-[0_10px_18px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.2)]" />
-                    <div class="absolute top-7 left-1/2 -translate-x-1/2 w-3 h-[120px] rounded-full bg-gradient-to-b from-zinc-100 via-zinc-300 to-zinc-700 border border-black/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_18px_rgba(0,0,0,0.5)] rotate-[8deg]" />
+                    <div class="absolute top-7 left-1/2 -translate-x-1/2 w-3 h-[120px] rounded-full bg-linear-to-b from-zinc-100 via-zinc-300 to-zinc-700 border border-black/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_18px_rgba(0,0,0,0.5)] rotate-[8deg]" />
                     <div class="absolute bottom-4 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-red-500 border border-black/55 shadow-[0_14px_22px_rgba(0,0,0,0.6),inset_0_2px_0_rgba(255,255,255,0.18)]" />
-                    <div class="absolute bottom-1 left-1/2 -translate-x-1/2 w-16 h-7 rounded-full bg-gradient-to-b from-zinc-300 via-zinc-500 to-zinc-800 border border-black/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]" />
+                    <div class="absolute bottom-1 left-1/2 -translate-x-1/2 w-16 h-7 rounded-full bg-linear-to-b from-zinc-300 via-zinc-500 to-zinc-800 border border-black/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]" />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="mt-3 rounded-[18px] border border-black/55 bg-gradient-to-b from-zinc-900 via-zinc-950 to-black px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+            <div class="mt-3 rounded-[18px] border border-black/55 bg-linear-to-b from-zinc-900 via-zinc-950 to-black px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
               <div class="flex items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
                   <div class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_18px_rgba(251,191,36,0.6)]" />
@@ -251,11 +251,11 @@ export default function JumboSlotMachine(props: Props) {
             </div>
           </div>
 
-          <div class="h-3 bg-gradient-to-b from-black/0 via-black/25 to-black/0" />
+          <div class="h-3 bg-linear-to-b from-black/0 via-black/25 to-black/0" />
         </div>
 
         <div class="relative mt-3 flex items-center justify-center">
-          <div class="w-[92%] h-6 rounded-full border border-black/50 bg-gradient-to-b from-zinc-100 via-zinc-400 to-zinc-800 shadow-[0_14px_22px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.2)]" />
+          <div class="w-[92%] h-6 rounded-full border border-black/50 bg-linear-to-b from-zinc-100 via-zinc-400 to-zinc-800 shadow-[0_14px_22px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.2)]" />
         </div>
       </div>
     </div>

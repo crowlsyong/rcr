@@ -10,7 +10,7 @@ export default function RiskExtensionPage() {
       <div className="bg-[#0F1729] text-white min-h-screen flex items-center justify-center p-6 sm:p-10">
         <section className="w-full max-w-3xl mx-auto text-center py-8 px-4 sm:py-12 sm:px-8 bg-[#0F1729] rounded-xl sm:shadow-2xl sm:shadow-blue-500/40 sm:border sm:border-gray-700 relative overflow-hidden">
           {/* Blue bar: only visible on sm screens and up */}
-          <div className="sm:absolute sm:top-0 sm:left-0 sm:right-0 sm:h-[4px] sm:bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400">
+          <div className="sm:absolute sm:top-0 sm:left-0 sm:right-0 sm:h-1 sm:bg-linear-to-r from-blue-600 via-blue-500 to-blue-400">
           </div>
           <p className="text-xl sm:text-2xl text-gray-400 mb-2 font-light">
             Introducing the
@@ -29,7 +29,7 @@ export default function RiskExtensionPage() {
               href="https://chromewebstore.google.com/detail/risk-credit-score/oemipgilahmncafhojjdiecpibhohdoa?authuser=0&hl=en"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold py-3 px-8 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 text-lg sm:text-xl"
+              className="inline-block w-full sm:w-auto bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold py-3 px-8 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 text-lg sm:text-xl"
             >
               Add Extension
             </a>

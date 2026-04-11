@@ -1,4 +1,4 @@
-// tailwind-v4-fix.ts
+// cleanup_tailwind-v4-fix.ts
 import { extname, join, relative } from "jsr:@std/path@^1.1.2";
 
 const ROOT = Deno.cwd();
