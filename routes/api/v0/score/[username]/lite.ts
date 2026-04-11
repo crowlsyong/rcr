@@ -19,7 +19,6 @@ import {
 const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2";
 
 export async function handler(
-  _req: Request,
   { params }: { params: { username: string } },
 ): Promise<Response> {
   const username = params.username;

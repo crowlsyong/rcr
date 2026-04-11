@@ -1,13 +1,14 @@
 // routes/admin/adjustments.tsx
-import { Handlers, PageProps } from "$fresh/server.ts";
+import { PageProps } from "fresh";
 import AdjustmentForm from "../../islands/admin/AdjustmentForm.tsx"; // Import the AdjustmentForm island
-import { AdminState } from "../_middleware.ts"; // Import AdminState from the middleware
+import { AdminState } from "../_middleware.ts";
+import { Handlers } from "fresh/compat";
 
 // The handler for this Fresh page.
 // It simply renders the page, letting the client-side island handle data fetching.
 export const handler: Handlers<null, AdminState> = {
   // FIXED: Removed 'async' keyword as there is no 'await' expression
-  GET(_req, ctx) {
+  GET(ctx) {
     // The middleware already sets ctx.state.isAdmin and ctx.state.githubLogin.
     // We just pass null for data, as the AdjustmentForm island fetches its own data.
     return ctx.render(null);

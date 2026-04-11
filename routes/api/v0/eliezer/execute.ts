@@ -1,5 +1,4 @@
 // routes/api/v0/eliezer/execute.ts
-import { Handlers } from "$fresh/server.ts";
 import {
   getMarketDataBySlug,
   postDataToManifoldApi,
@@ -7,6 +6,7 @@ import {
 import {
   ManaPaymentTransaction,
 } from "../../../../utils/api/manifold_types.ts";
+import { Handlers } from "fresh/compat";
 
 // Define log entry interfaces
 interface SuccessfulPayoutLog {
@@ -78,7 +78,8 @@ function handleError(message: string, status: number): Response {
 }
 
 export const handler: Handlers<ExecutePayoutsResponse> = {
-  async POST(req) {
+  async POST(ctx) {
+    const req = ctx.req;
     const body: ExecutePayoutsRequest = await req.json();
     const {
       apiKey,

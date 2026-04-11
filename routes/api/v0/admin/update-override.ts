@@ -1,8 +1,8 @@
 // routes/api/v0/admin/update-override.ts
-import { Handlers } from "$fresh/server.ts";
 import db from "../../../../database/db.ts";
 import { AdminState } from "../../../../routes/_middleware.ts";
-import { OverrideEvent } from "../credit-score/index.ts"; // Import the interface
+import { OverrideEvent } from "../credit-score/index.ts";
+import { Handlers } from "fresh/compat";
 
 // Corrected interface: it needs userId, plus all OverrideEvent properties, and originalTimestamp
 interface UpdateOverridePayload {
@@ -24,7 +24,9 @@ const getErrorMessage = (e: unknown): string => {
 };
 
 export const handler: Handlers<null, AdminState> = {
-  async POST(req, ctx) {
+  async POST(ctx) {
+    const req = ctx.req;
+
     console.log("API: /api/v0/admin/update-override POST handler hit!");
 
     if (!ctx.state.isAdmin) {

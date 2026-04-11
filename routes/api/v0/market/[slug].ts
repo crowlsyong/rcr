@@ -1,9 +1,10 @@
 // routes/api/v0/market/[slug].ts
-import { FreshContext, Handlers } from "$fresh/server.ts";
+import { FreshContext } from "fresh";
 import { getMarketDataBySlug } from "../../../../utils/api/manifold_api_service.ts";
+import { Handlers } from "fresh/compat";
 
 export const handler: Handlers = {
-  async GET(_req: Request, ctx: FreshContext) {
+  async GET(ctx: FreshContext) {
     const slug = ctx.params.slug;
 
     if (!slug) {

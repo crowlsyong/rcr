@@ -1,8 +1,8 @@
 // routes/auth/signin.ts
-import { Handlers } from "$fresh/server.ts";
 import { setCookie } from "$std/http/cookie.ts";
 import { setOauthSession } from "../../database/db.ts";
 import { oauth2Client } from "../../utils/auth/oauth.ts";
+import { Handlers } from "fresh/compat";
 
 export const handler: Handlers = {
   async GET() {

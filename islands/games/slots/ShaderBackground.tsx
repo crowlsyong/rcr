@@ -1,6 +1,6 @@
 // islands/background/ShaderBackground.tsx
 import { useEffect, useRef, useState } from "preact/hooks";
-import { IS_BROWSER } from "$fresh/runtime.ts";
+import { IS_BROWSER } from "fresh/runtime";
 
 type Props = {
   class?: string;

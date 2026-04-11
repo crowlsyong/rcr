@@ -1,5 +1,5 @@
 // routes/ext/[username].tsx
-import { PageProps } from "$fresh/server.ts";
+import { PageProps } from "fresh";
 import CreditScore from "../../islands/tools/creditscore/CreditScoreChExt.tsx"; // Importing the island
 
 export default function UserPage({ params }: PageProps) {

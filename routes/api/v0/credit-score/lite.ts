@@ -1,5 +1,5 @@
 // routes/api/v0/credit-score/lite.ts
-import { FreshContext, Handlers } from "$fresh/server.ts";
+import { FreshContext } from "fresh";
 import {
   fetchUserData,
   fetchUserDataLiteById,
@@ -19,6 +19,7 @@ import {
   fetchTransactionCount,
   fetchUserPortfolio,
 } from "../../../../utils/api/manifold_api_service.ts";
+import { Handlers } from "fresh/compat";
 
 const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2";
 
@@ -52,7 +53,8 @@ async function resolveUser(
 }
 
 export const handler: Handlers = {
-  async GET(req: Request, _ctx: FreshContext) { // Changed 'ctx' to '_ctx' here
+  async GET(ctx) {
+    const req = ctx.req;
     const url = new URL(req.url);
     const username = url.searchParams.get("username");
     const userIdParam = url.searchParams.get("userId");

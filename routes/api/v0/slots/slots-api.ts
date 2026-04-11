@@ -1,6 +1,6 @@
-// routes/api/v0/slots/slots-api.ts
-import { Handlers } from "$fresh/server.ts";
+import { Handlers } from "fresh/compat";
 
+// routes/api/v0/slots/slots-api.ts
 const API_BASE = "https://api.manifold.markets";
 
 type DisplayUser = {
@@ -276,7 +276,9 @@ function makeClaimId() {
 }
 
 export const handler: Handlers = {
-  async POST(req) {
+  async POST(ctx) {
+    const req = ctx.req;
+
     try {
       pruneClaims();
 

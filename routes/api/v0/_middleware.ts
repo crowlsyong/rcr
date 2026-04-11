@@ -1,5 +1,5 @@
 // routes/api/v0/_middleware.ts
-import { FreshContext } from "$fresh/server.ts";
+import { FreshContext } from "fresh";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*", // Allow any origin
@@ -8,7 +8,9 @@ const CORS_HEADERS = {
     "Content-Type, Authorization, X-Requested-With",
 };
 
-export async function handler(req: Request, ctx: FreshContext) {
+export async function handler(ctx: FreshContext) {
+  const req = ctx.req;
+
   // Handle preflight OPTIONS requests
   if (req.method === "OPTIONS") {
     return new Response(null, {

@@ -1,5 +1,4 @@
 // routes/api/v0/credit-score/index.ts
-import { Handlers } from "$fresh/server.ts";
 import {
   fetchLoanTransactions,
   fetchManaAndRecentRank,
@@ -24,6 +23,7 @@ import {
   UserPortfolio,
 } from "../../../../utils/api/manifold_types.ts";
 import db from "../../../../database/db.ts";
+import { Handlers } from "fresh/compat";
 
 const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2";
 
@@ -75,7 +75,8 @@ async function resolveUser(
 }
 
 export const handler: Handlers = {
-  async GET(req) {
+  async GET(ctx) {
+    const req = ctx.req;
     const url = new URL(req.url);
     const username = url.searchParams.get("username");
     const userIdParam = url.searchParams.get("userId");

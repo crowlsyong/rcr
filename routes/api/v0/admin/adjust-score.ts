@@ -1,7 +1,7 @@
 // routes/api/v0/admin/adjust-score.ts
-import { Handlers } from "$fresh/server.ts";
 import db from "../../../../database/db.ts";
 import { AdminState } from "../../../../routes/_middleware.ts";
+import { Handlers } from "fresh/compat";
 
 interface OverrideEvent {
   username: string;
@@ -19,7 +19,9 @@ const getErrorMessage = (e: unknown): string => {
 };
 
 export const handler: Handlers<null, AdminState> = {
-  async POST(req, ctx) {
+  async POST(ctx) {
+    const req = ctx.req;
+
     console.log("API: /api/v0/admin/adjust-score POST handler hit!"); // NEW: Debugging log
 
     if (!ctx.state.isAdmin) {

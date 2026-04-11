@@ -1,9 +1,9 @@
+import { Handlers } from "fresh/compat";
+
 // routes/api/v0/validate-partner-code.ts
-
-import { Handlers } from "$fresh/server.ts";
-
 export const handler: Handlers = {
-  async POST(req) {
+  async POST(ctx) {
+    const req = ctx.req;
     const { code } = await req.json();
 
     const VALID_PARTNER_CODES_STR = Deno.env.get("PARTNER_CODES") || "";

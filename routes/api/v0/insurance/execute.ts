@@ -1,10 +1,10 @@
 // routes/api/v0/insurance/execute.ts
-import { Handlers } from "$fresh/server.ts";
 import {
   calculateInsuranceDetails,
   executeInsuranceTransaction,
   TransactionExecutionResult,
 } from "../../../../utils/api/insurance_calculator_logic.ts";
+import { Handlers } from "fresh/compat";
 
 function createErrorResponse(message: string, status: number): Response {
   return new Response(JSON.stringify({ success: false, error: message }), {
@@ -31,7 +31,9 @@ interface InsuranceExecutionBody {
 }
 
 export const handler: Handlers<TransactionExecutionResult | null> = {
-  async POST(req) {
+  async POST(ctx) {
+    const req = ctx.req;
+
     try {
       const body: InsuranceExecutionBody = await req.json();
       const {

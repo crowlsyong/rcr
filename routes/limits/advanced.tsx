@@ -1,6 +1,6 @@
 // routes/limits/advanced.tsx
 
-import { Head } from "$fresh/runtime.ts";
+import { Head } from "fresh/runtime";
 import AdvancedLimitsContainer from "../../islands/tools/limits/advanced/route/Container.tsx";
 
 export default function AdvancedLimitsPage() {

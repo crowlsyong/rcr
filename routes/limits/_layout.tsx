@@ -1,7 +1,7 @@
 // routes/limits/_layout.tsx
 
-import { Head } from "$fresh/runtime.ts"; // Import Head from Fresh runtime
-import { PageProps } from "$fresh/server.ts"; // Import PageProps
+import { Head } from "fresh/runtime"; // Import Head from Fresh runtime
+import { PageProps } from "fresh"; // Import PageProps
 import MenuBar from "../../islands/menu/MenuBar.tsx"; // Keep MenuBar import for later, or remove if testing barebones
 
 export default function LimitsLayout({ Component, url }: PageProps) { // Use PageProps and destructure Component, url

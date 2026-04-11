@@ -1,8 +1,6 @@
 // routes/docs/_layout.tsx
-
-import { Fragment } from "preact";
-import { PageProps } from "$fresh/server.ts";
-import { Head } from "$fresh/runtime.ts";
+import { PageProps } from "fresh";
+import { Head } from "fresh/runtime";
 
 export default function DocsLayout({ Component }: PageProps) {
   return (

@@ -1,5 +1,5 @@
 // routes/extension.tsx
-import { Head } from "$fresh/runtime.ts";
+import { Head } from "fresh/runtime";
 
 export default function RiskExtensionPage() {
   return (

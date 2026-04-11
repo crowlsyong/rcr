@@ -1,6 +1,5 @@
 // routes/docs/api.tsx
-import { Fragment } from "preact";
-import { Head } from "$fresh/runtime.ts";
+import { Head } from "fresh/runtime";
 
 export default function NotionDocsEmbed() {
   const notionPageUrl =

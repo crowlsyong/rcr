@@ -1,5 +1,4 @@
 // routes/api/v0/place-limit-orders.ts
-import { Handlers } from "$fresh/server.ts";
 import {
   cancelManifoldBet,
   placeManifoldBet,
@@ -8,6 +7,7 @@ import {
   BetPayload,
   ManifoldBetResponse,
 } from "../../../utils/api/manifold_types.ts";
+import { Handlers } from "fresh/compat";
 
 interface ApiOrder {
   amount: number;
@@ -37,7 +37,9 @@ type IncomingRequestBody =
   });
 
 export const handler: Handlers = {
-  async POST(req, _ctx) {
+  async POST(_ctx) {
+    const req = ctx.req;
+
     try {
       const body: IncomingRequestBody = await req.json();
       const { apiKey, contractId, expiresAt, expiresMillisAfter, answerId } =

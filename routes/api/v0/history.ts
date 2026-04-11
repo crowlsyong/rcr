@@ -1,7 +1,7 @@
 // routes/api/v0/history.ts
-import { Handlers } from "$fresh/server.ts";
 import db from "../../../database/db.ts";
-import { OverrideEvent } from "./credit-score/index.ts"; // Import OverrideEvent
+import { OverrideEvent } from "./credit-score/index.ts";
+import { Handlers } from "fresh/compat";
 
 interface CreditScoreDataPoint {
   userId: string;
@@ -17,7 +17,8 @@ const getErrorMessage = (e: unknown): string => {
 };
 
 export const handler: Handlers = {
-  async GET(req): Promise<Response> {
+  async GET(ctx): Promise<Response> {
+    const req = ctx.req;
     const url = new URL(req.url);
     const username = url.searchParams.get("username");
     const userId = url.searchParams.get("userId");

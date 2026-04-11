@@ -21,11 +21,13 @@ import {
   ManifoldUser,
   UserPortfolio,
 } from "../../../utils/api/manifold_types.ts";
-import db from "../../../database/db.ts"; // Make sure db is imported
+import db from "../../../database/db.ts";
+import { FreshContext } from "fresh";
 
 const MANIFOLD_USER_ID = "IPTOzEqrpkWmEzh6hwvAyY9PqFb2";
 
-export async function handler(req: Request): Promise<Response> {
+export async function handler(ctx: FreshContext): Promise<Response> {
+  const req = ctx.req;
   const url = new URL(req.url);
   const username = url.searchParams.get("username");
 

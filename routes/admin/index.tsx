@@ -1,9 +1,10 @@
 // routes/admin/index.tsx
 /// <reference lib="deno.unstable" />
 
-import { Handlers, PageProps } from "$fresh/server.ts";
+import { PageProps } from "fresh";
 import db from "../../database/db.ts";
-import { AdminState } from "../_middleware.ts"; // Import state from middleware
+import { AdminState } from "../_middleware.ts";
+import { Handlers } from "fresh/compat";
 
 interface DisplayKvEntry {
   key: Deno.KvKey;
@@ -17,7 +18,7 @@ interface AdminPageData {
 }
 
 export const handler: Handlers<AdminPageData, AdminState> = {
-  async GET(_req, ctx) {
+  async GET(ctx) {
     if (!ctx.state.isAdmin) {
       // Render page without data if not admin, component will show sign-in prompt
       return ctx.render({ entries: [] });

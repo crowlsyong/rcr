@@ -1,11 +1,11 @@
 // routes/chart/index.tsx
-import { Handlers } from "$fresh/server.ts";
 import Chart from "../../islands/tools/chart/Chart.tsx"; // The main chart island
-import ShareURL from "../../islands/buttons/ShareURL.tsx"; // Import ShareURL
+import ShareURL from "../../islands/buttons/ShareURL.tsx";
+import { Handlers } from "fresh/compat";
 
 // The handler now simply renders the page, the island handles URL parsing.
 export const handler: Handlers = {
-  GET(_req, ctx) {
+  GET(ctx) {
     return ctx.render();
   },
 };

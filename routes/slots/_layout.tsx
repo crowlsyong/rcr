@@ -1,6 +1,6 @@
 // routes/slots/_layout.tsx
-import { Head } from "$fresh/runtime.ts";
-import { PageProps } from "$fresh/server.ts";
+import { Head } from "fresh/runtime";
+import { PageProps } from "fresh";
 import ShaderBackground from "../../islands/games/slots/ShaderBackground.tsx";
 
 export default function SlotsLayout({ Component }: PageProps) {

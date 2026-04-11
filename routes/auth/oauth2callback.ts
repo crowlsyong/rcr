@@ -1,5 +1,4 @@
 // routes/auth/oauth2callback.ts
-import { Handlers } from "$fresh/server.ts";
 import { deleteCookie, getCookies, setCookie } from "$std/http/cookie.ts";
 import {
   getAndDeleteOauthSession,
@@ -8,9 +7,11 @@ import {
 import { getAuthenticatedUser } from "../../utils/auth/github.ts";
 import { oauth2Client } from "../../utils/auth/oauth.ts";
 import { ALLOWED_ADMIN_LOGINS } from "../../utils/allowed_users.ts";
+import { Handlers } from "fresh/compat";
 
 export const handler: Handlers = {
-  async GET(req) {
+  async GET(ctx) {
+    const req = ctx.req;
     const cookies = getCookies(req.headers);
     const oauthSessionId = cookies["oauth-session"];
 

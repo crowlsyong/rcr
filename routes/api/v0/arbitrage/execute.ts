@@ -1,10 +1,10 @@
 // routes/api/v0/arbitrage/execute.ts
-import { Handlers } from "$fresh/server.ts";
 import {
   cancelManifoldBet,
   placeManifoldBet,
 } from "../../../../utils/api/manifold_api_service.ts";
 import { BetPayload } from "../../../../utils/api/manifold_types.ts";
+import { Handlers } from "fresh/compat";
 
 interface ArbitrageExecutionBody {
   apiKey: string;
@@ -66,7 +66,9 @@ const safePlaceBet = async (
 };
 
 export const handler: Handlers = {
-  async POST(req) {
+  async POST(ctx) {
+    const req = ctx.req;
+
     try {
       const { apiKey, betA, betB }: ArbitrageExecutionBody = await req.json();
 

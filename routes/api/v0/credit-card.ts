@@ -1,5 +1,4 @@
 // routes/api/v0/credit-card.ts
-import { Handlers } from "$fresh/server.ts";
 import {
   calculateInsuranceDetails,
   generateCreditCardReceiptMessage,
@@ -10,6 +9,7 @@ import {
   postComment,
 } from "../../../utils/api/manifold_api_service.ts";
 import { ManaPaymentTransaction } from "../../../utils/api/manifold_types.ts";
+import { Handlers } from "fresh/compat";
 
 interface CreditInsuranceRequestBody {
   creditcard: boolean;
@@ -66,7 +66,8 @@ function getCoverageValueFromPolicy(policy: string): number | null {
 }
 
 export const handler: Handlers<CreditInsuranceResponse | null> = {
-  async POST(req) {
+  async POST(ctx) {
+    const req = ctx.req;
     const body: CreditInsuranceRequestBody = await req.json();
 
     const {

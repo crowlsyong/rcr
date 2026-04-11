@@ -1,7 +1,7 @@
 // routes/api/v0/admin/delete-override.ts
-import { Handlers } from "$fresh/server.ts";
 import db from "../../../../database/db.ts"; // Path to db.ts
-import { AdminState } from "../../../../routes/_middleware.ts"; // Admin state from middleware
+import { AdminState } from "../../../../routes/_middleware.ts";
+import { Handlers } from "fresh/compat";
 
 const getErrorMessage = (e: unknown): string => {
   return typeof e === "object" && e !== null && "message" in e
@@ -10,7 +10,9 @@ const getErrorMessage = (e: unknown): string => {
 };
 
 export const handler: Handlers<null, AdminState> = {
-  async POST(req, ctx) {
+  async POST(ctx) {
+    const req = ctx.req;
+
     if (!ctx.state.isAdmin) {
       return new Response(
         JSON.stringify({ error: "Unauthorized: Admin access required." }),

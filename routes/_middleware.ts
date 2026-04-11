@@ -1,6 +1,6 @@
 // routes/_middleware.ts
 
-import { FreshContext } from "$fresh/server.ts";
+import { FreshContext } from "fresh";
 import { deleteCookie, getCookies } from "$std/http/cookie.ts";
 import { deleteAdminSession, getAdminLoginBySession } from "../database/db.ts";
 import { ALLOWED_ADMIN_LOGINS } from "../utils/allowed_users.ts";
@@ -15,9 +15,10 @@ const REDIRECTS: Record<string, string> = {
 };
 
 export async function handler(
-  req: Request,
   ctx: FreshContext<AdminState>,
 ) {
+  const req = ctx.req;
+
   try {
     const url = new URL(req.url);
 

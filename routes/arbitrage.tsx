@@ -1,4 +1,4 @@
-import { Head } from "$fresh/runtime.ts";
+import { Head } from "fresh/runtime";
 import ArbitrageCalculator from "../islands/tools/arbitrage/ArbitrageCalculator.tsx";
 
 export default function ArbitragePage() {

@@ -1,11 +1,12 @@
 // routes/slots/index.tsx
-import { Handlers } from "$fresh/server.ts";
 import Slots from "../../islands/games/slots/Slots.tsx";
 import About from "../../islands/games/slots/About.tsx";
+import { Handlers } from "fresh/compat";
+
 // import JumboSlotMachine from "../../islands/games/slots/JumboSlotMachine.tsx";
 
 export const handler: Handlers = {
-  GET(_req, ctx) {
+  GET(ctx) {
     return ctx.render();
   },
 };

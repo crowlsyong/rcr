@@ -1,30 +1,26 @@
 {
   "unstable": ["kv"],
-  "lock": true,
   "tasks": {
     "check": "deno fmt --check && deno lint && deno check **/*.ts && deno check **/*.tsx",
-    "cli": "echo \"import '\\$fresh/src/dev/cli.ts'\" | deno run --unstable -A -",
-    "manifest": "deno task cli manifest $(pwd)",
-    "start": "deno run -A --watch=static/,routes/ --unstable-kv dev.ts",
-    "build": "deno run -A --unstable-kv dev.ts build",
-    "preview": "deno run -A main.ts",
-    "update": "deno run -A -r https://fresh.deno.dev/update ."
+    "dev": "deno run -A --node-modules-dir=auto npm:vite",
+    "build": "deno run -A --node-modules-dir=auto npm:vite build",
+    "preview": "deno serve -A _fresh/server.js",
+    "update": "deno run -A -r jsr:@fresh/update ."
   },
   "lint": { "rules": { "tags": ["fresh", "recommended"] } },
-  "exclude": ["**/_fresh/*"],
+  "exclude": ["**/_fresh/*", "node_modules/"],
   "imports": {
-    "$fresh/": "https://deno.land/x/fresh@1.7.3/",
+    "fresh": "jsr:@fresh/core@^2.0.0-alpha.25",
+    "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@^1.0.8",
+    "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.2.2",
     "chart.js": "npm:chart.js@^4.5.0",
     "chart.js/auto": "npm:chart.js@^4.5.0/auto",
-    "preact": "https://esm.sh/preact@10.22.0",
+    "preact": "npm:preact@^10.28.3",
     "preact/": "https://esm.sh/preact@10.22.0/",
-    "@preact/signals": "https://esm.sh/*@preact/signals@1.2.2",
-    "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.5.1",
+    "@preact/signals": "npm:@preact/signals@^2.7.1",
     "@preact-icons/tb": "jsr:@preact-icons/tb@^1.0.14",
-    "tailwindcss": "npm:tailwindcss@3.4.1",
-    "tailwindcss/": "npm:/tailwindcss@3.4.1/",
-    "tailwindcss/plugin": "npm:/tailwindcss@3.4.1/plugin.js",
-    "$std/": "https://deno.land/std@0.216.0/"
+    "$std/": "https://deno.land/std@0.216.0/",
+    "vite": "npm:vite@^8.0.8"
   },
   "compilerOptions": { "jsx": "react-jsx", "jsxImportSource": "preact" },
   "nodeModulesDir": "auto"

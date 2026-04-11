@@ -1,6 +1,6 @@
 // routes/qr/[string].tsx
 
-import { PageProps } from "$fresh/server.ts";
+import { PageProps } from "fresh";
 
 export default function SimpleDisplayPage(props: PageProps) {
   const { string } = props.params;

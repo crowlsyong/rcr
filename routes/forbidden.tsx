@@ -1,5 +1,5 @@
 // routes/forbidden.tsx
-import { Head } from "$fresh/runtime.ts";
+import { Head } from "fresh/runtime";
 
 export default function ForbiddenPage() {
   return (

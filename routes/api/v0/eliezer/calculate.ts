@@ -1,5 +1,4 @@
 // routes/api/v0/eliezer/calculate.ts
-import { Handlers } from "$fresh/server.ts";
 import {
   fetchBetsForContract,
   fetchUserDataLiteById,
@@ -10,6 +9,7 @@ import {
   type ManifoldBetResponse as _ManifoldBetResponse, // <--- REAL FIX (as per linter suggestion)
   MarketData,
 } from "../../../../utils/api/manifold_types.ts";
+import { Handlers } from "fresh/compat";
 
 interface CalculatePayoutsRequest {
   marketUrl: string;
@@ -55,7 +55,8 @@ const getMarketSlugFromUrlPath = (url: string): string | null => {
 };
 
 export const handler: Handlers<EliezerCalculateResponse> = {
-  async POST(req) {
+  async POST(ctx) {
+    const req = ctx.req;
     const body: CalculatePayoutsRequest = await req.json();
     const { marketUrl, apologyPercentage, useStartingBetLogic } = body;
 

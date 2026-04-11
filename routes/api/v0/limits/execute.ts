@@ -1,10 +1,10 @@
 // routes/api/v0/limits/execute.ts
-import { Handlers } from "$fresh/server.ts";
 import {
   cancelManifoldBet,
   placeManifoldBet,
 } from "../../../../utils/api/manifold_api_service.ts";
 import { BetPayload } from "../../../../utils/api/manifold_types.ts";
+import { Handlers } from "fresh/compat";
 
 interface ApiOrder {
   amount: number;
@@ -29,7 +29,9 @@ function createErrorResponse(message: string, status: number): Response {
 }
 
 export const handler: Handlers = {
-  async POST(req) {
+  async POST(ctx) {
+    const req = ctx.req;
+
     try {
       const body: LimitOrderRequestBody = await req.json();
       const {

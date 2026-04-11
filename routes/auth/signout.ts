@@ -1,10 +1,11 @@
 // routes/auth/signout.ts
-import { Handlers } from "$fresh/server.ts";
 import { deleteCookie, getCookies } from "$std/http/cookie.ts";
 import { deleteAdminSession } from "../../database/db.ts";
+import { Handlers } from "fresh/compat";
 
 export const handler: Handlers = {
-  async GET(req) {
+  async GET(ctx) {
+    const req = ctx.req;
     const cookies = getCookies(req.headers);
     const adminSessionId = cookies["session"];
 

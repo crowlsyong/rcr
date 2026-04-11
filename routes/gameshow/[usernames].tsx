@@ -1,5 +1,5 @@
 // routes/gameshow/[usernames].tsx
-import { PageProps } from "$fresh/server.ts";
+import { PageProps } from "fresh";
 import GameShowCreditScore from "../../islands/tools/custom/GameShowCreditScore.tsx";
 
 export default function GameShowPage({ params }: PageProps) {

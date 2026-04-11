@@ -1,10 +1,11 @@
 // routes/insurance.tsx
 
 import InsuranceCalc from "../islands/tools/insurance/InsuranceCalc.tsx";
-import { Head } from "$fresh/runtime.ts";
-import { RouteContext } from "$fresh/server.ts";
+import { Head } from "fresh/runtime";
+import { FreshContext } from "fresh";
+import { RouteContext } from "fresh/compat";
 
-export default function Home(_req: Request, _ctx: RouteContext) {
+export default function Home(_ctx: FreshContext) {
   return (
     <>
       <Head>

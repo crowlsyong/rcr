@@ -1,7 +1,7 @@
 // islands/buttons/Button.tsx
 
 import { JSX } from "preact";
-import { IS_BROWSER } from "$fresh/runtime.ts";
+import { IS_BROWSER } from "fresh/runtime";
 
 interface ButtonProps extends JSX.HTMLAttributes<HTMLAnchorElement> {
   url: string;

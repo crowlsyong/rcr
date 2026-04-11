@@ -1,10 +1,10 @@
 // routes/api/v0//place-arbitrage.bets.ts
-import { Handlers } from "$fresh/server.ts";
 import {
   cancelManifoldBet,
   placeManifoldBet,
 } from "../../../utils/api/manifold_bet_helpers.ts";
 import { BetPayload } from "../../../utils/api/manifold_types.ts";
+import { Handlers } from "fresh/compat";
 
 interface MarketInfo {
   slug: string;
@@ -28,7 +28,9 @@ interface PlaceBetResult {
 }
 
 export const handler: Handlers = {
-  async POST(req, _ctx) {
+  async POST(_ctx) {
+    const req = ctx.req;
+
     try {
       const { apiKey, betA, betB, marketAInfo, marketBInfo }: RequestBody =
         await req.json();

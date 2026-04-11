@@ -1,11 +1,11 @@
 // routes/api/v0/insurance.ts
-import { Handlers } from "$fresh/server.ts";
 import {
   calculateInsuranceDetails,
   executeInsuranceTransaction,
   InsuranceCalculationResult,
   TransactionExecutionResult,
 } from "../../../utils/api/insurance_calculator_logic.ts";
+import { Handlers } from "fresh/compat";
 
 function handleError(message: string, status: number): Response {
   return new Response(JSON.stringify({ success: false, error: message }), {
@@ -19,7 +19,8 @@ function handleError(message: string, status: number): Response {
 export const handler: Handlers<
   InsuranceCalculationResult | TransactionExecutionResult | null
 > = {
-  async GET(req) {
+  async GET(ctx) {
+    const req = ctx.req;
     const url = new URL(req.url);
     const params = url.searchParams;
 
@@ -89,7 +90,8 @@ export const handler: Handlers<
     }
   },
 
-  async POST(req) {
+  async POST(ctx) {
+    const req = ctx.req;
     const body = await req.json();
     const {
       apiKey,
