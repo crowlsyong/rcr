@@ -30,7 +30,7 @@ export default function PayoutTable(props: { iconUrls: readonly string[] }) {
   }));
 
   return (
-    <details class="rounded-[18px] bg-gradient-to-b from-[#141018] via-[#0f0b12] to-black shadow-[0_18px_48px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.08)] overflow-hidden group">
+    <details class="rounded-[18px] bg-linear-to-b from-[#141018] via-[#0f0b12] to-black shadow-[0_18px_48px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.08)] overflow-hidden group">
       <summary class="list-none cursor-pointer select-none px-4 py-3 flex items-center justify-between gap-3 bg-[linear-gradient(to_right,rgba(255,196,88,0.18),rgba(255,255,255,0.04),rgba(82,255,214,0.10))] border-b border-white/20">
         <div class="flex items-center gap-3">
           <div class="text-[12px] tracking-[0.18em] font-black text-white/90">
@@ -50,7 +50,7 @@ export default function PayoutTable(props: { iconUrls: readonly string[] }) {
       </summary>
 
       <div class="overflow-x-auto">
-        <table class="w-full min-w-[640px] border-separate border-spacing-0">
+        <table class="w-full min-w-160 border-separate border-spacing-0">
           <thead>
             <tr class="text-[11px] uppercase tracking-wide">
               <th class="text-left py-2 px-3 text-white/70 border-b border-white/8">
@@ -75,7 +75,7 @@ export default function PayoutTable(props: { iconUrls: readonly string[] }) {
             {rows.map((r, idx) => (
               <tr
                 key={idx}
-                class={idx % 2 === 0 ? "bg-white/[0.02]" : "bg-white/[0.05]"}
+                class={idx % 2 === 0 ? "bg-white/2" : "bg-white/5"}
               >
                 <td class="py-2 px-3 border-b border-white/6">
                   <div class="w-9 h-9 rounded-xl bg-black/35 border border-white/8 grid place-items-center shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">

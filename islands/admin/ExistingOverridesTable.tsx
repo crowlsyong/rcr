@@ -125,7 +125,7 @@ export default function ExistingOverridesTable({
                 <td class="px-4 py-2 text-xxs text-gray-200">
                   {event.modifier > 0 ? `+${event.modifier}` : event.modifier}
                 </td>
-                <td class="px-4 py-2 text-xxs text-gray-300 max-w-[200px] truncate">
+                <td class="px-4 py-2 text-xxs text-gray-300 max-w-50 truncate">
                   {event.description}
                 </td>
                 <td class="px-4 py-2 text-xxs text-blue-400 hover:underline">
