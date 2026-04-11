@@ -13,7 +13,7 @@ export default function GameShowPage({ params }: PageProps) {
         <img
           src="/nash-pit-transaprent-risk.png"
           alt="Company Logo"
-          class="max-w-[240px] md:max-w-sm lg:max-w-md mx-auto" // Adjusted max-width for mobile
+          class="max-w-60 md:max-w-sm lg:max-w-md mx-auto" // Adjusted max-width for mobile
         />
       </div>
 

@@ -14,7 +14,7 @@ function PayBox(
         </div>
         <div class="text-[10px] font-black text-white/90">{mult}</div>
       </div>
-      <div class="h-[1px] bg-black/25" />
+      <div class="h-px bg-black/25" />
       <div class="px-2 py-1 text-[9px] text-white/70 tracking-wide">
         3 in a row
       </div>
@@ -53,7 +53,7 @@ export default function JumboSlotMachine(props: Props) {
   return (
     <div
       {...props}
-      class={`w-full max-w-[520px] mx-auto ${props.class || ""}`}
+      class={`w-full max-w-130 mx-auto ${props.class || ""}`}
     >
       <div class="relative rounded-[28px] p-4 sm:p-5 bg-linear-to-b from-zinc-200 via-zinc-300 to-zinc-700 shadow-[0_28px_60px_rgba(0,0,0,0.55)] border border-black/40">
         <div class="absolute inset-0 rounded-[28px] bg-[radial-gradient(circle_at_20%_10%,rgba(255,255,255,0.45),transparent_35%),radial-gradient(circle_at_85%_20%,rgba(255,255,255,0.25),transparent_40%),linear-gradient(to_bottom,rgba(255,255,255,0.12),rgba(0,0,0,0.2))] pointer-events-none" />
@@ -66,7 +66,7 @@ export default function JumboSlotMachine(props: Props) {
                 <div class="flex items-center justify-center">
                   <svg
                     viewBox="0 0 360 120"
-                    class="w-full max-w-[360px] h-[88px]"
+                    class="w-full max-w-90 h-22"
                   >
                     <defs>
                       <path
@@ -225,10 +225,10 @@ export default function JumboSlotMachine(props: Props) {
                   </div>
                 </div>
 
-                <div class="w-[94px] sm:w-[110px] flex items-center justify-center">
-                  <div class="relative h-[190px] w-full flex items-center justify-center">
+                <div class="w-23.5 sm:w-27.5 flex items-center justify-center">
+                  <div class="relative h-47.5 w-full flex items-center justify-center">
                     <div class="absolute top-1 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-red-500 border border-black/50 shadow-[0_10px_18px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.2)]" />
-                    <div class="absolute top-7 left-1/2 -translate-x-1/2 w-3 h-[120px] rounded-full bg-linear-to-b from-zinc-100 via-zinc-300 to-zinc-700 border border-black/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_18px_rgba(0,0,0,0.5)] rotate-[8deg]" />
+                    <div class="absolute top-7 left-1/2 -translate-x-1/2 w-3 h-30 rounded-full bg-linear-to-b from-zinc-100 via-zinc-300 to-zinc-700 border border-black/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_18px_rgba(0,0,0,0.5)] rotate-[8deg]" />
                     <div class="absolute bottom-4 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-red-500 border border-black/55 shadow-[0_14px_22px_rgba(0,0,0,0.6),inset_0_2px_0_rgba(255,255,255,0.18)]" />
                     <div class="absolute bottom-1 left-1/2 -translate-x-1/2 w-16 h-7 rounded-full bg-linear-to-b from-zinc-300 via-zinc-500 to-zinc-800 border border-black/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]" />
                   </div>

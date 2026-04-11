@@ -14,7 +14,7 @@ export default function DocsLayout({ Component }: PageProps) {
         />
       </Head>
 
-      <div class="fixed pt-[44px] inset-0 bg-white dark:bg-gray-900 transition-colors duration-200">
+      <div class="fixed pt-11 inset-0 bg-white dark:bg-gray-900 transition-colors duration-200">
         <main class="h-full w-full p-0 m-0">
           <Component />
         </main>

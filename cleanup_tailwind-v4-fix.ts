@@ -109,7 +109,7 @@ function escapeRegex(value: string): string {
 function canonicalSpacing(px: string): string | null {
   const n = Number(px);
   if (!Number.isFinite(n) || n < 0) return null;
-  if (n % 4 !== 0) return null;
+  if (n % 2 !== 0) return null;
   return String(n / 4);
 }
 

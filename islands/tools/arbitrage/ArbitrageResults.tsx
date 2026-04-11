@@ -109,7 +109,7 @@ export default function ArbitrageResults(
   };
 
   return (
-    <div class="bg-gray-800 shadow-lg rounded-lg p-3 mt-6 border border-gray-700 min-h-[120px] flex items-center justify-center">
+    <div class="bg-gray-800 shadow-lg rounded-lg p-3 mt-6 border border-gray-700 min-h-30 flex items-center justify-center">
       {renderContent()}
     </div>
   );

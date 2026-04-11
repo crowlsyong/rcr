@@ -78,7 +78,7 @@ export default function AdvancedMarketInfoDisplay({
                 type="button"
                 onClick={() => copyToClipboard(marketData.id)}
                 class="ml-2 p-1 rounded-md bg-gray-700 hover:bg-gray-600 text-white flex items-center justify-center focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-100 ease-in-out
-                       min-w-[48px] h-6"
+                       min-w-12 h-6"
                 title={copied ? "Copied!" : "Copy Market ID"}
               >
                 {isClient // Conditionally render icon

@@ -388,7 +388,7 @@ export default function Institutions(props: InstitutionsProps): JSX.Element {
                   handleInstitutionSelect(
                     key as "BANK" | "IMF" | "RISK" | "OFFSHORE",
                   )}
-                class={`flex-1 p-2 rounded-md font-semibold text-sm transition-colors duration-200 min-w-[100px] ${
+                class={`flex-1 p-2 rounded-md font-semibold text-sm transition-colors duration-200 min-w-25 ${
                   institution.value === key
                     ? "bg-blue-600 text-white"
                     : "bg-gray-700 hover:bg-gray-600 border border-gray-700"

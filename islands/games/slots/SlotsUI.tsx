@@ -157,7 +157,7 @@ export default function SlotsUI(props: Props) {
           <div class="pt-10 pb-4 sm:px-8 py-5 sm:py-6 border-b border-white/8 flex items-center justify-center bg-[radial-gradient(circle_at_50%_0%,rgba(255,214,120,0.22),transparent_60%),linear-gradient(to_bottom,rgba(255,255,255,0.06),transparent)]">
             <svg
               viewBox="0 -20 360 160"
-              class="w-[320px] sm:w-110 h-30"
+              class="w-80 sm:w-110 h-30"
             >
               <defs>
                 <path id="arc" d="M 30 98 C 90 18, 270 18, 330 98" />
