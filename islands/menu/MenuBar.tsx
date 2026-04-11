@@ -115,7 +115,7 @@ export default function MenuBar({ theme = "default" }: MenuBarProps) { // Defaul
 
         <div
           ref={menuRef}
-          class={`fixed top-0 right-0 h-full w-full md:w-[300px] ${menuBgClass} bg-opacity-70 backdrop-blur-lg text-white p-6 z-50 md:rounded-l-lg md:border-l-2 border-[#334155] transform transition-transform duration-300 ease-in-out ${
+          class={`fixed top-0 right-0 h-full w-full md:w-75 ${menuBgClass} bg-opacity-70 backdrop-blur-lg text-white p-6 z-50 md:rounded-l-lg md:border-l-2 border-[#334155] transform transition-transform duration-300 ease-in-out ${
             isMenuOpen.value
               ? "translate-x-0 pointer-events-auto"
               : "translate-x-full pointer-events-none"
@@ -140,7 +140,7 @@ export default function MenuBar({ theme = "default" }: MenuBarProps) { // Defaul
 
           <div
             ref={scrollableContentRef}
-            class="space-y-2 mt-10 flex-grow overflow-y-auto hide-scrollbar pb-10"
+            class="space-y-2 mt-10 grow overflow-y-auto hide-scrollbar pb-10"
           >
             <LinkDataProvider>
               {(data) => (
