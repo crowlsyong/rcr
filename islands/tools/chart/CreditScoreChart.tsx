@@ -1,7 +1,7 @@
 // islands/tools/chart/CreditScoreChart.tsx
 import { useEffect, useRef } from "preact/hooks";
 import { Chart, registerables } from "chart.js";
-import "npm:chartjs-adapter-date-fns";
+import "chartjs-adapter-date-fns";
 import type { Chart as ChartJsType, TooltipItem } from "chart.js";
 import { OverrideEvent } from "../../../routes/api/v0/credit-score/index.ts";
 
