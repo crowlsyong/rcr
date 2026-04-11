@@ -1,1 +1,0 @@
-import{a as i}from"./chunk-HFIS46HI.js";import{a as l}from"./chunk-MEABNXAK.js";function e({granularity:a,setGranularity:r,isAdvancedMode:t}){return l("div",{class:t?"opacity-50 pointer-events-none":"",children:l(i,{granularity:a,setGranularity:r,disabled:t})})}export{e as a};

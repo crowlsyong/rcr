@@ -1,5 +1,5 @@
 {
-  "nodeModulesDir": "auto",
+  "nodeModulesDir": "manual",
   "unstable": ["kv"],
   "tasks": {
     "check": "deno fmt --check . && deno lint . && deno check **/*.ts **/*.tsx",
@@ -18,14 +18,16 @@
   "imports": {
     "fresh": "jsr:@fresh/core@^2.2.2",
     "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@^1.0.8",
-    "vite": "npm:vite@^6.0.0",
-    "tailwindcss": "npm:tailwindcss@^4.0.0",
-    "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.0.0",
+    "vite": "npm:vite@^7.1.3",
+    "tailwindcss": "npm:tailwindcss@^4.1.10",
+    "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.1.12",
     "preact": "npm:preact@^10.28.3",
     "@preact/signals": "npm:@preact/signals@^2.7.1",
     "@preact-icons/tb": "jsr:@preact-icons/tb@^1.0.14",
     "chart.js": "npm:chart.js@^4.5.0",
     "chart.js/auto": "npm:chart.js@^4.5.0/auto",
+    "chartjs-adapter-date-fns": "npm:chartjs-adapter-date-fns@^3.0.0",
+    "date-fns": "npm:date-fns@^3.0.0",
     "$std/": "https://deno.land/std@0.216.0/"
   },
   "compilerOptions": {
