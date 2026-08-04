@@ -13,7 +13,8 @@ const DELAY_BETWEEN_USERS_MS = 50; // Keep this as is for smooth API calls
 
 // This schedule will run every 30 minutes (e.g., at :00 and :30 past the hour).
 // You could also do "*/15 * * * *" for every 15 minutes, if you want it to run more frequently.
-const FREQUENT_SCHEDULE = "0 * * * *";
+// const FREQUENT_SCHEDULE = "0 * * * *"; // ORIGINAL
+const FREQUENT_SCHEDULE = "0 0 * * *"; // once per day
 const CRON_PROGRESS_KEY = ["cron_progress", CRON_NAME, "last_index"];
 
 interface User {
